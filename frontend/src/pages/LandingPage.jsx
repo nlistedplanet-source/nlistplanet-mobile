@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2 } from 'lucide-react';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const [displayText, setDisplayText] = useState('Buy');
   
   useEffect(() => {
