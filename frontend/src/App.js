@@ -29,6 +29,11 @@ const MyPostsPage = lazy(() => import('./pages/trading/MyPostsPage'));
 const BidsPage = lazy(() => import('./pages/trading/BidsPage'));
 const OffersReceivedPage = lazy(() => import('./pages/trading/OffersReceivedPage'));
 
+// Legal pages
+const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
+
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
@@ -99,6 +104,11 @@ function AppRoutes() {
           <Route path="/my-posts" element={<ProtectedRoute><MyPostsPage /></ProtectedRoute>} />
           <Route path="/bids" element={<ProtectedRoute><BidsPage /></ProtectedRoute>} />
           <Route path="/offers" element={<ProtectedRoute><OffersReceivedPage /></ProtectedRoute>} />
+
+          {/* Legal pages - public */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/cookies" element={<CookiePolicy />} />
 
           {/* Catch all - redirect to landing/welcome */}
           <Route path="*" element={<Navigate to="/welcome" replace />} />
