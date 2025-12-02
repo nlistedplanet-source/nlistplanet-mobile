@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=yes" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="description" content="Trade unlisted shares on the go with NlistPlanet mobile app" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="NlistPlanet" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>NlistPlanet - Trade Unlisted Shares</title>
+    
+    <!-- Desktop Redirect Script -->
+    <script>
+      (function() {
+        // Check if device is desktop
+        const isDesktop = !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isLargeScreen = window.innerWidth >= 1024;
+        
+        // Only redirect if on desktop device AND large screen
+        if (isDesktop && isLargeScreen) {
+          // Desktop app URL
+          const desktopAppUrl = 'https://nlistplanet.com';
+          
+          // Check if we're not already on the desktop site
+          if (!window.location.href.includes(desktopAppUrl.replace('https://', '').replace('http://', ''))) {
+            // Redirect to desktop app
+            window.location.href = desktopAppUrl;
+          }
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
