@@ -29,14 +29,15 @@ export const AuthProvider = ({ children }) => {
           setToken(storedToken);
           setUser(storedUser);
           
-          // Verify token is still valid
+          // Verify token is still valid (but don't block if it fails initially)
           try {
             const response = await authAPI.getProfile();
             setUser(response.data.user);
             storage.set('user', response.data.user);
           } catch (error) {
-            // Token invalid, clear auth
-            logout();
+            // If verification fails, don't immediately logout - 
+            // token might be valid but backend might be cold starting
+            console.log('Token verification failed, using cached user data');
           }
         }
       } catch (error) {
