@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { isValidEmail } from '../../utils/helpers';
 import { haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
-import { BrandLogo } from '../../components/common';
+// BrandLogo removed from login page per request
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -61,7 +61,7 @@ const LoginPage = () => {
 
     if (result.success) {
       haptic.success();
-      navigate('/home');
+      navigate('/');
     } else {
       haptic.error();
       setLoading(false);
@@ -72,7 +72,6 @@ const LoginPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 flex flex-col">
       {/* Header */}
       <div className="px-6 pt-12 pb-8">
-        <BrandLogo size={64} className="mb-6 rounded-2xl" />
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
         <p className="text-gray-600">Sign in to continue trading</p>
       </div>
@@ -188,8 +187,8 @@ const LoginPage = () => {
       <div className="px-6 pb-8 pt-4">
         <p className="text-xs text-center text-gray-500">
           By continuing, you agree to our{' '}
-          <span className="text-primary-600 font-medium">Terms of Service</span> and{' '}
-          <span className="text-primary-600 font-medium">Privacy Policy</span>
+          <Link to="/terms" className="text-primary-600 font-medium">Terms of Service</Link> and{' '}
+          <Link to="/privacy" className="text-primary-600 font-medium">Privacy Policy</Link>
         </p>
       </div>
     </div>
