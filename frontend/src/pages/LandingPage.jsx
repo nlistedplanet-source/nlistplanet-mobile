@@ -53,7 +53,16 @@ const LandingPage = () => {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl flex items-center justify-center shadow-lg">
+            <img 
+              src="/new_logo.png" 
+              alt="NlistPlanet Logo" 
+              className="w-16 h-16 object-contain rounded-2xl shadow-lg"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div className="w-16 h-16 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl flex items-center justify-center shadow-lg" style={{display: 'none'}}>
               <span className="text-2xl font-bold text-white">N</span>
             </div>
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
