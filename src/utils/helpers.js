@@ -215,31 +215,56 @@ export const storage = {
   }
 };
 
-// Haptic feedback (if available)
+// Check if vibration API is supported
+const canVibrate = () => {
+  return 'vibrate' in navigator && typeof navigator.vibrate === 'function';
+};
+
+// Haptic feedback with proper feature detection
 export const haptic = {
   light: () => {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(10);
+    try {
+      if (canVibrate()) {
+        navigator.vibrate(10);
+      }
+    } catch (e) {
+      // Silently fail - haptic is non-critical
     }
   },
   medium: () => {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(20);
+    try {
+      if (canVibrate()) {
+        navigator.vibrate(20);
+      }
+    } catch (e) {
+      // Silently fail
     }
   },
   heavy: () => {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate(50);
+    try {
+      if (canVibrate()) {
+        navigator.vibrate(50);
+      }
+    } catch (e) {
+      // Silently fail
     }
   },
   success: () => {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate([10, 50, 10]);
+    try {
+      if (canVibrate()) {
+        navigator.vibrate([10, 50, 10]);
+      }
+    } catch (e) {
+      // Silently fail
     }
   },
   error: () => {
-    if (window.navigator && window.navigator.vibrate) {
-      window.navigator.vibrate([50, 100, 50]);
+    try {
+      if (canVibrate()) {
+        navigator.vibrate([50, 100, 50]);
+      }
+    } catch (e) {
+      // Silently fail
     }
   }
 };

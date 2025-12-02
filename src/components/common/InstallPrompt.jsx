@@ -105,8 +105,8 @@ const InstallPrompt = () => {
           </div>
         </div>
 
-        {/* iOS Instructions */}
-        {/iPhone|iPad|iPod/.test(navigator.userAgent) && (
+        {/* iOS Instructions - Show when no beforeinstallprompt was fired (iOS Safari) */}
+        {!deferredPrompt && 'standalone' in navigator && !navigator.standalone && (
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
               <span className="font-medium">On iOS:</span> Tap the Share button 

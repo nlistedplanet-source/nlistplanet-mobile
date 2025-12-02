@@ -15,21 +15,18 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>NlistPlanet - Trade Unlisted Shares</title>
     
-    <!-- Desktop Redirect Script -->
+    <!-- Desktop Redirect - Uses CSS-based media query check -->
     <script>
       (function() {
-        // Check if device is desktop
-        const isDesktop = !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isLargeScreen = window.innerWidth >= 1024;
+        // Check screen width for large desktop screens
+        // This avoids unreliable user agent sniffing
+        const isLargeScreen = window.matchMedia('(min-width: 1024px)').matches;
+        const hasNoTouchSupport = !('ontouchstart' in window) && !navigator.maxTouchPoints;
         
-        // Only redirect if on desktop device AND large screen
-        if (isDesktop && isLargeScreen) {
-          // Desktop app URL
+        // Only redirect if on large screen without touch support (likely desktop)
+        if (isLargeScreen && hasNoTouchSupport) {
           const desktopAppUrl = 'https://nlistplanet.com';
-          
-          // Check if we're not already on the desktop site
           if (!window.location.href.includes(desktopAppUrl.replace('https://', '').replace('http://', ''))) {
-            // Redirect to desktop app
             window.location.href = desktopAppUrl;
           }
         }
