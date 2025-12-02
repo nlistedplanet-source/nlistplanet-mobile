@@ -225,11 +225,11 @@ const LandingPage = () => {
         <div className="text-center text-xs text-gray-500">
           <p className="mb-2">© 2024 NlistPlanet. All rights reserved.</p>
           <div className="flex items-center justify-center gap-3">
-            <span className="text-emerald-600 font-medium">Terms</span>
+            <button onClick={() => navigate('/terms')} className="text-emerald-600 font-medium hover:text-emerald-700 transition-colors">Terms</button>
             <span>•</span>
-            <span className="text-emerald-600 font-medium">Privacy</span>
+            <button onClick={() => navigate('/privacy')} className="text-emerald-600 font-medium hover:text-emerald-700 transition-colors">Privacy</button>
             <span>•</span>
-            <span className="text-emerald-600 font-medium">Support</span>
+            <a href="mailto:support@nlistplanet.com" className="text-emerald-600 font-medium hover:text-emerald-700 transition-colors">Support</a>
           </div>
         </div>
       </div>
