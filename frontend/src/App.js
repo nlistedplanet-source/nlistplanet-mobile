@@ -10,6 +10,7 @@ import {
 } from './components/common';
 
 // Lazy load pages for better performance
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
@@ -37,13 +38,13 @@ function ProtectedRoute({ children }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/welcome" replace />;
   }
 
   return children;
 }
 
-// Public Route wrapper (redirect if already authenticated)
+// Public Route wrapper (redirect to landing if not authenticated)
 function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
@@ -73,6 +74,9 @@ function AppRoutes() {
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
+          {/* Landing page - public */}
+          <Route path="/welcome" element={<LandingPage />} />
+          
           {/* Public routes */}
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
@@ -96,8 +100,8 @@ function AppRoutes() {
           <Route path="/bids" element={<ProtectedRoute><BidsPage /></ProtectedRoute>} />
           <Route path="/offers" element={<ProtectedRoute><OffersReceivedPage /></ProtectedRoute>} />
 
-          {/* Catch all - redirect to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Catch all - redirect to landing/welcome */}
+          <Route path="*" element={<Navigate to="/welcome" replace />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>
