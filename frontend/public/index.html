@@ -15,42 +15,7 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>NlistPlanet - Trade Unlisted Shares</title>
     
-    <!-- Smart Redirect Script: Desktop ↔ Mobile based on viewport and domain -->
-    <script>
-      (function () {
-        try {
-          const host = window.location.hostname;
-          const params = new URLSearchParams(window.location.search);
-          const disableRedirect = params.get('preview') === '1' || params.get('no-redirect') === '1';
-          
-          // Skip redirect for Vercel preview domains
-          if (host.includes('vercel.app') || host === 'localhost' || host === '127.0.0.1') {
-            return;
-          }
-
-          // Detect device and viewport
-          const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-          const isSmallScreen = window.innerWidth < 1024;
-          const isLargeScreen = window.innerWidth >= 1024;
-
-          // Define domains
-          const isProdMobileDomain = host === 'mobile.nlistplanet.com' || host === 'm.nlistplanet.com';
-          const desktopAppUrl = 'https://nlistplanet.com';
-          const mobileAppUrl = 'https://mobile.nlistplanet.com';
-
-          // Redirect logic (unless bypassed)
-          if (!disableRedirect) {
-            // On mobile domain but using desktop device with large screen → redirect to desktop
-            if (isProdMobileDomain && !isMobileDevice && isLargeScreen) {
-              window.location.href = desktopAppUrl + window.location.pathname + window.location.search;
-            }
-          }
-        } catch (e) {
-          // Fail open: never block the app from loading
-          console.warn('Redirect script skipped:', e);
-        }
-      })();
-    </script>
+    <!-- No redirect needed - mobile app stays on mobile domain -->
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
