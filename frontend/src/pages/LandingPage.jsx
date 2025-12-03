@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe } from 'lucide-react';
+import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -39,6 +39,24 @@ const LandingPage = () => {
     }
   ];
 
+  const benefitCards = [
+    {
+      icon: '💰',
+      title: 'Best Prices',
+      description: 'Set your own price and get competitive bids'
+    },
+    {
+      icon: '⚡',
+      title: 'Quick Listing',
+      description: 'List your shares in less than 5 minutes'
+    },
+    {
+      icon: '🔒',
+      title: 'Secure Transfer',
+      description: 'Safe and verified ownership transfer process'
+    }
+  ];
+
   const companies = [
     { name: 'Razorpay', logo: 'https://logo.clearbit.com/razorpay.com' },
     { name: 'Swiggy', logo: 'https://logo.clearbit.com/swiggy.com' },
@@ -60,10 +78,43 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
+      {/* Header */}
+      <header className="relative z-20 px-5 py-4 flex items-center justify-between border-b border-gray-800/50 bg-gray-950/80 backdrop-blur-lg sticky top-0">
+        <div className="flex items-center gap-2">
+          <img 
+            src="/new_logo.png" 
+            alt="NlistPlanet" 
+            className="w-9 h-9 object-contain"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+            <span className="text-lg font-bold text-white">N</span>
+          </div>
+          <span className="text-white font-bold text-lg">NlistPlanet</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className="px-4 py-2 text-gray-300 hover:text-white text-sm font-medium transition-colors"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            Sign Up
+          </Link>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <div className="relative z-10 px-6 pt-12 pb-8">
+      <div className="relative z-10 px-6 pt-8 pb-6">
         {/* Logo */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6">
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
             <div className="relative bg-gray-900 p-3 rounded-2xl border border-gray-800">
@@ -87,8 +138,8 @@ const LandingPage = () => {
         </div>
 
         {/* Hero Text */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-2 mb-6">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-2 mb-5">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
             <span className="text-emerald-400 text-sm font-medium">India's #1 Unlisted Share Platform</span>
           </div>
@@ -113,59 +164,19 @@ const LandingPage = () => {
           </p>
         </div>
 
-        {/* Trust Badges */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="flex items-center gap-2 bg-gray-900/80 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-gray-800">
-            <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-              <Users className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm">10K+</p>
-              <p className="text-gray-500 text-[10px]">Traders</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 bg-gray-900/80 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-gray-800">
-            <div className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm">₹500Cr+</p>
-              <p className="text-gray-500 text-[10px]">Volume</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 bg-gray-900/80 backdrop-blur-sm px-4 py-2.5 rounded-xl border border-gray-800">
-            <div className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <Globe className="w-4 h-4 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-sm">100+</p>
-              <p className="text-gray-500 text-[10px]">Companies</p>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="space-y-3 mb-8">
+        {/* CTA Buttons - Single Row */}
+        <div className="flex gap-3 mb-6">
           <Link
             to="/register"
-            className="block w-full relative group overflow-hidden"
+            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg shadow-emerald-500/20"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="relative flex items-center justify-center gap-2 py-4 px-6 font-semibold text-white">
-              <span className="text-base">Start Trading Now</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </div>
+            Start Trading <ArrowRight className="w-4 h-4" />
           </Link>
-          
           <Link
             to="/login"
-            className="block w-full bg-gray-900 border border-gray-700 text-white font-semibold py-4 px-6 rounded-2xl hover:bg-gray-800 hover:border-gray-600 transition-all duration-300 text-center group"
+            className="flex-1 bg-gray-800 border border-gray-700 text-white font-semibold py-3 px-4 rounded-xl text-center text-sm flex items-center justify-center gap-2 hover:bg-gray-700 transition-all"
           >
-            <span className="flex items-center justify-center gap-2">
-              Sign In to Account
-              <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
-            </span>
+            Sign In <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -182,6 +193,21 @@ const LandingPage = () => {
           <div className="flex items-center gap-1.5 bg-gray-900/60 px-3 py-1.5 rounded-full border border-gray-800">
             <Zap className="w-3.5 h-3.5 text-yellow-400" />
             <span className="text-gray-300 text-xs">Instant Match</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Benefit Cards Section - NEW */}
+      <div className="relative z-10 px-6 pb-6">
+        <div className="bg-white rounded-2xl p-4 shadow-xl">
+          <div className="grid grid-cols-3 gap-3">
+            {benefitCards.map((card, index) => (
+              <div key={index} className="text-center">
+                <div className="text-3xl mb-2">{card.icon}</div>
+                <h4 className="font-bold text-gray-900 text-sm mb-1">{card.title}</h4>
+                <p className="text-gray-500 text-[10px] leading-tight">{card.description}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
