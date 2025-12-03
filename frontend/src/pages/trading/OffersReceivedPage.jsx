@@ -220,7 +220,7 @@ const OffersReceivedPage = () => {
               }
             </p>
             
-            {/* Offer Summary */}
+            {/* Offer Summary - Show what seller receives after 2% fee */}
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Company</span>
@@ -231,12 +231,12 @@ const OffersReceivedPage = () => {
                 <span className="font-semibold text-gray-900">{selectedOffer.quantity} shares</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Price per share</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(selectedOffer.price)}</span>
+                <span className="text-gray-600">You'll receive per share</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(selectedOffer.price * 0.98)}</span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-                <span className="text-gray-900 font-semibold">Total Amount</span>
-                <span className="font-bold text-primary-600">{formatCurrency(selectedOffer.price * selectedOffer.quantity)}</span>
+                <span className="text-gray-900 font-semibold">Total You'll Receive</span>
+                <span className="font-bold text-primary-600">{formatCurrency(selectedOffer.price * 0.98 * selectedOffer.quantity)}</span>
               </div>
             </div>
 
@@ -272,6 +272,10 @@ const OffersReceivedPage = () => {
 
 // Offer Card Component
 const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
+  // Seller receives price after 2% platform fee deduction
+  const sellerReceives = offer.price * 0.98;
+  const totalReceives = sellerReceives * offer.quantity;
+  
   const statusConfig = {
     pending: {
       icon: Clock,
@@ -325,16 +329,16 @@ const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
           {/* Price Info */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 mb-0.5">Offered price</p>
+              <p className="text-xs text-gray-500 mb-0.5">You'll receive</p>
               <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(offer.price)}
+                {formatCurrency(sellerReceives)}
                 <span className="text-sm text-gray-500 font-normal">/share</span>
               </p>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 mb-0.5">For {offer.quantity} shares</p>
               <p className="text-lg font-bold text-primary-600">
-                {formatCurrency(offer.price * offer.quantity)}
+                {formatCurrency(totalReceives)}
               </p>
             </div>
           </div>
