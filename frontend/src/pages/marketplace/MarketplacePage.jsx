@@ -168,6 +168,7 @@ const MarketplacePage = () => {
                 key={listing._id} 
                 listing={listing} 
                 onClick={() => handleListingClick(listing)}
+                navigate={navigate}
               />
             ))}
           </div>
@@ -178,7 +179,7 @@ const MarketplacePage = () => {
 };
 
 // Listing Card Component
-const ListingCard = ({ listing, onClick }) => {
+const ListingCard = ({ listing, onClick, navigate }) => {
   const isSell = listing.type === 'sell';
   const totalPrice = calculateTotalWithFee(listing.price);
   const bidsCount = isSell ? listing.bids?.length || 0 : listing.offers?.length || 0;
@@ -274,25 +275,37 @@ const ListingCard = ({ listing, onClick }) => {
       <div className="flex items-center justify-between gap-2 mt-2">
         <button
           className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
-          onClick={(e) => { e.stopPropagation(); haptic.medium(); navigate(`/listing/${listing._id}?action=bid`); }}
+          onClick={(e) => { e.stopPropagation(); haptic.medium(); onClick(); }}
         >
           Place Bid
         </button>
         <button
           className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
-          onClick={(e) => { e.stopPropagation(); haptic.medium(); navigate(`/listing/${listing._id}?action=accept`); }}
+          onClick={(e) => { e.stopPropagation(); haptic.medium(); onClick(); }}
         >
           Accept
         </button>
         <button
           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
-          onClick={(e) => { e.stopPropagation(); haptic.light(); navigator.share ? navigator.share({ title: listing.companyName, url: window.location.href }) : toast('Share link copied!'); }}
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            haptic.light(); 
+            if (navigator.share) {
+              navigator.share({ 
+                title: listing.companyName, 
+                text: `Check out ${listing.companyName} on NlistPlanet`,
+                url: window.location.origin + `/listing/${listing._id}`
+              }).catch(() => {});
+            } else {
+              toast.success('Share link copied!');
+            }
+          }}
         >
           <Share2 size={14} /> Share
         </button>
         <button
           className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
-          onClick={(e) => { e.stopPropagation(); haptic.light(); toast('Liked!'); }}
+          onClick={(e) => { e.stopPropagation(); haptic.light(); toast.success('Liked!'); }}
         >
           <TrendingUp size={14} /> Like
         </button>
