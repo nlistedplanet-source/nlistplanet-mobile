@@ -12,6 +12,20 @@ export const formatNumber = (num) => {
   return new Intl.NumberFormat('en-IN').format(num);
 };
 
+// Format number in short form (1K, 1L, 1Cr)
+export const formatShortNumber = (num) => {
+  if (num >= 10000000) {
+    return (num / 10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
+  }
+  if (num >= 100000) {
+    return (num / 100000).toFixed(1).replace(/\.0$/, '') + ' L';
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + ' K';
+  }
+  return num.toString();
+};
+
 // Platform fee percentage
 export const PLATFORM_FEE_PERCENTAGE = 2;
 
@@ -63,7 +77,7 @@ export const getPriceDisplay = (price, listingType, isOwner = false) => {
       buyerPays,
       sellerGets,
       displayPrice: buyerPays,
-      label: 'Buyer Pays'
+      label: 'Price'
     };
   } else {
     // BUY listing: Other users are sellers, show what they get
@@ -71,7 +85,7 @@ export const getPriceDisplay = (price, listingType, isOwner = false) => {
       buyerPays,
       sellerGets,
       displayPrice: sellerGets,
-      label: 'Seller Gets'
+      label: 'Price'
     };
   }
 };

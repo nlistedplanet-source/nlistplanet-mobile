@@ -15,7 +15,7 @@ import {
   Info
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, debounce, formatDate, formatNumber, formatShortNumber, getPriceDisplay } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const MarketplacePage = () => {
@@ -186,8 +186,6 @@ const ListingCard = ({ listing, onClick, navigate }) => {
   const isSell = listing.type === 'sell';
   
   // Marketplace shows prices to non-owners (isOwner = false)
-  // SELL listing: Buyers see "Buyer Pays" (price + 2%)
-  // BUY listing: Sellers see "Seller Gets" (price - 2%)
   const priceInfo = getPriceDisplay(listing.price, listing.type, false);
   const displayPrice = priceInfo.displayPrice;
   const priceLabel = priceInfo.label;
@@ -196,60 +194,58 @@ const ListingCard = ({ listing, onClick, navigate }) => {
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-2xl p-4 shadow-mobile active:scale-98 transition-transform cursor-pointer ${
+      className={`bg-white rounded-xl p-3 shadow-sm active:scale-98 transition-transform cursor-pointer ${
         listing.isBoosted ? 'ring-2 ring-yellow-400' : ''
       }`}
     >
       {/* Boosted Badge */}
       {listing.isBoosted && (
-        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-          <Zap size={12} fill="white" />
-          BOOSTED
+        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+          <Zap size={10} fill="white" />
+          BOOST
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative">
-            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
-              <img
-                src={listing.companyId.logo || listing.companyId.Logo}
-                alt={listing.companyName}
-                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-700 font-bold text-lg">
-                  {listing.companyName?.[0] || 'C'}
-                </span>
-              </div>
-            )}
-          </div>
+      {/* Header - Compact */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {(listing.companyId?.logo || listing.companyId?.Logo) ? (
+            <img
+              src={listing.companyId.logo || listing.companyId.Logo}
+              alt={listing.companyName}
+              className="w-9 h-9 rounded-lg object-cover flex-shrink-0"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-700 font-bold text-sm">
+                {listing.companyName?.[0] || 'C'}
+              </span>
+            </div>
+          )}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-base text-gray-900 leading-tight truncate">
-                {listing.companyId?.scriptName || listing.companyName}
+            <div className="flex items-center gap-1">
+              <h3 className="font-semibold text-sm text-gray-900 leading-tight truncate">
+                {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
               </h3>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowTooltip(!showTooltip);
                 }}
-                className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                className="flex-shrink-0 w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center"
               >
-                <Info size={12} className="text-gray-600" />
+                <Info size={10} className="text-gray-500" />
               </button>
             </div>
-            <p className="text-xs text-gray-500">{listing.companyId?.sector || 'Company'}</p>
+            <p className="text-xs text-gray-500 truncate">{listing.companyId?.sector || listing.companyId?.Sector || ''}</p>
           </div>
         </div>
 
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0 ${
           isSell ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
         }`}>
           {isSell ? 'SELL' : 'BUY'}
@@ -258,69 +254,44 @@ const ListingCard = ({ listing, onClick, navigate }) => {
 
       {/* Mobile Tooltip */}
       {showTooltip && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
-          <div className="flex items-start justify-between mb-2">
-            <h4 className="font-bold text-sm text-gray-900">{listing.companyId?.scriptName || listing.companyName}</h4>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowTooltip(false);
-              }}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ×
-            </button>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-2 text-xs">
+          <div className="flex items-start justify-between mb-1">
+            <h4 className="font-semibold text-gray-900">{listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}</h4>
+            <button onClick={(e) => { e.stopPropagation(); setShowTooltip(false); }} className="text-gray-400 text-lg leading-none">&times;</button>
           </div>
-          <div className="space-y-1 text-xs text-gray-600">
-            <p><span className="font-semibold">Sector:</span> {listing.companyId?.sector || 'N/A'}</p>
-            {listing.companyId?.isin && <p><span className="font-semibold">ISIN:</span> {listing.companyId.isin}</p>}
-            {listing.companyId?.pan && <p><span className="font-semibold">PAN:</span> {listing.companyId.pan}</p>}
-            {listing.companyId?.cin && <p><span className="font-semibold">CIN:</span> {listing.companyId.cin}</p>}
-            {listing.companyId?.description && <p className="mt-2 text-gray-700">{listing.companyId.description}</p>}
+          <div className="space-y-0.5 text-gray-600">
+            {listing.companyId?.sector && <p><span className="font-medium">Sector:</span> {listing.companyId.sector || listing.companyId.Sector}</p>}
+            {listing.companyId?.isin && <p><span className="font-medium">ISIN:</span> {listing.companyId.isin || listing.companyId.ISIN}</p>}
           </div>
         </div>
       )}
 
-      {/* Description */}
-      {listing.description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {listing.description}
-        </p>
-      )}
-
-      {/* Price & Quantity */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1">
-            {priceLabel}
-          </p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(displayPrice)}</p>
+      {/* Price & Quantity - Compact */}
+      <div className="flex items-center gap-2 mb-2">
+        <div className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5">
+          <p className="text-xs text-gray-500">{priceLabel}</p>
+          <p className="text-base font-bold text-gray-900">{formatCurrency(displayPrice)}</p>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1">Quantity</p>
-          <p className="text-lg font-bold text-gray-900">{formatNumber(listing.quantity)}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Min: {formatNumber(listing.minLot)}
-          </p>
+        <div className="flex-1 bg-gray-50 rounded-lg px-2 py-1.5">
+          <p className="text-xs text-gray-500">Qty</p>
+          <p className="text-base font-bold text-gray-900">{formatShortNumber(listing.quantity)}</p>
         </div>
       </div>
 
-      {/* ...removed Total Amount section... */}
-
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 mt-2">
+      {/* Action Buttons - Compact */}
+      <div className="flex items-center gap-1.5">
         <button
-          className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex-1 transition-colors"
+          className="bg-primary-600 active:bg-primary-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex-1"
           onClick={(e) => { 
             e.stopPropagation(); 
             haptic.medium();
             navigate(`/listing/${listing._id}`);
           }}
         >
-          Place Bid
+          {isSell ? 'Place Bid' : 'Make Offer'}
         </button>
         <button
-          className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex-1 transition-colors"
+          className="bg-green-600 active:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex-1"
           onClick={(e) => { 
             e.stopPropagation(); 
             haptic.medium();
@@ -330,14 +301,13 @@ const ListingCard = ({ listing, onClick, navigate }) => {
           Accept
         </button>
         <button
-          className="w-10 h-10 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 rounded-lg flex items-center justify-center transition-colors"
+          className="w-8 h-8 bg-gray-100 active:bg-gray-200 text-gray-600 rounded-lg flex items-center justify-center"
           onClick={(e) => { 
             e.stopPropagation(); 
             haptic.light(); 
             if (navigator.share) {
               navigator.share({ 
                 title: listing.companyName, 
-                text: `Check out ${listing.companyName} on NlistPlanet`,
                 url: window.location.origin + `/listing/${listing._id}`
               }).catch(() => {});
             } else {
@@ -345,33 +315,33 @@ const ListingCard = ({ listing, onClick, navigate }) => {
             }
           }}
         >
-          <Share2 size={18} />
+          <Share2 size={14} />
         </button>
         <button
-          className="w-10 h-10 bg-gray-100 hover:bg-gray-200 active:bg-red-50 text-gray-700 hover:text-red-600 rounded-lg flex items-center justify-center transition-colors"
+          className="w-8 h-8 bg-gray-100 active:bg-red-50 text-gray-600 active:text-red-500 rounded-lg flex items-center justify-center"
           onClick={(e) => { 
             e.stopPropagation(); 
             haptic.light(); 
-            toast.success('Added to favorites!'); 
+            toast.success('Saved!'); 
           }}
         >
-          <Heart size={18} />
+          <Heart size={14} />
         </button>
       </div>
-      {/* Meta Info */}
-      <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
-        <div className="flex items-center gap-1">
-          <Calendar size={14} />
+      {/* Meta Info - Compact */}
+      <div className="flex items-center gap-3 text-xs text-gray-400 mt-1.5">
+        <span className="flex items-center gap-1">
+          <Calendar size={11} />
           {formatDate(listing.createdAt)}
-        </div>
-        <div className="flex items-center gap-1">
-          <MessageCircle size={14} />
-          {bidsCount} {isSell ? 'Bids' : 'Offers'}
-        </div>
-        <div className="flex items-center gap-1">
-          <Package size={14} />
+        </span>
+        <span className="flex items-center gap-1">
+          <MessageCircle size={11} />
+          {bidsCount}
+        </span>
+        <span className="flex items-center gap-1">
+          <Package size={11} />
           @{listing.username}
-        </div>
+        </span>
       </div>
     </div>
   );

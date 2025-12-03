@@ -188,6 +188,35 @@ router.get('/my-placed-bids', protect, async (req, res, next) => {
   }
 });
 
+// @route   GET /api/listings/:id
+// @desc    Get single listing by ID
+// @access  Public
+router.get('/:id', optionalAuth, async (req, res, next) => {
+  try {
+    const listing = await Listing.findById(req.params.id)
+      .populate('userId', 'username avatar fullName')
+      .populate('companyId', 'CompanyName ScripName Logo Sector name logo sector scriptName PAN ISIN CIN pan isin cin description');
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    // Check if current user is the owner
+    const isOwner = req.user && listing.userId._id.toString() === req.user._id.toString();
+
+    res.json({
+      success: true,
+      data: listing,
+      isOwner
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @route   POST /api/listings
 // @desc    Create new listing
 // @access  Private
