@@ -273,11 +273,11 @@ const CompactCard = ({ listing, onClick }) => {
           )}
         </div>
         
-        {/* Type Badge - Right Corner */}
+        {/* Type Badge - Right Corner (Flipped for marketplace: SELL post = BUY opportunity) */}
         <div className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
-          isSell ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+          isSell ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'
         }`}>
-          {isSell ? 'SELL' : 'BUY'}
+          {isSell ? 'BUY' : 'SELL'}
         </div>
       </div>
 
@@ -449,11 +449,11 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 <h3 className="font-bold text-gray-900 text-base truncate">
                   {company.scriptName || company.ScripName || listing.companyName}
                 </h3>
-                {/* Type Badge */}
+                {/* Type Badge (Flipped for marketplace) */}
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
-                  isSell ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                  isSell ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'
                 }`}>
-                  {isSell ? 'SELL' : 'BUY'}
+                  {isSell ? 'BUY' : 'SELL'}
                 </span>
                 {/* Info Tooltip Trigger */}
                 <button 
@@ -591,13 +591,13 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
             </div>
           </div>
 
-          {/* ═══ Tags & Meta Info ═══ */}
+          {/* ═══ Tags & Meta Info (Flipped for marketplace) ═══ */}
           <div className="flex items-center justify-between text-[10px] text-gray-500 pt-3 border-t border-gray-100">
             <div className="flex items-center gap-1.5">
               <span className={`px-2 py-0.5 rounded-full ${
-                isSell ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                isSell ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
               }`}>
-                {isSell ? 'SELL' : 'BUY'}
+                {isSell ? 'BUY' : 'SELL'}
               </span>
               <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-600">Unlisted</span>
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600">Active</span>
