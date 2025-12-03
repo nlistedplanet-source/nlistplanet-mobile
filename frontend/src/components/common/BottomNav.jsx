@@ -28,14 +28,19 @@ const BottomNav = () => {
   }, []);
 
   const navItems = [
-    { icon: Home, label: 'Home', path: '/home' },
+    { icon: Home, label: 'Home', path: '/' },
     { icon: TrendingUp, label: 'Market', path: '/marketplace' },
     { icon: PlusCircle, label: 'Post', path: '/create', highlight: true },
     { icon: Bell, label: 'Activity', path: '/activity', badge: unreadCount },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname === path || location.pathname.startsWith(path + '/');
+  };
 
   const handleNavClick = (path) => {
     haptic.light();
@@ -54,8 +59,8 @@ const BottomNav = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 safe-area-bottom">
-      <div className="flex items-center justify-around px-2 py-2">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-gray-100 z-40 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="flex items-center justify-around px-2 py-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.path);
@@ -64,30 +69,41 @@ const BottomNav = () => {
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
-              className={`flex flex-col items-center justify-center flex-1 py-2 rounded-xl transition-all relative touch-feedback ${
+              className={`flex flex-col items-center justify-center flex-1 py-2.5 rounded-2xl transition-all relative touch-feedback ${
                 item.highlight 
-                  ? 'text-primary-600' 
+                  ? '' 
                   : active 
-                  ? 'text-primary-600 bg-primary-50' 
-                  : 'text-gray-500'
+                  ? 'text-primary-600' 
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
-              style={{ minHeight: '64px' }}
+              style={{ minHeight: '60px' }}
             >
-              <div className="relative">
-                <Icon 
-                  size={item.highlight ? 28 : 24} 
-                  strokeWidth={active || item.highlight ? 2.5 : 2}
-                  className={item.highlight && !active ? 'animate-pulse' : ''}
-                />
-                {item.badge > 0 && (
-                  <span className="badge animate-scale-in">
-                    {item.badge > 99 ? '99+' : item.badge}
+              {item.highlight ? (
+                <div className="relative -mt-6">
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/30">
+                    <Icon size={26} strokeWidth={2} className="text-white" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="relative">
+                    <div className={`p-1.5 rounded-xl transition-all ${active ? 'bg-primary-50' : ''}`}>
+                      <Icon 
+                        size={22} 
+                        strokeWidth={active ? 2.5 : 2}
+                      />
+                    </div>
+                    {item.badge > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-scale-in">
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] mt-1 ${active ? 'font-bold' : 'font-medium'}`}>
+                    {item.label}
                   </span>
-                )}
-              </div>
-              <span className={`text-xs mt-1.5 ${active ? 'font-semibold' : 'font-medium'}`}>
-                {item.label}
-              </span>
+                </>
+              )}
             </button>
           );
         })}

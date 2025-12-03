@@ -143,7 +143,7 @@ const MarketplacePage = () => {
   }
 
   return (
-    <div className="min-h-screen-nav bg-gray-100 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header - Compact Light Theme */}
       <div className="bg-white sticky top-0 z-20 shadow-sm">
         <div className="px-3 pt-safe pb-2">

@@ -84,7 +84,7 @@ const SettingsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="px-6 pt-safe pb-4">

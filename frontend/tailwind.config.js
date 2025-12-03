@@ -24,19 +24,28 @@ module.exports = {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
       },
       boxShadow: {
-        'mobile': '0 2px 8px rgba(0, 0, 0, 0.1)',
-        'mobile-lg': '0 4px 16px rgba(0, 0, 0, 0.12)',
-        'bottom-sheet': '0 -4px 16px rgba(0, 0, 0, 0.1)',
+        'mobile': '0 2px 12px rgba(0, 0, 0, 0.06)',
+        'mobile-lg': '0 8px 24px rgba(0, 0, 0, 0.08)',
+        'bottom-sheet': '0 -4px 24px rgba(0, 0, 0, 0.08)',
+        'card': '0 4px 16px rgba(0, 0, 0, 0.06)',
+        'card-hover': '0 8px 32px rgba(0, 0, 0, 0.1)',
+        'button': '0 4px 12px rgba(14, 165, 233, 0.25)',
+        'nav': '0 -2px 16px rgba(0, 0, 0, 0.04)',
       },
       height: {
         'screen-safe': 'calc(100vh - env(safe-area-inset-bottom))',
         'screen-nav': 'calc(100vh - 64px - env(safe-area-inset-bottom))',
+      },
+      borderRadius: {
+        '4xl': '2rem',
       },
       animation: {
         'slide-up': 'slideUp 0.3s ease-out',
         'slide-down': 'slideDown 0.3s ease-out',
         'fade-in': 'fadeIn 0.2s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
+        'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
+        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
       },
       keyframes: {
         slideUp: {
@@ -54,6 +63,14 @@ module.exports = {
         scaleIn: {
           '0%': { transform: 'scale(0.9)', opacity: '0' },
           '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        bounceSubtle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-4px)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(14, 165, 233, 0.4)' },
+          '50%': { boxShadow: '0 0 0 8px rgba(14, 165, 233, 0)' },
         },
       },
     },

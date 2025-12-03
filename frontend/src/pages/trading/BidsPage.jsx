@@ -145,7 +145,7 @@ const BidsPage = () => {
 
   return (
     <>
-      <div className="min-h-screen-nav bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
         <div className="bg-white sticky top-0 z-10 shadow-sm">
           <div className="px-6 pt-safe pb-4">

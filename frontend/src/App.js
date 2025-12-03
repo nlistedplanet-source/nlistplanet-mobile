@@ -94,18 +94,18 @@ function AppRoutes() {
           {/* Protected routes with bottom nav */}
           <Route path="/" element={<ProtectedRoute><AppLayout><HomePage /></AppLayout></ProtectedRoute>} />
           <Route path="/marketplace" element={<ProtectedRoute><AppLayout><MarketplacePage /></AppLayout></ProtectedRoute>} />
-          <Route path="/listing/:id" element={<ProtectedRoute><ListingDetailPage /></ProtectedRoute>} />
+          <Route path="/listing/:id" element={<ProtectedRoute><AppLayout><ListingDetailPage /></AppLayout></ProtectedRoute>} />
           <Route path="/activity" element={<ProtectedRoute><AppLayout><ActivityPage /></AppLayout></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
           
-          {/* Additional protected routes */}
-          <Route path="/kyc" element={<ProtectedRoute><KYCPage /></ProtectedRoute>} />
-          <Route path="/referrals" element={<ProtectedRoute><ReferralsPage /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-          <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
-          <Route path="/my-posts" element={<ProtectedRoute><MyPostsPage /></ProtectedRoute>} />
-          <Route path="/bids" element={<ProtectedRoute><BidsPage /></ProtectedRoute>} />
-          <Route path="/offers" element={<ProtectedRoute><OffersReceivedPage /></ProtectedRoute>} />
+          {/* Additional protected routes - all with bottom nav */}
+          <Route path="/kyc" element={<ProtectedRoute><AppLayout><KYCPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/referrals" element={<ProtectedRoute><AppLayout><ReferralsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute><AppLayout><NotificationsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/my-posts" element={<ProtectedRoute><AppLayout><MyPostsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/bids" element={<ProtectedRoute><AppLayout><BidsPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/offers" element={<ProtectedRoute><AppLayout><OffersReceivedPage /></AppLayout></ProtectedRoute>} />
 
           {/* Legal pages - public */}
           <Route path="/privacy" element={<PrivacyPolicy />} />

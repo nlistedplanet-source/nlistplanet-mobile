@@ -135,7 +135,7 @@ const KYCPage = () => {
   const StatusIcon = statusConfig?.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="px-6 pt-safe pb-4">

@@ -80,7 +80,7 @@ const ReferralsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary-600 to-primary-700">
         <div className="px-6 pt-safe pb-6">
