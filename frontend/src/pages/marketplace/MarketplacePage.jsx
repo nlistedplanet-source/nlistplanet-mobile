@@ -11,11 +11,12 @@ import {
   ThumbsUp,
   ThumbsDown,
   X,
-  Share2,
   Clock,
-  User,
   Heart,
-  Info
+  Info,
+  Check,
+  Send,
+  ChevronDown
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
@@ -298,8 +299,8 @@ const CompactCard = ({ listing, isExpanded, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 const ExpandedPanel = ({ listing, onClose, navigate }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-  const [liked, setLiked] = useState(false);
-  const [disliked, setDisliked] = useState(false);
+  const [showRateOptions, setShowRateOptions] = useState(false);
+  const [rating, setRating] = useState(null); // 'like', 'dislike', 'love'
   const [favorited, setFavorited] = useState(false);
   
   const isSell = listing.type === 'sell';
@@ -309,27 +310,29 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
   const bidsCount = isSell ? listing.bids?.length || 0 : listing.offers?.length || 0;
   const company = listing.companyId || {};
 
-  const handleLike = (e) => {
-    e.stopPropagation();
+  const handleRate = (type, e) => {
+    e?.stopPropagation();
     haptic.light();
-    setLiked(!liked);
-    setDisliked(false);
-    toast.success(liked ? 'Removed like' : 'Liked!');
-  };
-
-  const handleDislike = (e) => {
-    e.stopPropagation();
-    haptic.light();
-    setDisliked(!disliked);
-    setLiked(false);
-    toast.success(disliked ? 'Removed dislike' : 'Not interested');
+    if (rating === type) {
+      setRating(null);
+      toast.success('Rating removed');
+    } else {
+      setRating(type);
+      const messages = {
+        like: 'Liked!',
+        dislike: 'Not for me',
+        love: 'Love it! ❤️'
+      };
+      toast.success(messages[type]);
+    }
+    setShowRateOptions(false);
   };
 
   const handleFavorite = (e) => {
     e.stopPropagation();
     haptic.light();
     setFavorited(!favorited);
-    toast.success(favorited ? 'Removed from favorites' : 'Added to favorites!');
+    toast.success(favorited ? 'Removed from list' : 'Added to My List!');
   };
 
   const handleShare = (e) => {
@@ -344,6 +347,20 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
       navigator.clipboard?.writeText(window.location.origin + `/listing/${listing._id}`);
       toast.success('Link copied!');
     }
+  };
+
+  const handleAccept = (e) => {
+    e.stopPropagation();
+    haptic.medium();
+    navigate(`/listing/${listing._id}?action=accept`);
+  };
+
+  // Get rate icon based on current rating
+  const getRateIcon = () => {
+    if (rating === 'like') return <ThumbsUp size={18} />;
+    if (rating === 'dislike') return <ThumbsDown size={18} />;
+    if (rating === 'love') return <Heart size={18} fill="currentColor" />;
+    return <ThumbsUp size={18} />;
   };
 
   return (
@@ -448,62 +465,159 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
 
         {/* ═══ Action Buttons - Netflix Style ═══ */}
         <div className="flex items-center gap-2 mb-3">
-          {/* Primary Action - View Details / Place Bid */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              haptic.medium();
-              navigate(`/listing/${listing._id}`);
-            }}
-            className="flex-1 bg-white hover:bg-gray-100 active:bg-gray-200 text-black py-2.5 rounded-md font-bold text-sm flex items-center justify-center gap-2 transition-colors"
-          >
-            <Play size={14} fill="currentColor" />
-            {isSell ? 'Place Bid' : 'Make Offer'}
-          </button>
+          {/* Play/View Button */}
+          <div className="group relative">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                haptic.medium();
+                navigate(`/listing/${listing._id}`);
+              }}
+              className="w-11 h-11 bg-white hover:bg-gray-100 active:bg-gray-200 text-black rounded-full flex items-center justify-center transition-all"
+            >
+              <Play size={20} fill="currentColor" />
+            </button>
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {isSell ? 'Place Bid' : 'Make Offer'}
+            </div>
+          </div>
           
-          {/* Favorite - Heart */}
-          <button
-            onClick={handleFavorite}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              favorited 
-                ? 'bg-red-600 text-white' 
-                : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600'
-            }`}
-          >
-            <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />
-          </button>
+          {/* Add to List Button */}
+          <div className="group relative">
+            <button
+              onClick={handleFavorite}
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border-2 ${
+                favorited 
+                  ? 'bg-white text-black border-white' 
+                  : 'bg-transparent text-white border-gray-400 hover:border-white'
+              }`}
+            >
+              {favorited ? <Check size={20} /> : <Plus size={20} />}
+            </button>
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {favorited ? 'In My List' : 'Add to List'}
+            </div>
+          </div>
           
-          {/* Like */}
-          <button
-            onClick={handleLike}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              liked 
-                ? 'bg-green-600 text-white' 
-                : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600'
-            }`}
+          {/* Rate Button with Hover Popup - Netflix Style */}
+          <div 
+            className="group relative"
+            onMouseEnter={() => setShowRateOptions(true)}
+            onMouseLeave={() => setShowRateOptions(false)}
+            onTouchStart={() => setShowRateOptions(true)}
           >
-            <ThumbsUp size={18} />
-          </button>
+            <button
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border-2 ${
+                rating 
+                  ? rating === 'love' 
+                    ? 'bg-red-600 text-white border-red-600' 
+                    : rating === 'like'
+                      ? 'bg-white text-black border-white'
+                      : 'bg-gray-600 text-white border-gray-600'
+                  : 'bg-transparent text-white border-gray-400 hover:border-white'
+              }`}
+            >
+              {getRateIcon()}
+            </button>
+            
+            {/* Rate Options Popup */}
+            <div className={`absolute -top-14 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-gray-900 rounded-full p-1.5 border border-gray-700 shadow-xl transition-all duration-200 ${
+              showRateOptions ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
+            }`}>
+              {/* Dislike */}
+              <button
+                onClick={(e) => handleRate('dislike', e)}
+                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  rating === 'dislike' 
+                    ? 'bg-gray-600 text-white' 
+                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                }`}
+              >
+                <ThumbsDown size={18} />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                  Not for me
+                </span>
+              </button>
+              
+              {/* Like */}
+              <button
+                onClick={(e) => handleRate('like', e)}
+                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  rating === 'like' 
+                    ? 'bg-white text-black' 
+                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                }`}
+              >
+                <ThumbsUp size={18} />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                  I like this
+                </span>
+              </button>
+              
+              {/* Love it */}
+              <button
+                onClick={(e) => handleRate('love', e)}
+                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  rating === 'love' 
+                    ? 'bg-red-600 text-white' 
+                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                }`}
+              >
+                <Heart size={18} fill={rating === 'love' ? 'currentColor' : 'none'} />
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                  Love this!
+                </span>
+              </button>
+            </div>
+            
+            {/* Label when not hovering */}
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-0 pointer-events-none">
+              Rate
+            </div>
+          </div>
           
-          {/* Dislike */}
-          <button
-            onClick={handleDislike}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-              disliked 
-                ? 'bg-gray-600 text-white' 
-                : 'bg-gray-800 hover:bg-gray-700 text-white border border-gray-600'
-            }`}
-          >
-            <ThumbsDown size={18} />
-          </button>
+          {/* Accept Button */}
+          <div className="group relative">
+            <button
+              onClick={handleAccept}
+              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all hover:bg-green-600 hover:border-green-600"
+            >
+              <Check size={20} />
+            </button>
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Accept
+            </div>
+          </div>
           
-          {/* Share */}
-          <button
-            onClick={handleShare}
-            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-full flex items-center justify-center text-white transition-colors"
-          >
-            <Share2 size={18} />
-          </button>
+          {/* Share Button - Paper Plane Style */}
+          <div className="group relative">
+            <button
+              onClick={handleShare}
+              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all"
+            >
+              <Send size={18} className="rotate-[-35deg] translate-x-[1px]" />
+            </button>
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              Share
+            </div>
+          </div>
+          
+          {/* More Info / Expand Button */}
+          <div className="group relative ml-auto">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                haptic.light();
+                navigate(`/listing/${listing._id}`);
+              }}
+              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all"
+            >
+              <ChevronDown size={20} />
+            </button>
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              More Info
+            </div>
+          </div>
         </div>
 
         {/* ═══ Tags & Meta Info ═══ */}
