@@ -21,6 +21,7 @@ import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -138,11 +139,7 @@ const MarketplacePage = () => {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen-nav flex items-center justify-center bg-gray-50">
-        <RefreshCw className="w-6 h-6 text-primary-600 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading Marketplace..." />;
   }
 
   return (

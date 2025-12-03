@@ -17,6 +17,7 @@ import {
 import { notificationsAPI } from '../../utils/api';
 import { timeAgo, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -136,11 +137,7 @@ const NotificationsPage = () => {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen-nav flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading Notifications..." />;
   }
 
   return (

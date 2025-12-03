@@ -14,6 +14,7 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import LoadingScreen from '../../components/common/LoadingScreen';
 
 const MyPostsPage = () => {
   const navigate = useNavigate();
@@ -117,11 +118,7 @@ const MyPostsPage = () => {
   );
 
   if (loading) {
-    return (
-      <div className="min-h-screen-nav flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Loading My Posts..." />;
   }
 
   return (
