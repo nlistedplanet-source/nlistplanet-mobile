@@ -232,11 +232,11 @@ const OffersReceivedPage = () => {
               </div>
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">You'll receive per share</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(selectedOffer.price * 0.98)}</span>
+                <span className="font-semibold text-gray-900">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * 0.98)}</span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
                 <span className="text-gray-900 font-semibold">Total You'll Receive</span>
-                <span className="font-bold text-primary-600">{formatCurrency(selectedOffer.price * 0.98 * selectedOffer.quantity)}</span>
+                <span className="font-bold text-primary-600">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * 0.98 * selectedOffer.quantity)}</span>
               </div>
             </div>
 
@@ -272,8 +272,10 @@ const OffersReceivedPage = () => {
 
 // Offer Card Component
 const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
+  // Use originalPrice for buyer's original bid (fallback to price for old bids)
+  const buyerOriginalPrice = offer.originalPrice || offer.price;
   // Seller receives price after 2% platform fee deduction
-  const sellerReceives = offer.price * 0.98;
+  const sellerReceives = buyerOriginalPrice * 0.98;
   const totalReceives = sellerReceives * offer.quantity;
   
   const statusConfig = {
