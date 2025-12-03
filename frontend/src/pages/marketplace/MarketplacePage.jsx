@@ -15,7 +15,7 @@ import {
   Info
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, debounce, formatDate, formatNumber, calculateTotalWithFee } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const MarketplacePage = () => {
@@ -184,7 +184,13 @@ const MarketplacePage = () => {
 const ListingCard = ({ listing, onClick, navigate }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const isSell = listing.type === 'sell';
-  const totalPrice = calculateTotalWithFee(listing.price);
+  
+  // Marketplace shows prices to non-owners (isOwner = false)
+  // SELL listing: Buyers see "Buyer Pays" (price + 2%)
+  // BUY listing: Sellers see "Seller Gets" (price - 2%)
+  const priceInfo = getPriceDisplay(listing.price, listing.type, false);
+  const displayPrice = priceInfo.displayPrice;
+  const priceLabel = priceInfo.label;
   const bidsCount = isSell ? listing.bids?.length || 0 : listing.offers?.length || 0;
   
   return (
@@ -286,9 +292,9 @@ const ListingCard = ({ listing, onClick, navigate }) => {
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 mb-1">
-            {isSell ? 'Buyer Pays' : 'Seller Gets'}
+            {priceLabel}
           </p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(totalPrice)}</p>
+          <p className="text-lg font-bold text-gray-900">{formatCurrency(displayPrice)}</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3">
           <p className="text-xs text-gray-500 mb-1">Quantity</p>

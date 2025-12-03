@@ -12,33 +12,67 @@ export const formatNumber = (num) => {
   return new Intl.NumberFormat('en-IN').format(num);
 };
 
-// Calculate platform fee (2%)
+// Platform fee percentage
 export const PLATFORM_FEE_PERCENTAGE = 2;
 
 export const calculatePlatformFee = (amount) => {
   return (amount * PLATFORM_FEE_PERCENTAGE) / 100;
 };
 
-// Calculate total with fee for SELL posts
-export const calculateBuyerPrice = (sellerDesiredPrice) => {
-  // Seller wants X, buyer pays X / 0.98
-  return sellerDesiredPrice / 0.98;
+// Calculate what BUYER pays (original price + 2%)
+export const calculateBuyerPays = (price) => {
+  return price * (1 + PLATFORM_FEE_PERCENTAGE / 100);
 };
 
-// Calculate seller receives for BUY requests
-export const calculateSellerPrice = (buyerOfferedPrice) => {
-  // Buyer offers X, seller receives X * 0.98
-  return buyerOfferedPrice * 0.98;
+// Calculate what SELLER gets (original price - 2%)
+export const calculateSellerGets = (price) => {
+  return price * (1 - PLATFORM_FEE_PERCENTAGE / 100);
 };
 
-// Calculate total with fee
-export const calculateTotalWithFee = (price, type) => {
-  if (type === 'sell') {
-    // For sell posts: display price = seller desired price / 0.98
-    return calculateBuyerPrice(price);
+// Legacy function for backward compatibility
+export const calculateTotalWithFee = (price) => {
+  return calculateBuyerPays(price);
+};
+
+/**
+ * Get display price based on listing type and viewer
+ * @param {number} price - Original listing price
+ * @param {string} listingType - 'sell' or 'buy'
+ * @param {boolean} isOwner - Is the current user the listing owner
+ * @returns {object} { buyerPays, sellerGets, displayPrice, label }
+ */
+export const getPriceDisplay = (price, listingType, isOwner = false) => {
+  const isSell = listingType === 'sell';
+  const buyerPays = calculateBuyerPays(price);
+  const sellerGets = isSell ? price : calculateSellerGets(price);
+  
+  if (isOwner) {
+    // Owner sees original price
+    return {
+      buyerPays,
+      sellerGets,
+      displayPrice: price,
+      label: 'Your Price'
+    };
+  }
+  
+  // Other users see price with fee
+  if (isSell) {
+    // SELL listing: Other users are buyers, show what they pay
+    return {
+      buyerPays,
+      sellerGets,
+      displayPrice: buyerPays,
+      label: 'Buyer Pays'
+    };
   } else {
-    // For buy requests: display price = buyer max price * 0.98
-    return calculateSellerPrice(price);
+    // BUY listing: Other users are sellers, show what they get
+    return {
+      buyerPays,
+      sellerGets,
+      displayPrice: sellerGets,
+      label: 'Seller Gets'
+    };
   }
 };
 
