@@ -81,12 +81,12 @@ router.get('/', optionalAuth, async (req, res, next) => {
 // @access  Private
 router.get('/my', protect, async (req, res, next) => {
   try {
-    const { type, status = 'active' } = req.query;
+    const { type, status } = req.query;
 
     const query = { userId: req.user._id };
     
     if (type) query.type = type;
-    if (status) query.status = status;
+    if (status) query.status = status;  // Only filter by status if explicitly provided
 
     const listings = await Listing.find(query)
       .sort('-createdAt')
@@ -222,14 +222,26 @@ router.get('/:id', optionalAuth, async (req, res, next) => {
 // @access  Private
 router.post('/', protect, async (req, res, next) => {
   try {
-    const { type, companyId, price, quantity, minLot, companySegmentation, description } = req.body;
+    const { type, companyId, companyName: manualCompanyName, price, quantity, minLot, companySegmentation, companyPan, companyISIN, companyCIN, description } = req.body;
 
-    // Validate company exists
-    const company = await Company.findById(companyId);
-    if (!company) {
-      return res.status(404).json({
+    let company = null;
+    let finalCompanyName = manualCompanyName;
+
+    // If companyId provided, validate company exists
+    if (companyId) {
+      company = await Company.findById(companyId);
+      if (!company) {
+        return res.status(404).json({
+          success: false,
+          message: 'Company not found'
+        });
+      }
+      finalCompanyName = company.CompanyName || company.name;
+    } else if (!manualCompanyName) {
+      // Neither companyId nor companyName provided
+      return res.status(400).json({
         success: false,
-        message: 'Company not found'
+        message: 'Company name or company ID is required'
       });
     }
 
@@ -238,9 +250,12 @@ router.post('/', protect, async (req, res, next) => {
       userId: req.user._id,
       username: req.user.username,
       type,
-      companyId,
-      companyName: company.CompanyName || company.name,
+      companyId: company ? company._id : null,
+      companyName: finalCompanyName,
       companySegmentation: companySegmentation || null,
+      companyPan: companyPan || null,
+      companyISIN: companyISIN || null,
+      companyCIN: companyCIN || null,
       price, // Keep original for backward compatibility
       quantity,
       minLot: minLot || 1,
@@ -262,9 +277,11 @@ router.post('/', protect, async (req, res, next) => {
 
     const listing = await Listing.create(listingData);
 
-    // Update company listings count
-    company.totalListings += 1;
-    await company.save();
+    // Update company listings count (only if company from database)
+    if (company) {
+      company.totalListings += 1;
+      await company.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -412,8 +429,8 @@ router.put('/:id/boost', protect, async (req, res, next) => {
 });
 
 // @route   PUT /api/listings/:listingId/bids/:bidId/accept
-// @desc    Accept a bid/offer
-// @access  Private (listing owner only)
+// @desc    Accept a bid/offer or accept a counter offer
+// @access  Private (listing owner OR bidder if status is 'countered')
 router.put('/:listingId/bids/:bidId/accept', protect, async (req, res, next) => {
   try {
     const listing = await Listing.findById(req.params.listingId);
@@ -422,14 +439,6 @@ router.put('/:listingId/bids/:bidId/accept', protect, async (req, res, next) => 
       return res.status(404).json({
         success: false,
         message: 'Listing not found'
-      });
-    }
-
-    // Verify ownership
-    if (listing.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to accept this bid'
       });
     }
 
@@ -444,6 +453,19 @@ router.put('/:listingId/bids/:bidId/accept', protect, async (req, res, next) => 
       });
     }
 
+    const isOwner = listing.userId.toString() === req.user._id.toString();
+    const isBidder = bid.userId.toString() === req.user._id.toString();
+    
+    // Authorization check:
+    // - Owner can always accept bids
+    // - Bidder can accept ONLY when status is 'countered' (seller has countered)
+    if (!isOwner && !(isBidder && bid.status === 'countered')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to accept this bid'
+      });
+    }
+
     // Update bid status
     bid.status = 'accepted';
     
@@ -452,12 +474,13 @@ router.put('/:listingId/bids/:bidId/accept', protect, async (req, res, next) => 
     
     await listing.save();
 
-    // Create notification for bidder
+    // Create notification for the other party
+    const notifyUserId = isOwner ? bid.userId : listing.userId;
     await Notification.create({
-      userId: bid.userId,
+      userId: notifyUserId,
       type: 'bid_accepted',
       title: 'Bid Accepted! 🎉',
-      message: `Your ${listing.type === 'sell' ? 'bid' : 'offer'} of ₹${bid.price} for ${bid.quantity} shares of ${listing.companyName} has been accepted!`,
+      message: `${isOwner ? 'Your' : 'The'} ${listing.type === 'sell' ? 'bid' : 'offer'} of ₹${bid.price} for ${bid.quantity} shares of ${listing.companyName} has been accepted!`,
       data: {
         listingId: listing._id,
         bidId: bid._id,
@@ -556,8 +579,8 @@ router.put('/:listingId/bids/:bidId/accept', protect, async (req, res, next) => 
 });
 
 // @route   PUT /api/listings/:listingId/bids/:bidId/reject
-// @desc    Reject a bid/offer
-// @access  Private (listing owner only)
+// @desc    Reject a bid/offer or reject a counter offer
+// @access  Private (listing owner OR bidder if status is 'countered')
 router.put('/:listingId/bids/:bidId/reject', protect, async (req, res, next) => {
   try {
     const listing = await Listing.findById(req.params.listingId);
@@ -566,14 +589,6 @@ router.put('/:listingId/bids/:bidId/reject', protect, async (req, res, next) => 
       return res.status(404).json({
         success: false,
         message: 'Listing not found'
-      });
-    }
-
-    // Verify ownership
-    if (listing.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to reject this bid'
       });
     }
 
@@ -588,16 +603,30 @@ router.put('/:listingId/bids/:bidId/reject', protect, async (req, res, next) => 
       });
     }
 
+    const isOwner = listing.userId.toString() === req.user._id.toString();
+    const isBidder = bid.userId.toString() === req.user._id.toString();
+    
+    // Authorization check:
+    // - Owner can always reject bids
+    // - Bidder can reject ONLY when status is 'countered' (seller has countered)
+    if (!isOwner && !(isBidder && bid.status === 'countered')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to reject this bid'
+      });
+    }
+
     // Update bid status
     bid.status = 'rejected';
     await listing.save();
 
-    // Create notification for bidder
+    // Create notification for the other party
+    const notifyUserId = isOwner ? bid.userId : listing.userId;
     await Notification.create({
-      userId: bid.userId,
+      userId: notifyUserId,
       type: 'bid_rejected',
       title: 'Bid Rejected',
-      message: `Your ${listing.type === 'sell' ? 'bid' : 'offer'} of ₹${bid.price} for ${bid.quantity} shares of ${listing.companyName} has been rejected.`,
+      message: `${isOwner ? 'Your' : 'The'} ${listing.type === 'sell' ? 'bid' : 'offer'} of ₹${bid.price} for ${bid.quantity} shares of ${listing.companyName} has been rejected.`,
       data: {
         listingId: listing._id,
         bidId: bid._id,
@@ -618,7 +647,7 @@ router.put('/:listingId/bids/:bidId/reject', protect, async (req, res, next) => 
 
 // @route   PUT /api/listings/:listingId/bids/:bidId/counter
 // @desc    Counter a bid/offer
-// @access  Private (listing owner only)
+// @access  Private (listing owner OR bidder if status is 'countered')
 router.put('/:listingId/bids/:bidId/counter', protect, async (req, res, next) => {
   try {
     const { price, quantity, message } = req.body;
@@ -628,14 +657,6 @@ router.put('/:listingId/bids/:bidId/counter', protect, async (req, res, next) =>
       return res.status(404).json({
         success: false,
         message: 'Listing not found'
-      });
-    }
-
-    // Verify ownership
-    if (listing.userId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to counter this bid'
       });
     }
 
@@ -650,11 +671,27 @@ router.put('/:listingId/bids/:bidId/counter', protect, async (req, res, next) =>
       });
     }
 
+    const isOwner = listing.userId.toString() === req.user._id.toString();
+    const isBidder = bid.userId.toString() === req.user._id.toString();
+    
+    // Authorization check:
+    // - Owner can always counter bids
+    // - Bidder can counter ONLY when status is 'countered' (seller has countered)
+    if (!isOwner && !(isBidder && bid.status === 'countered')) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to counter this bid'
+      });
+    }
+
+    // Determine who is sending the counter
+    const counterBy = isOwner ? 'seller' : 'buyer';
+
     // Add to counter history
     const round = (bid.counterHistory?.length || 0) + 1;
     const counterData = {
       round,
-      by: 'seller',
+      by: counterBy,
       price,
       quantity: quantity || bid.quantity,
       message: message || '',
@@ -682,9 +719,10 @@ router.put('/:listingId/bids/:bidId/counter', protect, async (req, res, next) =>
     
     await listing.save();
 
-    // Create notification for bidder
+    // Create notification for the other party
+    const notifyUserId = isOwner ? bid.userId : listing.userId;
     await Notification.create({
-      userId: bid.userId,
+      userId: notifyUserId,
       type: 'bid_countered',
       title: 'Counter Offer Received',
       message: `Counter offer on ${listing.companyName}: ₹${price} for ${quantity || bid.quantity} shares`,

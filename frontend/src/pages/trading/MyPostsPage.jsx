@@ -33,8 +33,16 @@ const MyPostsPage = () => {
   const fetchMyListings = async () => {
     try {
       setLoading(true);
-      const response = await listingsAPI.getMyListings();
-      setListings(response.data.data || []);
+      // Fetch all statuses
+      const [activeRes, soldRes] = await Promise.all([
+        listingsAPI.getMyListings({ status: 'active' }),
+        listingsAPI.getMyListings({ status: 'sold' })
+      ]);
+      const allListings = [
+        ...(activeRes.data.data || []),
+        ...(soldRes.data.data || [])
+      ];
+      setListings(allListings);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
       toast.error('Failed to load your posts');
@@ -98,7 +106,9 @@ const MyPostsPage = () => {
 
   const filteredListings = listings.filter(listing => {
     if (activeFilter === 'all') return true;
-    return listing.status === activeFilter;
+    if (activeFilter === 'active') return listing.status === 'active';
+    if (activeFilter === 'sold') return listing.status === 'sold';
+    return true;
   });
 
   const FilterButton = ({ value, label }) => (
@@ -142,12 +152,12 @@ const MyPostsPage = () => {
             <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
               <FilterButton value="all" label={`All (${listings.length})`} />
               <FilterButton 
-                value="open" 
-                label={`Active (${listings.filter(l => l.status === 'open').length})`} 
+                value="active" 
+                label={`Active (${listings.filter(l => l.status === 'active').length})`} 
               />
               <FilterButton 
-                value="closed" 
-                label={`Closed (${listings.filter(l => l.status === 'closed').length})`} 
+                value="sold" 
+                label={`Sold (${listings.filter(l => l.status === 'sold').length})`} 
               />
             </div>
           </div>
@@ -220,7 +230,7 @@ const MyPostsPage = () => {
                 <span className="font-semibold text-gray-900">View Details</span>
               </button>
 
-              {selectedListing.status === 'open' && (
+              {selectedListing.status === 'active' && (
                 <>
                   <button
                     onClick={handleEdit}
@@ -283,7 +293,7 @@ const MyPostsPage = () => {
 // Post Card Component
 const PostCard = ({ listing, onMoreClick, onViewClick }) => {
   const isSell = listing.type === 'sell';
-  const isOpen = listing.status === 'open';
+  const isActive = listing.status === 'active';
   
   return (
     <div className="bg-white rounded-2xl p-4 shadow-mobile">
@@ -343,12 +353,23 @@ const PostCard = ({ listing, onMoreClick, onViewClick }) => {
 
             <div className="flex flex-col items-end gap-2">
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                isOpen
+                isActive
                   ? 'bg-green-50 text-green-700'
                   : 'bg-gray-100 text-gray-600'
               }`}>
-                {isOpen ? 'Active' : 'Closed'}
+                {isActive ? 'Active' : 'Sold'}
               </span>
+              
+              {/* Bids/Offers count */}
+              {isActive && (
+                <span className="text-xs text-primary-600 font-medium">
+                  {listing.type === 'sell' 
+                    ? `${listing.bids?.length || 0} bids`
+                    : `${listing.offers?.length || 0} offers`
+                  }
+                </span>
+              )}
+              
               <button 
                 onClick={onViewClick}
                 className="text-primary-600 font-semibold text-sm hover:underline"

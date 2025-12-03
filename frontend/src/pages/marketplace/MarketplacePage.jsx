@@ -90,7 +90,7 @@ const MarketplacePage = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
-      const response = await listingsAPI.getAll({ status: 'open' });
+      const response = await listingsAPI.getAll({ status: 'active' });
       setListings(response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch listings:', error);

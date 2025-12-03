@@ -227,7 +227,7 @@ const ListingDetailPage = () => {
       </div>
 
       {/* Action Button */}
-      {!isOwnListing && listing.status === 'open' && (
+      {!isOwnListing && listing.status === 'active' && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-safe shadow-lg">
           <button
             onClick={handlePlaceBid}

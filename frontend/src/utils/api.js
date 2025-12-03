@@ -40,6 +40,8 @@ export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
   verifyEmail: (token) => api.get(`/auth/verify-email/${token}`),
+  verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  resendOTP: (email) => api.post('/auth/resend-otp', { email }),
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
@@ -53,7 +55,8 @@ export const authAPI = {
 export const listingsAPI = {
   getAll: (params) => api.get('/listings', { params }),
   getById: (id) => api.get(`/listings/${id}`),
-  getMyListings: () => api.get('/listings/my'),
+  getMyListings: (params) => api.get('/listings/my', { params }),
+  getMyPlacedBids: () => api.get('/listings/my-placed-bids'),
   create: (data) => api.post('/listings', data),
   update: (id, data) => api.put(`/listings/${id}`, data),
   delete: (id) => api.delete(`/listings/${id}`),
@@ -61,11 +64,11 @@ export const listingsAPI = {
   getBids: (id) => api.get(`/listings/${id}/bids`),
   acceptBid: (listingId, bidId) => api.put(`/listings/${listingId}/bids/${bidId}/accept`),
   rejectBid: (listingId, bidId) => api.put(`/listings/${listingId}/bids/${bidId}/reject`),
-  counterOffer: (listingId, bidId, data) => api.post(`/listings/${listingId}/bids/${bidId}/counter`, data),
+  counterOffer: (listingId, bidId, data) => api.put(`/listings/${listingId}/bids/${bidId}/counter`, data),
   withdrawBid: (listingId, bidId) => api.delete(`/listings/${listingId}/bids/${bidId}`),
   like: (id) => api.post(`/listings/${id}/like`),
   unlike: (id) => api.delete(`/listings/${id}/like`),
-  boost: (id) => api.post(`/listings/${id}/boost`),
+  boost: (id) => api.put(`/listings/${id}/boost`),
 };
 
 // Portfolio API

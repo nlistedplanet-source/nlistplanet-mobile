@@ -87,7 +87,13 @@ const RegisterPage = () => {
 
     if (result.success) {
       haptic.success();
-      navigate('/check-email');
+      // Redirect to OTP verification page
+      navigate('/verify-otp', { 
+        state: { 
+          email: result.email || formData.email,
+          phone: result.phone // Last 4 digits from backend
+        } 
+      });
     } else {
       haptic.error();
       setLoading(false);

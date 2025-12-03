@@ -8,7 +8,9 @@ import {
   CheckCircle,
   XCircle,
   Package,
-  X
+  X,
+  Check,
+  MessageSquare
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic } from '../../utils/helpers';
@@ -20,9 +22,11 @@ const BidsPage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [bids, setBids] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('all'); // all, pending, accepted, rejected
+  const [activeFilter, setActiveFilter] = useState('all'); // all, pending, countered, accepted, rejected
   const [selectedBid, setSelectedBid] = useState(null);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [showActionModal, setShowActionModal] = useState(false);
+  const [actionType, setActionType] = useState(null); // 'accept' or 'reject'
 
   useEffect(() => {
     fetchMyBids();
@@ -65,6 +69,53 @@ const BidsPage = () => {
       console.error('Failed to withdraw bid:', error);
       toast.error(error.response?.data?.message || 'Failed to withdraw bid');
     }
+  };
+
+  // Handle accept counter from seller
+  const handleAcceptCounter = async () => {
+    if (!selectedBid) return;
+
+    try {
+      haptic.medium();
+      await listingsAPI.acceptBid(selectedBid.listingId, selectedBid._id);
+      haptic.success();
+      toast.success('Counter-offer accepted successfully!');
+      setShowActionModal(false);
+      setSelectedBid(null);
+      setActionType(null);
+      fetchMyBids();
+    } catch (error) {
+      haptic.error();
+      console.error('Failed to accept counter:', error);
+      toast.error(error.response?.data?.message || 'Failed to accept counter-offer');
+    }
+  };
+
+  // Handle reject counter from seller
+  const handleRejectCounter = async () => {
+    if (!selectedBid) return;
+
+    try {
+      haptic.medium();
+      await listingsAPI.rejectBid(selectedBid.listingId, selectedBid._id);
+      haptic.success();
+      toast.success('Counter-offer rejected');
+      setShowActionModal(false);
+      setSelectedBid(null);
+      setActionType(null);
+      fetchMyBids();
+    } catch (error) {
+      haptic.error();
+      console.error('Failed to reject counter:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject counter-offer');
+    }
+  };
+
+  const openActionModal = (bid, type) => {
+    haptic.light();
+    setSelectedBid(bid);
+    setActionType(type);
+    setShowActionModal(true);
   };
 
   const filteredBids = bids.filter(bid => {
@@ -117,6 +168,10 @@ const BidsPage = () => {
                 label={`Pending (${bids.filter(b => b.status === 'pending').length})`} 
               />
               <FilterButton 
+                value="countered" 
+                label={`Countered (${bids.filter(b => b.status === 'countered').length})`} 
+              />
+              <FilterButton 
                 value="accepted" 
                 label={`Accepted (${bids.filter(b => b.status === 'accepted').length})`} 
               />
@@ -161,6 +216,8 @@ const BidsPage = () => {
                     setSelectedBid(bid);
                     setShowWithdrawConfirm(true);
                   }}
+                  onAcceptClick={() => openActionModal(bid, 'accept')}
+                  onRejectClick={() => openActionModal(bid, 'reject')}
                 />
               ))}
             </div>
@@ -200,18 +257,94 @@ const BidsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Accept/Reject Counter Modal */}
+      {showActionModal && selectedBid && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in">
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+              actionType === 'accept' ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              {actionType === 'accept' ? (
+                <Check className="w-8 h-8 text-green-600" />
+              ) : (
+                <X className="w-8 h-8 text-red-600" />
+              )}
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+              {actionType === 'accept' ? 'Accept Counter-Offer?' : 'Reject Counter-Offer?'}
+            </h3>
+            <p className="text-gray-600 text-center mb-4">
+              {actionType === 'accept' 
+                ? 'By accepting this counter-offer, you agree to the new terms. The deal will be finalized.'
+                : 'Are you sure you want to reject this counter-offer? The seller will be notified.'
+              }
+            </p>
+            
+            {/* Counter Summary */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-6">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Company</span>
+                <span className="font-semibold text-gray-900">{selectedBid.companyName}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Quantity</span>
+                <span className="font-semibold text-gray-900">{selectedBid.quantity} shares</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Counter Price</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(selectedBid.price)}/share</span>
+              </div>
+              <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
+                <span className="text-gray-900 font-semibold">Total Amount</span>
+                <span className="font-bold text-primary-600">{formatCurrency(selectedBid.price * selectedBid.quantity)}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  haptic.light();
+                  setShowActionModal(false);
+                  setSelectedBid(null);
+                  setActionType(null);
+                }}
+                className="flex-1 btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={actionType === 'accept' ? handleAcceptCounter : handleRejectCounter}
+                className={`flex-1 rounded-2xl py-3 px-6 font-semibold transition-colors touch-feedback text-white ${
+                  actionType === 'accept' 
+                    ? 'bg-green-600 hover:bg-green-700' 
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {actionType === 'accept' ? 'Accept' : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
 
 // Bid Card Component
-const BidCard = ({ bid, onViewClick, onWithdrawClick }) => {
+const BidCard = ({ bid, onViewClick, onWithdrawClick, onAcceptClick, onRejectClick }) => {
   const statusConfig = {
     pending: {
       icon: Clock,
       bgColor: 'bg-yellow-50',
       textColor: 'text-yellow-700',
       label: 'Pending'
+    },
+    countered: {
+      icon: MessageSquare,
+      bgColor: 'bg-purple-50',
+      textColor: 'text-purple-700',
+      label: 'Countered'
     },
     accepted: {
       icon: CheckCircle,
@@ -230,6 +363,12 @@ const BidCard = ({ bid, onViewClick, onWithdrawClick }) => {
   const status = statusConfig[bid.status] || statusConfig.pending;
   const StatusIcon = status.icon;
   const canWithdraw = bid.status === 'pending';
+  const canRespondToCounter = bid.status === 'countered';
+
+  // Get latest counter price if countered
+  const latestPrice = bid.counterHistory && bid.counterHistory.length > 0
+    ? bid.counterHistory[bid.counterHistory.length - 1].price
+    : bid.price;
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-mobile">
@@ -267,19 +406,36 @@ const BidCard = ({ bid, onViewClick, onWithdrawClick }) => {
           {/* Price Info */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-xs text-gray-500 mb-0.5">Your offer</p>
+              <p className="text-xs text-gray-500 mb-0.5">
+                {canRespondToCounter ? 'Counter offer' : 'Your offer'}
+              </p>
               <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(bid.price)}
+                {formatCurrency(latestPrice)}
                 <span className="text-sm text-gray-500 font-normal">/share</span>
               </p>
+              {canRespondToCounter && bid.originalPrice !== latestPrice && (
+                <p className="text-xs text-gray-400 line-through">
+                  Your bid: {formatCurrency(bid.originalPrice)}
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 mb-0.5">Total</p>
               <p className="text-lg font-bold text-primary-600">
-                {formatCurrency(bid.price * bid.quantity)}
+                {formatCurrency(latestPrice * bid.quantity)}
               </p>
             </div>
           </div>
+
+          {/* Counter History Indicator */}
+          {bid.counterHistory && bid.counterHistory.length > 0 && (
+            <div className="mb-3 p-2 bg-purple-50 rounded-lg">
+              <p className="text-xs text-purple-700 font-medium">
+                {bid.counterHistory.length} counter{bid.counterHistory.length > 1 ? 's' : ''} exchanged
+                {canRespondToCounter && ' - Seller countered!'}
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-2">
@@ -298,6 +454,24 @@ const BidCard = ({ bid, onViewClick, onWithdrawClick }) => {
                 <Trash2 size={14} />
                 Withdraw
               </button>
+            )}
+            {canRespondToCounter && (
+              <>
+                <button 
+                  onClick={onRejectClick}
+                  className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors touch-feedback flex items-center gap-1"
+                >
+                  <X size={14} />
+                  Reject
+                </button>
+                <button 
+                  onClick={onAcceptClick}
+                  className="px-4 py-2 bg-green-50 text-green-600 rounded-xl font-semibold text-sm hover:bg-green-100 transition-colors touch-feedback flex items-center gap-1"
+                >
+                  <Check size={14} />
+                  Accept
+                </button>
+              </>
             )}
           </div>
         </div>

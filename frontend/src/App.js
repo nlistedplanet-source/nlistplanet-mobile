@@ -15,6 +15,7 @@ const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'));
+const OTPVerificationPage = lazy(() => import('./pages/auth/OTPVerificationPage'));
 const CheckEmailPage = lazy(() => import('./pages/auth/CheckEmailPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const MarketplacePage = lazy(() => import('./pages/marketplace/MarketplacePage'));
@@ -86,6 +87,7 @@ function AppRoutes() {
           <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
           <Route path="/verify-email" element={<EmailVerificationPage />} />
+          <Route path="/verify-otp" element={<OTPVerificationPage />} />
           <Route path="/check-email" element={<CheckEmailPage />} />
           <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
 
