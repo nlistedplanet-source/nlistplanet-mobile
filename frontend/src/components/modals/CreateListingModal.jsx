@@ -1,127 +1,195 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, TrendingDown, AlertCircle, Check } from 'lucide-react';
+import { X, Search, TrendingUp, TrendingDown, Package, Info, IndianRupee, Check, AlertCircle } from 'lucide-react';
 import { companiesAPI, listingsAPI } from '../../utils/api';
-import { formatCurrency, calculatePlatformFee, haptic } from '../../utils/helpers';
+import { formatCurrency, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
+// Number to words converter (Indian format)
+const numberToWords = (num) => {
+  if (!num || num === 0) return 'Zero';
+  
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  
+  const convertLessThanThousand = (n) => {
+    if (n === 0) return '';
+    if (n < 10) return ones[n];
+    if (n < 20) return teens[n - 10];
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '');
+    return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + convertLessThanThousand(n % 100) : '');
+  };
+  
+  if (num < 1000) return convertLessThanThousand(num);
+  if (num < 100000) return convertLessThanThousand(Math.floor(num / 1000)) + ' Thousand' + (num % 1000 !== 0 ? ' ' + convertLessThanThousand(num % 1000) : '');
+  if (num < 10000000) return convertLessThanThousand(Math.floor(num / 100000)) + ' Lakh' + (num % 100000 !== 0 ? ' ' + numberToWords(num % 100000) : '');
+  return convertLessThanThousand(Math.floor(num / 10000000)) + ' Crore' + (num % 10000000 !== 0 ? ' ' + numberToWords(num % 10000000) : '');
+};
+
 const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
-  const [step, setStep] = useState(1); // 1: Type selection, 2: Form
-  const [type, setType] = useState(''); // 'sell' or 'buy'
+  const [step, setStep] = useState(1);
+  const [type, setType] = useState('sell');
   const [companies, setCompanies] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [manualEntry, setManualEntry] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   
   const [formData, setFormData] = useState({
     companyId: '',
     companyName: '',
-    quantity: '',
+    companyLogo: '',
+    companyPan: '',
+    companyISIN: '',
+    companyCIN: '',
+    companySegmentation: '',
     price: '',
-    description: '',
+    quantity: '',
+    minLot: '1',
+    description: ''
   });
 
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      fetchCompanies();
-      // Reset form when modal opens
       setStep(1);
-      setType('');
+      setType('sell');
+      setSearchTerm('');
+      setCompanies([]);
+      setShowSuggestions(false);
+      setManualEntry(false);
+      setShowPreview(false);
+      setAgreedToTerms(false);
       setFormData({
         companyId: '',
         companyName: '',
-        quantity: '',
+        companyLogo: '',
+        companyPan: '',
+        companyISIN: '',
+        companyCIN: '',
+        companySegmentation: '',
         price: '',
-        description: '',
+        quantity: '',
+        minLot: '1',
+        description: ''
       });
     }
   }, [isOpen]);
 
+  // Debounced company search
   useEffect(() => {
-    if (searchQuery.trim()) {
-      const filtered = companies.filter(company =>
-        company.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setFilteredCompanies(filtered);
+    if (searchTerm.length > 0) {
+      const delayDebounce = setTimeout(async () => {
+        try {
+          const response = await companiesAPI.getAll({ search: searchTerm, limit: 10 });
+          setCompanies(response.data.data || []);
+          setShowSuggestions(true);
+        } catch (error) {
+          console.error('Failed to fetch companies:', error);
+          setCompanies([]);
+        }
+      }, 300);
+
+      return () => clearTimeout(delayDebounce);
     } else {
-      setFilteredCompanies(companies);
+      setCompanies([]);
+      setShowSuggestions(false);
     }
-  }, [searchQuery, companies]);
-
-  const fetchCompanies = async () => {
-    try {
-      const response = await companiesAPI.getAll();
-      setCompanies(response.data.data || []);
-      setFilteredCompanies(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch companies:', error);
-    }
-  };
-
-  const handleTypeSelect = (selectedType) => {
-    haptic.medium();
-    setType(selectedType);
-    setStep(2);
-  };
+  }, [searchTerm]);
 
   const handleCompanySelect = (company) => {
-    haptic.light();
+    haptic.medium();
     setFormData({
       ...formData,
       companyId: company._id,
-      companyName: company.name,
+      companyName: company.CompanyName || company.name,
+      companyLogo: company.Logo || company.logo || '',
+      companyPan: company.PAN || '',
+      companyISIN: company.ISIN || '',
+      companyCIN: company.CIN || ''
     });
-    setSearchQuery('');
+    setSearchTerm(company.CompanyName || company.name);
+    setShowSuggestions(false);
+    setManualEntry(false);
+    setStep(2);
   };
 
-  const handleSubmit = async (e) => {
+  const handleManualEntry = () => {
+    if (searchTerm.length > 0) {
+      haptic.medium();
+      setFormData({
+        ...formData,
+        companyId: '',
+        companyName: searchTerm
+      });
+      setManualEntry(true);
+      setShowSuggestions(false);
+      setStep(2);
+    } else {
+      toast.error('Please enter company name');
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!formData.companyId || !formData.quantity || !formData.price) {
+    if (!formData.companyName || !formData.price || !formData.quantity) {
       toast.error('Please fill all required fields');
       return;
     }
 
-    if (parseInt(formData.quantity) <= 0) {
-      toast.error('Quantity must be greater than 0');
+    if (!agreedToTerms) {
+      toast.error('Please agree to Terms & Conditions');
       return;
     }
 
-    if (parseFloat(formData.price) <= 0) {
-      toast.error('Price must be greater than 0');
-      return;
-    }
+    haptic.medium();
+    setShowPreview(true);
+  };
 
+  const handleConfirmSubmit = async () => {
+    setLoading(true);
+    haptic.medium();
+    
     try {
-      setLoading(true);
-      haptic.medium();
-
       const payload = {
         type,
-        companyId: formData.companyId,
-        quantity: parseInt(formData.quantity),
         price: parseFloat(formData.price),
-        description: formData.description || '',
+        quantity: parseInt(formData.quantity),
+        minLot: parseInt(formData.minLot) || 1,
+        companyPan: formData.companyPan,
+        companyISIN: formData.companyISIN,
+        companyCIN: formData.companyCIN,
+        companySegmentation: formData.companySegmentation || null,
+        description: formData.description || ''
       };
+
+      if (formData.companyId) {
+        payload.companyId = formData.companyId;
+      } else {
+        payload.companyName = formData.companyName;
+      }
 
       await listingsAPI.create(payload);
       
       haptic.success();
-      toast.success(`${type === 'sell' ? 'Selling' : 'Buying'} post created successfully!`);
+      toast.success(`${type === 'sell' ? 'Sell post' : 'Buy request'} created successfully!`);
       onSuccess?.();
       onClose();
     } catch (error) {
       haptic.error();
-      console.error('Failed to create listing:', error);
-      toast.error(error.response?.data?.message || 'Failed to create post');
+      toast.error(error.response?.data?.message || 'Failed to create listing');
     } finally {
       setLoading(false);
     }
   };
 
-  const platformFee = formData.price ? calculatePlatformFee(parseFloat(formData.price) * parseInt(formData.quantity || 1)) : 0;
   const totalAmount = formData.price && formData.quantity 
     ? parseFloat(formData.price) * parseInt(formData.quantity) 
     : 0;
+  const platformFee = totalAmount * 0.02;
 
   if (!isOpen) return null;
 
@@ -129,173 +197,331 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end animate-fade-in">
       <div className="bg-white rounded-t-3xl w-full max-h-[90vh] overflow-y-auto animate-slide-up pb-safe">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-white border-b border-gray-100 px-5 py-4 flex items-center justify-between z-10">
           <h2 className="text-xl font-bold text-gray-900">
-            {step === 1 ? 'Create New Post' : `Create ${type === 'sell' ? 'Sell' : 'Buy'} Post`}
+            {step === 1 ? 'Create New Post' : showPreview ? 'Review Listing' : `Create ${type === 'sell' ? 'Sell' : 'Buy'} Post`}
           </h2>
           <button
             onClick={() => {
               haptic.light();
-              onClose();
+              if (showPreview) {
+                setShowPreview(false);
+              } else {
+                onClose();
+              }
             }}
-            className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+            className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"
           >
             <X size={20} className="text-gray-600" />
           </button>
         </div>
 
-        {/* Step 1: Type Selection */}
-        {step === 1 && (
-          <div className="p-6 space-y-4">
-            <p className="text-gray-600 mb-6">What would you like to do?</p>
-            
-            <button
-              onClick={() => handleTypeSelect('sell')}
-              className="w-full bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-2xl p-6 text-left touch-feedback active:scale-98 transition-transform"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center">
-                  <TrendingDown className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Sell Shares</h3>
-                  <p className="text-sm text-gray-600">Post shares you want to sell</p>
-                </div>
+        {/* Step 1: Type & Company Selection */}
+        {step === 1 && !showPreview && (
+          <div className="p-5 space-y-5">
+            {/* Type Selection */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Listing Type
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => { haptic.light(); setType('sell'); }}
+                  className={`py-4 px-4 rounded-xl border-2 font-semibold transition-all ${
+                    type === 'sell'
+                      ? 'border-red-500 bg-gradient-to-br from-red-50 to-rose-50 text-red-700 shadow-md'
+                      : 'border-gray-200 bg-white text-gray-600'
+                  }`}
+                >
+                  <TrendingDown className="mx-auto mb-2" size={24} />
+                  SELL Post
+                </button>
+                <button
+                  onClick={() => { haptic.light(); setType('buy'); }}
+                  className={`py-4 px-4 rounded-xl border-2 font-semibold transition-all ${
+                    type === 'buy'
+                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 shadow-md'
+                      : 'border-gray-200 bg-white text-gray-600'
+                  }`}
+                >
+                  <TrendingUp className="mx-auto mb-2" size={24} />
+                  BUY Request
+                </button>
               </div>
-            </button>
+            </div>
 
-            <button
-              onClick={() => handleTypeSelect('buy')}
-              className="w-full bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 rounded-2xl p-6 text-left touch-feedback active:scale-98 transition-transform"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">Buy Shares</h3>
-                  <p className="text-sm text-gray-600">Post a request to buy shares</p>
-                </div>
+            {/* Company Search */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Search Company <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Start typing company name..."
+                  className="w-full px-4 py-3.5 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
+                  autoFocus
+                />
               </div>
-            </button>
+              <p className="text-xs text-gray-500 mt-1.5">
+                Select from suggestions or continue typing to add manually
+              </p>
+            </div>
+
+            {/* Company Suggestions */}
+            {showSuggestions && companies.length > 0 && (
+              <div className="max-h-64 overflow-y-auto space-y-2 border-2 border-primary-200 rounded-xl p-2 bg-white">
+                <p className="text-xs font-semibold text-gray-600 px-2 py-1">Suggestions from database:</p>
+                {companies.map((company) => (
+                  <button
+                    key={company._id}
+                    onClick={() => handleCompanySelect(company)}
+                    className="w-full flex items-center gap-3 p-3 bg-gray-50 hover:bg-primary-50 active:bg-primary-100 rounded-xl transition-all text-left"
+                  >
+                    {(company.Logo || company.logo) ? (
+                      <img
+                        src={company.Logo || company.logo}
+                        alt={company.CompanyName || company.name}
+                        className="w-12 h-12 rounded-lg object-contain bg-white border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center">
+                        <span className="text-primary-700 font-bold text-lg">
+                          {(company.CompanyName || company.name)?.[0] || 'C'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 truncate">{company.CompanyName || company.name}</h4>
+                      <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
+                        {company.ScripName && (
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">{company.ScripName}</span>
+                        )}
+                        <span className="truncate">{company.Sector || company.sector || 'Unlisted'}</span>
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* No Results */}
+            {showSuggestions && searchTerm.length > 0 && companies.length === 0 && (
+              <div className="text-center py-6 px-4 bg-gray-50 rounded-xl border border-gray-200">
+                <p className="text-gray-600 text-sm">No companies found matching "{searchTerm}"</p>
+              </div>
+            )}
+
+            {/* Manual Entry Option */}
+            {searchTerm.length > 0 && (
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <p className="text-sm text-gray-700 mb-3">
+                  Can't find <span className="font-bold">"{searchTerm}"</span> in suggestions?
+                </p>
+                <button
+                  type="button"
+                  onClick={handleManualEntry}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3.5 rounded-xl font-semibold active:scale-[0.98] transition-all"
+                >
+                  Continue with "{searchTerm}"
+                </button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  You'll be able to list this company manually
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Step 2: Form */}
-        {step === 2 && (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Company Selection */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Company <span className="text-red-500">*</span>
-              </label>
-              
-              {!formData.companyId ? (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Search company..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="input-field"
-                  />
-                  
-                  {searchQuery && (
-                    <div className="mt-2 max-h-60 overflow-y-auto bg-white border border-gray-200 rounded-xl">
-                      {filteredCompanies.length > 0 ? (
-                        filteredCompanies.map((company) => (
-                          <button
-                            key={company._id}
-                            type="button"
-                            onClick={() => handleCompanySelect(company)}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-0 touch-feedback"
-                          >
-                            <p className="font-semibold text-gray-900">{company.name}</p>
-                            {company.industry && (
-                              <p className="text-sm text-gray-500">{company.industry}</p>
-                            )}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-8 text-center text-gray-500">
-                          No companies found
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
+        {/* Step 2: Form Details */}
+        {step === 2 && !showPreview && (
+          <form onSubmit={handleSubmit} className="p-5 space-y-5">
+            {/* Selected Company */}
+            <div className="bg-primary-50 rounded-xl p-4 flex items-center gap-3">
+              {formData.companyLogo ? (
+                <img
+                  src={formData.companyLogo}
+                  alt={formData.companyName}
+                  className="w-12 h-12 rounded-lg object-contain bg-white border border-gray-100"
+                />
               ) : (
-                <div className="flex items-center justify-between bg-primary-50 border-2 border-primary-200 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                      <span className="text-white font-bold">{formData.companyName.charAt(0)}</span>
-                    </div>
-                    <p className="font-semibold text-gray-900">{formData.companyName}</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      haptic.light();
-                      setFormData({ ...formData, companyId: '', companyName: '' });
-                    }}
-                    className="text-primary-600 font-semibold text-sm"
-                  >
-                    Change
-                  </button>
+                <div className="w-12 h-12 rounded-lg bg-primary-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">
+                    {formData.companyName?.[0] || 'C'}
+                  </span>
                 </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-gray-900 truncate">{formData.companyName}</h4>
+                <p className="text-sm text-gray-600 flex items-center gap-2">
+                  {type === 'sell' ? 'Selling shares' : 'Buying shares'}
+                  {manualEntry && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Manual</span>
+                  )}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  haptic.light();
+                  setStep(1);
+                  setSearchTerm('');
+                  setManualEntry(false);
+                }}
+                className="text-primary-600 text-sm font-semibold"
+              >
+                Change
+              </button>
+            </div>
+
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Price per Share (₹) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="Enter price"
+                  className="w-full px-4 py-3.5 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
+                  required
+                  min="1"
+                  step="0.01"
+                />
+              </div>
+              {formData.price && (
+                <p className="text-sm font-medium text-purple-600 mt-2 bg-purple-50 px-3 py-1.5 rounded-lg inline-block">
+                  ₹ {numberToWords(parseFloat(formData.price))} Rupees
+                </p>
               )}
             </div>
 
             {/* Quantity */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Quantity (shares) <span className="text-red-500">*</span>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Quantity (Shares) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                  type="number"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                  placeholder="Enter quantity"
+                  className="w-full px-4 py-3.5 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
+                  required
+                  min="1"
+                />
+              </div>
+              {formData.quantity && (
+                <p className="text-sm font-medium text-indigo-600 mt-2 bg-indigo-50 px-3 py-1.5 rounded-lg inline-block">
+                  📊 {numberToWords(parseInt(formData.quantity))} Shares
+                </p>
+              )}
+            </div>
+
+            {/* Min Lot Size */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Minimum Lot Size
               </label>
               <input
                 type="number"
-                placeholder="Enter quantity"
-                value={formData.quantity}
-                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                className="input-field"
+                value={formData.minLot}
+                onChange={(e) => setFormData({ ...formData, minLot: e.target.value })}
+                placeholder="1"
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
                 min="1"
-                required
               />
             </div>
 
-            {/* Price */}
+            {/* Company Segmentation */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Price per share (₹) <span className="text-red-500">*</span>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Company Segmentation
+              </label>
+              <select
+                value={formData.companySegmentation}
+                onChange={(e) => setFormData({ ...formData, companySegmentation: e.target.value })}
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base appearance-none bg-white"
+              >
+                <option value="">Select Segmentation</option>
+                <option value="SME">SME</option>
+                <option value="Mainboard">Mainboard</option>
+                <option value="Unlisted">Unlisted</option>
+                <option value="Pre-IPO">Pre-IPO</option>
+                <option value="Startup">Startup</option>
+              </select>
+            </div>
+
+            {/* Company PAN */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Company PAN
               </label>
               <input
-                type="number"
-                placeholder="Enter price"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="input-field"
-                min="0"
-                step="0.01"
-                required
+                type="text"
+                value={formData.companyPan}
+                onChange={(e) => setFormData({ ...formData, companyPan: e.target.value.toUpperCase() })}
+                placeholder="AAAAA0000A"
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base font-mono"
+                maxLength="10"
+              />
+            </div>
+
+            {/* Company ISIN */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Company ISIN
+              </label>
+              <input
+                type="text"
+                value={formData.companyISIN}
+                onChange={(e) => setFormData({ ...formData, companyISIN: e.target.value.toUpperCase() })}
+                placeholder="INE000X00000"
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base font-mono"
+                maxLength="12"
+              />
+            </div>
+
+            {/* Company CIN */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Company CIN
+              </label>
+              <input
+                type="text"
+                value={formData.companyCIN}
+                onChange={(e) => setFormData({ ...formData, companyCIN: e.target.value.toUpperCase() })}
+                placeholder="U00000XX0000XXX000000"
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base font-mono"
+                maxLength="21"
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Description (Optional)
               </label>
               <textarea
-                placeholder="Add any additional details..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="input-field min-h-[100px] resize-none"
-                rows={4}
+                placeholder="Add any additional details..."
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base min-h-[100px] resize-none"
+                rows={3}
               />
             </div>
 
             {/* Price Summary */}
             {totalAmount > 0 && (
-              <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
                 <div className="flex items-center gap-2 text-primary-600 mb-3">
                   <AlertCircle size={18} />
                   <p className="text-sm font-semibold">Price Breakdown</p>
@@ -327,38 +553,168 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
             )}
 
+            {/* Terms & Conditions */}
+            <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-2 focus:ring-primary-500"
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
+                I agree to the <span className="text-primary-600 font-semibold">Terms & Conditions</span> and confirm that all information provided is accurate
+              </label>
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => {
                   haptic.light();
                   setStep(1);
                 }}
-                className="flex-1 btn-secondary"
-                disabled={loading}
+                className="flex-1 py-3.5 bg-gray-100 text-gray-700 font-semibold rounded-xl active:bg-gray-200 transition-all"
               >
                 Back
               </button>
               <button
                 type="submit"
-                disabled={loading || !formData.companyId || !formData.quantity || !formData.price}
-                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!agreedToTerms || !formData.price || !formData.quantity}
+                className="flex-1 py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Creating...
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    <Check size={18} />
-                    Create Post
-                  </span>
-                )}
+                Preview & Submit
               </button>
             </div>
           </form>
+        )}
+
+        {/* Preview Modal */}
+        {showPreview && (
+          <div className="p-5 space-y-5">
+            <p className="text-sm text-gray-600">Please verify all details before posting</p>
+
+            {/* Company */}
+            <div className="bg-gradient-to-r from-primary-50 to-indigo-50 rounded-xl p-4">
+              <p className="text-xs text-gray-600 mb-1">Company</p>
+              <div className="flex items-center gap-3">
+                {formData.companyLogo ? (
+                  <img
+                    src={formData.companyLogo}
+                    alt={formData.companyName}
+                    className="w-10 h-10 rounded-lg object-contain bg-white"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-primary-600 flex items-center justify-center">
+                    <span className="text-white font-bold">{formData.companyName?.[0]}</span>
+                  </div>
+                )}
+                <div>
+                  <p className="text-lg font-bold text-gray-900">{formData.companyName}</p>
+                  {manualEntry && (
+                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Manual Entry</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Grid Details */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-600 mb-1">Type</p>
+                <p className={`font-bold ${type === 'sell' ? 'text-red-600' : 'text-green-600'}`}>
+                  {type === 'sell' ? 'SELL' : 'BUY'}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-600 mb-1">Price per Share</p>
+                <p className="font-bold text-gray-900">₹{parseFloat(formData.price).toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-600 mb-1">Quantity</p>
+                <p className="font-bold text-gray-900">{parseInt(formData.quantity).toLocaleString('en-IN')} shares</p>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-xs text-gray-600 mb-1">Min Lot</p>
+                <p className="font-bold text-gray-900">{formData.minLot}</p>
+              </div>
+            </div>
+
+            {/* Extra Details */}
+            {(formData.companyPan || formData.companyISIN || formData.companyCIN || formData.companySegmentation) && (
+              <div className="bg-gray-50 rounded-xl p-3 space-y-1">
+                <p className="text-xs text-gray-600 mb-2 font-semibold">Company Details</p>
+                {formData.companySegmentation && (
+                  <p className="text-sm text-gray-900">Segment: <span className="font-medium">{formData.companySegmentation}</span></p>
+                )}
+                {formData.companyPan && (
+                  <p className="text-sm text-gray-900">PAN: <span className="font-mono">{formData.companyPan}</span></p>
+                )}
+                {formData.companyISIN && (
+                  <p className="text-sm text-gray-900">ISIN: <span className="font-mono">{formData.companyISIN}</span></p>
+                )}
+                {formData.companyCIN && (
+                  <p className="text-sm text-gray-900">CIN: <span className="font-mono text-xs">{formData.companyCIN}</span></p>
+                )}
+              </div>
+            )}
+
+            {/* Total Amount */}
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-600">Total Value</span>
+                <span className="font-bold text-gray-900 text-lg">{formatCurrency(totalAmount)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-blue-600">Platform Fee (2%)</span>
+                <span className="text-blue-700 font-medium">{formatCurrency(platformFee)}</span>
+              </div>
+              <div className="border-t border-blue-200 mt-3 pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-gray-900">
+                    {type === 'sell' ? 'You receive' : 'You pay'}
+                  </span>
+                  <span className="font-bold text-primary-600 text-xl">
+                    {type === 'sell' 
+                      ? formatCurrency(totalAmount - platformFee)
+                      : formatCurrency(totalAmount + platformFee)
+                    }
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  haptic.light();
+                  setShowPreview(false);
+                }}
+                className="flex-1 py-3.5 bg-gray-100 text-gray-700 font-semibold rounded-xl active:bg-gray-200 transition-all"
+              >
+                Edit
+              </button>
+              <button
+                onClick={handleConfirmSubmit}
+                disabled={loading}
+                className="flex-1 py-3.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-xl disabled:opacity-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Confirm & Post
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
