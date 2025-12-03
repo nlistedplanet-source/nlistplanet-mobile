@@ -117,41 +117,41 @@ const MarketplacePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen-nav flex items-center justify-center bg-black">
-        <RefreshCw className="w-8 h-8 text-red-600 animate-spin" />
+      <div className="min-h-screen-nav flex items-center justify-center bg-gray-50">
+        <RefreshCw className="w-6 h-6 text-primary-600 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen-nav bg-black pb-20">
-      {/* Header - Netflix Style Dark */}
-      <div className="bg-black/95 backdrop-blur-xl sticky top-0 z-20 border-b border-gray-800">
-        <div className="px-4 pt-safe pb-3">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-xl font-bold text-white">Marketplace</h1>
+    <div className="min-h-screen-nav bg-gray-100 pb-20">
+      {/* Header - Compact Light Theme */}
+      <div className="bg-white sticky top-0 z-20 shadow-sm">
+        <div className="px-3 pt-safe pb-2">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-base font-bold text-gray-900">Marketplace</h1>
             <button 
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center"
+              className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center"
             >
-              <RefreshCw className={`w-4 h-4 text-white ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative mb-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          {/* Search Bar - Smaller */}
+          <div className="relative mb-2">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
             <input
               type="text"
               placeholder="Search companies..."
               onChange={(e) => debouncedSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+              className="w-full pl-8 pr-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
             />
           </div>
 
-          {/* Filter Tabs - Netflix Red Theme */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4">
+          {/* Filter Tabs - Smaller */}
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-3 px-3">
             {[
               { value: 'all', label: 'All' },
               { value: 'sell', label: 'Selling', icon: TrendingDown },
@@ -160,14 +160,14 @@ const MarketplacePage = () => {
               <button
                 key={value}
                 onClick={() => { haptic.light(); setActiveFilter(value); }}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
                   activeFilter === value
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-800 text-gray-400 border border-gray-700'
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 text-gray-600 border border-gray-200'
                 }`}
               >
-                <div className="flex items-center gap-1.5">
-                  {Icon && <Icon size={14} />}
+                <div className="flex items-center gap-1">
+                  {Icon && <Icon size={11} />}
                   {label}
                 </div>
               </button>
@@ -177,14 +177,14 @@ const MarketplacePage = () => {
       </div>
 
       {/* Listings Grid */}
-      <div className="px-3 pt-4">
+      <div className="px-2 pt-2">
         {filteredListings.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-600" />
+          <div className="text-center py-12">
+            <div className="w-14 h-14 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Search className="w-6 h-6 text-gray-400" />
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">No Listings Found</h3>
-            <p className="text-gray-500 text-sm">
+            <h3 className="text-sm font-bold text-gray-900 mb-1">No Listings Found</h3>
+            <p className="text-gray-500 text-xs">
               {searchQuery ? 'Try a different search' : 'No active listings'}
             </p>
           </div>
@@ -228,7 +228,7 @@ const MarketplacePage = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// COMPACT CARD - Netflix Style (Logo + Company + Price)
+// COMPACT CARD - Light Theme (Logo + Company + Price & Qty)
 // ═══════════════════════════════════════════════════════════════
 const CompactCard = ({ listing, isExpanded, onClick }) => {
   const isSell = listing.type === 'sell';
@@ -238,31 +238,31 @@ const CompactCard = ({ listing, isExpanded, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`relative bg-gray-900 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ${
+      className={`relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 shadow-sm ${
         isExpanded 
-          ? 'ring-2 ring-red-500 scale-[1.02] z-10' 
-          : 'hover:scale-[1.02] active:scale-[0.98]'
+          ? 'ring-2 ring-primary-500 scale-[1.02] z-10' 
+          : 'hover:shadow-md active:scale-[0.98]'
       }`}
     >
-      {/* Type Badge */}
-      <div className={`absolute top-2 left-2 px-1.5 py-0.5 rounded text-[9px] font-bold z-10 ${
+      {/* Type Badge - Smaller */}
+      <div className={`absolute top-1.5 left-1.5 px-1 py-0.5 rounded text-[7px] font-bold z-10 ${
         isSell ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
       }`}>
         {isSell ? 'SELL' : 'BUY'}
       </div>
 
-      {/* Company Logo - Prominent */}
-      <div className="pt-7 pb-2 px-3 flex justify-center">
+      {/* Company Logo - Bigger */}
+      <div className="pt-6 pb-1.5 px-3 flex justify-center">
         {(listing.companyId?.logo || listing.companyId?.Logo) ? (
           <img
             src={listing.companyId.logo || listing.companyId.Logo}
             alt={listing.companyName}
-            className="w-14 h-14 rounded-lg object-contain bg-gray-800"
+            className="w-16 h-16 rounded-xl object-contain bg-gray-50 border border-gray-100"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         ) : (
-          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
-            <span className="text-white font-bold text-xl">
+          <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+            <span className="text-white font-bold text-2xl">
               {listing.companyName?.[0] || 'C'}
             </span>
           </div>
@@ -271,24 +271,25 @@ const CompactCard = ({ listing, isExpanded, onClick }) => {
 
       {/* Company Name */}
       <div className="px-2 pb-1 text-center">
-        <h3 className="font-semibold text-xs text-white leading-tight truncate">
+        <h3 className="font-semibold text-[11px] text-gray-900 leading-tight truncate">
           {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
         </h3>
       </div>
 
-      {/* Price - Bold */}
-      <div className="px-2 pb-3 text-center">
-        <p className="text-base font-bold text-white">
+      {/* Price & Qty - Same Row */}
+      <div className="px-2 pb-2.5 flex items-center justify-center gap-2">
+        <p className="text-sm font-bold text-gray-900">
           {formatCurrency(displayPrice)}
         </p>
-        <p className="text-[10px] text-gray-500">
+        <span className="text-gray-300">•</span>
+        <p className="text-[10px] text-gray-500 font-medium">
           {formatNumber(listing.quantity)} qty
         </p>
       </div>
 
       {/* Expand Indicator */}
       {isExpanded && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-red-500 rounded-t-full"></div>
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary-500 rounded-t-full"></div>
       )}
     </div>
   );
@@ -357,38 +358,38 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
 
   // Get rate icon based on current rating
   const getRateIcon = () => {
-    if (rating === 'like') return <ThumbsUp size={18} />;
-    if (rating === 'dislike') return <ThumbsDown size={18} />;
-    if (rating === 'love') return <Heart size={18} fill="currentColor" />;
-    return <ThumbsUp size={18} />;
+    if (rating === 'like') return <ThumbsUp size={16} />;
+    if (rating === 'dislike') return <ThumbsDown size={16} />;
+    if (rating === 'love') return <Heart size={16} fill="currentColor" />;
+    return <ThumbsUp size={16} />;
   };
 
   return (
     <div 
-      className="relative bg-gradient-to-b from-gray-900 to-black rounded-xl overflow-hidden border border-gray-800 animate-slideDown"
+      className="relative bg-white rounded-xl overflow-hidden border border-gray-200 shadow-lg animate-slideDown"
     >
       {/* Close Button */}
       <button 
         onClick={onClose}
-        className="absolute top-3 right-3 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center z-10"
+        className="absolute top-2 right-2 w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center z-10"
       >
-        <X size={14} className="text-white" />
+        <X size={12} className="text-gray-600" />
       </button>
 
-      <div className="p-4">
+      <div className="p-3">
         {/* ═══ Company Header with Tooltip ═══ */}
-        <div className="flex items-start gap-3 mb-4">
+        <div className="flex items-start gap-2.5 mb-3">
           {/* Logo */}
           <div className="flex-shrink-0">
             {(company.logo || company.Logo) ? (
               <img
                 src={company.logo || company.Logo}
                 alt={listing.companyName}
-                className="w-12 h-12 rounded-lg object-contain bg-gray-800"
+                className="w-11 h-11 rounded-lg object-contain bg-gray-50 border border-gray-100"
               />
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
+              <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                <span className="text-white font-bold text-base">
                   {listing.companyName?.[0] || 'C'}
                 </span>
               </div>
@@ -397,74 +398,74 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
           
           {/* Company Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-white text-base truncate">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h3 className="font-bold text-gray-900 text-sm truncate">
                 {company.scriptName || company.ScripName || listing.companyName}
               </h3>
               {/* Tooltip Trigger */}
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
-                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
-                  showTooltip ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
+                className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${
+                  showTooltip ? 'bg-primary-600' : 'bg-gray-200 hover:bg-gray-300'
                 }`}
               >
-                <Info size={10} className="text-white" />
+                <Info size={8} className={showTooltip ? 'text-white' : 'text-gray-500'} />
               </button>
             </div>
             
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-[10px]">
               <span className="text-gray-400">Sector:</span>
-              <span className="text-white font-medium">{company.sector || company.Sector || 'Unlisted'}</span>
+              <span className="text-gray-700 font-medium">{company.sector || company.Sector || 'Unlisted'}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs mt-0.5">
+            <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
               <span className="text-gray-400">Seller:</span>
-              <span className="text-white font-medium">@{listing.username}</span>
+              <span className="text-gray-700 font-medium">@{listing.username}</span>
             </div>
           </div>
         </div>
 
         {/* ═══ Company Details Tooltip ═══ */}
         {showTooltip && (
-          <div className="mb-4 p-3 bg-gray-800/80 backdrop-blur rounded-lg border border-gray-700 text-xs space-y-1.5 animate-fadeIn">
-            <p className="text-gray-300">
-              <span className="text-gray-500 w-16 inline-block">Company:</span> 
-              <span className="font-medium">{company.companyName || company.name || listing.companyName}</span>
+          <div className="mb-3 p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-[10px] space-y-1 animate-fadeIn">
+            <p className="text-gray-600">
+              <span className="text-gray-400 w-14 inline-block">Company:</span> 
+              <span className="font-medium text-gray-800">{company.companyName || company.name || listing.companyName}</span>
             </p>
             {(company.pan || company.PAN) && (
-              <p className="text-gray-300">
-                <span className="text-gray-500 w-16 inline-block">PAN:</span> 
-                <span className="font-mono">{company.pan || company.PAN}</span>
+              <p className="text-gray-600">
+                <span className="text-gray-400 w-14 inline-block">PAN:</span> 
+                <span className="font-mono text-gray-800">{company.pan || company.PAN}</span>
               </p>
             )}
             {(company.isin || company.ISIN) && (
-              <p className="text-gray-300">
-                <span className="text-gray-500 w-16 inline-block">ISIN:</span> 
-                <span className="font-mono">{company.isin || company.ISIN}</span>
+              <p className="text-gray-600">
+                <span className="text-gray-400 w-14 inline-block">ISIN:</span> 
+                <span className="font-mono text-gray-800">{company.isin || company.ISIN}</span>
               </p>
             )}
             {(company.cin || company.CIN) && (
-              <p className="text-gray-300">
-                <span className="text-gray-500 w-16 inline-block">CIN:</span> 
-                <span className="font-mono text-[10px]">{company.cin || company.CIN}</span>
+              <p className="text-gray-600">
+                <span className="text-gray-400 w-14 inline-block">CIN:</span> 
+                <span className="font-mono text-gray-800 text-[9px]">{company.cin || company.CIN}</span>
               </p>
             )}
           </div>
         )}
 
         {/* ═══ Price & Quantity Row ═══ */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex-1 bg-gray-800/50 rounded-lg p-2.5 text-center">
-            <p className="text-gray-500 text-[10px] mb-0.5">💰 {priceLabel}</p>
-            <p className="text-white font-bold text-lg">{formatCurrency(displayPrice)}</p>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+            <p className="text-gray-400 text-[9px] mb-0.5">💰 {priceLabel}</p>
+            <p className="text-gray-900 font-bold text-base">{formatCurrency(displayPrice)}</p>
           </div>
-          <div className="flex-1 bg-gray-800/50 rounded-lg p-2.5 text-center">
-            <p className="text-gray-500 text-[10px] mb-0.5">📦 Quantity</p>
-            <p className="text-white font-bold text-lg">{formatNumber(listing.quantity)}</p>
+          <div className="flex-1 bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+            <p className="text-gray-400 text-[9px] mb-0.5">📦 Quantity</p>
+            <p className="text-gray-900 font-bold text-base">{formatNumber(listing.quantity)}</p>
           </div>
         </div>
 
-        {/* ═══ Action Buttons - Netflix Style ═══ */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* ═══ Action Buttons - Light Theme ═══ */}
+        <div className="flex items-center gap-1.5 mb-2.5">
           {/* Play/View Button */}
           <div className="group relative">
             <button
@@ -473,11 +474,11 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
                 haptic.medium();
                 navigate(`/listing/${listing._id}`);
               }}
-              className="w-11 h-11 bg-white hover:bg-gray-100 active:bg-gray-200 text-black rounded-full flex items-center justify-center transition-all"
+              className="w-9 h-9 bg-gray-900 hover:bg-gray-800 text-white rounded-full flex items-center justify-center transition-all"
             >
-              <Play size={20} fill="currentColor" />
+              <Play size={16} fill="currentColor" />
             </button>
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               {isSell ? 'Place Bid' : 'Make Offer'}
             </div>
           </div>
@@ -486,20 +487,20 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
           <div className="group relative">
             <button
               onClick={handleFavorite}
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border-2 ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border-2 ${
                 favorited 
-                  ? 'bg-white text-black border-white' 
-                  : 'bg-transparent text-white border-gray-400 hover:border-white'
+                  ? 'bg-gray-900 text-white border-gray-900' 
+                  : 'bg-transparent text-gray-600 border-gray-300 hover:border-gray-900'
               }`}
             >
-              {favorited ? <Check size={20} /> : <Plus size={20} />}
+              {favorited ? <Check size={16} /> : <Plus size={16} />}
             </button>
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              {favorited ? 'In My List' : 'Add to List'}
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              {favorited ? 'In List' : 'Add'}
             </div>
           </div>
           
-          {/* Rate Button with Hover Popup - Netflix Style */}
+          {/* Rate Button with Hover Popup */}
           <div 
             className="group relative"
             onMouseEnter={() => setShowRateOptions(true)}
@@ -507,34 +508,34 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
             onTouchStart={() => setShowRateOptions(true)}
           >
             <button
-              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all border-2 ${
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all border-2 ${
                 rating 
                   ? rating === 'love' 
-                    ? 'bg-red-600 text-white border-red-600' 
+                    ? 'bg-red-500 text-white border-red-500' 
                     : rating === 'like'
-                      ? 'bg-white text-black border-white'
-                      : 'bg-gray-600 text-white border-gray-600'
-                  : 'bg-transparent text-white border-gray-400 hover:border-white'
+                      ? 'bg-gray-900 text-white border-gray-900'
+                      : 'bg-gray-400 text-white border-gray-400'
+                  : 'bg-transparent text-gray-600 border-gray-300 hover:border-gray-900'
               }`}
             >
               {getRateIcon()}
             </button>
             
             {/* Rate Options Popup */}
-            <div className={`absolute -top-14 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-gray-900 rounded-full p-1.5 border border-gray-700 shadow-xl transition-all duration-200 ${
+            <div className={`absolute -top-12 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-white rounded-full p-1 border border-gray-200 shadow-lg transition-all duration-200 ${
               showRateOptions ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'
             }`}>
               {/* Dislike */}
               <button
                 onClick={(e) => handleRate('dislike', e)}
-                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`relative group/btn w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   rating === 'dislike' 
-                    ? 'bg-gray-600 text-white' 
-                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                    ? 'bg-gray-400 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-110'
                 }`}
               >
-                <ThumbsDown size={18} />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                <ThumbsDown size={14} />
+                <span className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
                   Not for me
                 </span>
               </button>
@@ -542,14 +543,14 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
               {/* Like */}
               <button
                 onClick={(e) => handleRate('like', e)}
-                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`relative group/btn w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   rating === 'like' 
-                    ? 'bg-white text-black' 
-                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                    ? 'bg-gray-900 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-110'
                 }`}
               >
-                <ThumbsUp size={18} />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                <ThumbsUp size={14} />
+                <span className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
                   I like this
                 </span>
               </button>
@@ -557,22 +558,17 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
               {/* Love it */}
               <button
                 onClick={(e) => handleRate('love', e)}
-                className={`relative group/btn w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`relative group/btn w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   rating === 'love' 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-gray-800 text-white hover:bg-gray-700 hover:scale-110'
+                    ? 'bg-red-500 text-white' 
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-110'
                 }`}
               >
-                <Heart size={18} fill={rating === 'love' ? 'currentColor' : 'none'} />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-white text-black text-[9px] font-semibold rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
+                <Heart size={14} fill={rating === 'love' ? 'currentColor' : 'none'} />
+                <span className="absolute -top-6 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap">
                   Love this!
                 </span>
               </button>
-            </div>
-            
-            {/* Label when not hovering */}
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-0 pointer-events-none">
-              Rate
             </div>
           </div>
           
@@ -580,29 +576,29 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
           <div className="group relative">
             <button
               onClick={handleAccept}
-              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all hover:bg-green-600 hover:border-green-600"
+              className="w-9 h-9 bg-transparent text-gray-600 border-2 border-gray-300 hover:border-green-500 hover:text-green-500 rounded-full flex items-center justify-center transition-all hover:bg-green-50"
             >
-              <Check size={20} />
+              <Check size={16} />
             </button>
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               Accept
             </div>
           </div>
           
-          {/* Share Button - Paper Plane Style */}
+          {/* Share Button */}
           <div className="group relative">
             <button
               onClick={handleShare}
-              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all"
+              className="w-9 h-9 bg-transparent text-gray-600 border-2 border-gray-300 hover:border-gray-900 rounded-full flex items-center justify-center transition-all"
             >
-              <Send size={18} className="rotate-[-35deg] translate-x-[1px]" />
+              <Send size={14} className="rotate-[-35deg] translate-x-[1px]" />
             </button>
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
               Share
             </div>
           </div>
           
-          {/* More Info / Expand Button */}
+          {/* More Info Button */}
           <div className="group relative ml-auto">
             <button
               onClick={(e) => {
@@ -610,35 +606,35 @@ const ExpandedPanel = ({ listing, onClose, navigate }) => {
                 haptic.light();
                 navigate(`/listing/${listing._id}`);
               }}
-              className="w-11 h-11 bg-transparent text-white border-2 border-gray-400 hover:border-white rounded-full flex items-center justify-center transition-all"
+              className="w-9 h-9 bg-transparent text-gray-600 border-2 border-gray-300 hover:border-gray-900 rounded-full flex items-center justify-center transition-all"
             >
-              <ChevronDown size={20} />
+              <ChevronDown size={16} />
             </button>
-            <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-white text-black text-[10px] font-semibold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-              More Info
+            <div className="absolute -top-7 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-gray-900 text-white text-[8px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+              More
             </div>
           </div>
         </div>
 
         {/* ═══ Tags & Meta Info ═══ */}
-        <div className="flex items-center justify-between text-[10px] text-gray-500 pt-2 border-t border-gray-800">
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 rounded ${
-              isSell ? 'bg-green-900/50 text-green-400' : 'bg-blue-900/50 text-blue-400'
+        <div className="flex items-center justify-between text-[9px] text-gray-500 pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-1.5">
+            <span className={`px-1.5 py-0.5 rounded ${
+              isSell ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
             }`}>
               {isSell ? 'SELL' : 'BUY'}
             </span>
-            <span className="px-2 py-0.5 rounded bg-purple-900/50 text-purple-400">Unlisted</span>
-            <span className="px-2 py-0.5 rounded bg-emerald-900/50 text-emerald-400">Active</span>
+            <span className="px-1.5 py-0.5 rounded bg-purple-100 text-purple-600">Unlisted</span>
+            <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-600">Active</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-gray-400">
             <span className="flex items-center gap-1">
-              <Clock size={10} />
+              <Clock size={9} />
               {formatDate(listing.createdAt, true)}
             </span>
             {bidsCount > 0 && (
               <span className="flex items-center gap-1">
-                <MessageCircle size={10} />
+                <MessageCircle size={9} />
                 {bidsCount}
               </span>
             )}
