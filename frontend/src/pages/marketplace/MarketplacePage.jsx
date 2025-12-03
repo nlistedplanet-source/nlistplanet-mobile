@@ -5,12 +5,8 @@ import {
   TrendingUp, 
   TrendingDown,
   RefreshCw,
-  Calendar,
   Package,
-  Share2,
-  Zap,
-  MessageCircle,
-  Info
+  MessageCircle
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
@@ -149,8 +145,8 @@ const MarketplacePage = () => {
         </div>
       </div>
 
-      {/* Listings Grid */}
-      <div className="px-6 pt-4">
+      {/* Listings Grid - 2 columns */}
+      <div className="px-4 pt-4">
         {filteredListings.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -162,7 +158,7 @@ const MarketplacePage = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-4 pb-4">
+          <div className="grid grid-cols-2 gap-3 pb-4">
             {filteredListings.map((listing) => (
               <ListingCard 
                 key={listing._id} 
@@ -178,207 +174,124 @@ const MarketplacePage = () => {
   );
 };
 
-// Listing Card Component - Same as Desktop Design
+// Listing Card Component - Desktop-like Compact Design
 const ListingCard = ({ listing, onClick, navigate }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
   const isSell = listing.type === 'sell';
   
   // Marketplace shows prices to non-owners (isOwner = false)
   const priceInfo = getPriceDisplay(listing.price, listing.type, false);
   const displayPrice = priceInfo.displayPrice;
   const priceLabel = priceInfo.label;
-  const totalAmount = displayPrice * listing.quantity;
   const bidsCount = isSell ? listing.bids?.length || 0 : listing.offers?.length || 0;
   
   return (
     <div
       onClick={onClick}
-      className={`bg-white rounded-xl p-4 shadow-sm relative active:scale-98 transition-transform cursor-pointer ${
-        listing.isBoosted ? 'ring-2 ring-primary-500' : ''
+      className={`bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 active:scale-98 transition-transform cursor-pointer ${
+        listing.isBoosted ? 'ring-2 ring-yellow-400' : ''
       }`}
     >
-      {/* Boosted Badge */}
-      {listing.isBoosted && (
-        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-          <Zap size={12} fill="white" />
-          BOOSTED
-        </div>
-      )}
+      {/* Top Badges Row */}
+      <div className="flex items-center gap-1.5 px-3 pt-3 pb-2 border-b border-gray-100">
+        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+          isSell ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+        }`}>
+          {isSell ? 'Sell' : 'Buy'}
+        </span>
+        <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-700 text-[10px] font-semibold">
+          Unlisted
+        </span>
+        <span className="ml-auto text-[10px] text-gray-400">
+          {formatDate(listing.createdAt, true)}
+        </span>
+      </div>
 
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 flex-1">
+      {/* Company Info */}
+      <div className="px-3 py-2">
+        <div className="flex items-center gap-2 mb-2">
           {(listing.companyId?.logo || listing.companyId?.Logo) ? (
             <img
               src={listing.companyId.logo || listing.companyId.Logo}
               alt={listing.companyName}
-              className="w-12 h-12 rounded-lg object-cover"
+              className="w-8 h-8 rounded-lg object-cover"
               onError={(e) => {
                 e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
               }}
             />
-          ) : null}
-          {!(listing.companyId?.logo || listing.companyId?.Logo) ? (
-            <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center">
-              <span className="text-primary-700 font-bold text-lg">
-                {listing.companyName?.[0] || 'C'}
-              </span>
-            </div>
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-primary-100 items-center justify-center hidden">
-              <span className="text-primary-700 font-bold text-lg">
+            <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
+              <span className="text-primary-700 font-bold text-sm">
                 {listing.companyName?.[0] || 'C'}
               </span>
             </div>
           )}
-          <div className="flex-1 min-w-0 relative">
-            <div className="flex items-center gap-1">
-              <h3 className="font-bold text-lg text-gray-900 leading-tight truncate">
-                {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
-              </h3>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowTooltip(!showTooltip);
-                }}
-                className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center"
-              >
-                <Info size={12} className="text-gray-500" />
-              </button>
-            </div>
-            <p className="text-xs text-gray-500">{listing.companyId?.sector || listing.companyId?.Sector || 'Company'}</p>
-            
-            {/* Tooltip */}
-            {showTooltip && (
-              <div className="absolute left-0 top-full mt-2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl z-20 min-w-[250px]">
-                <div className="space-y-1.5">
-                  <div className="flex justify-between items-center font-semibold border-b border-gray-700 pb-1 mb-2">
-                    <span>{listing.companyName}</span>
-                    <button onClick={(e) => { e.stopPropagation(); setShowTooltip(false); }} className="text-gray-400 hover:text-white">&times;</button>
-                  </div>
-                  {(listing.companyId?.sector || listing.companyId?.Sector) && (
-                    <div><span className="text-gray-400">Sector:</span> {listing.companyId.sector || listing.companyId.Sector}</div>
-                  )}
-                  {(listing.companyId?.isin || listing.companyId?.ISIN) && (
-                    <div><span className="text-gray-400">ISIN:</span> {listing.companyId.isin || listing.companyId.ISIN}</div>
-                  )}
-                  {(listing.companyId?.pan || listing.companyId?.PAN) && (
-                    <div><span className="text-gray-400">PAN:</span> {listing.companyId.pan || listing.companyId.PAN}</div>
-                  )}
-                  {(listing.companyId?.cin || listing.companyId?.CIN) && (
-                    <div><span className="text-gray-400">CIN:</span> {listing.companyId.cin || listing.companyId.CIN}</div>
-                  )}
-                  {listing.companySegmentation && (
-                    <div className="pt-1 mt-1 border-t border-gray-700">
-                      <span className="bg-purple-600 text-white px-2 py-0.5 rounded text-xs font-semibold">
-                        {listing.companySegmentation}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-sm text-gray-900 leading-tight truncate">
+              {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
+            </h3>
+            <p className="text-[10px] text-gray-500 truncate">
+              {listing.companyId?.sector || listing.companyId?.Sector || 'Company'}
+            </p>
           </div>
         </div>
 
-        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          isSell ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-        }`}>
-          {isSell ? 'SELL' : 'BUY'}
+        {/* Seller/Buyer Info */}
+        <div className="flex items-center gap-1 text-[10px] text-gray-500 mb-2">
+          <Package size={10} />
+          <span>{isSell ? 'Seller' : 'Buyer'}:</span>
+          <span className="font-medium text-gray-700">@{listing.username}</span>
         </div>
-      </div>
 
-      {/* Description */}
-      {listing.description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {listing.description}
-        </p>
-      )}
+        {/* Price & Quantity */}
+        <div className="space-y-1.5 mb-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-gray-500">{priceLabel}</span>
+            <span className="text-base font-bold text-gray-900">{formatCurrency(displayPrice)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] text-gray-500">Quantity</span>
+            <span className="text-sm font-semibold text-gray-700">{formatNumber(listing.quantity)}</span>
+          </div>
+        </div>
 
-      {/* Price & Quantity */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1">{priceLabel}</p>
-          <p className="text-lg font-bold text-gray-900">{formatCurrency(displayPrice)}</p>
+        {/* Actions */}
+        <div className="flex gap-2">
+          <button
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              haptic.medium();
+              navigate(`/listing/${listing._id}`);
+            }}
+            className="flex-1 bg-primary-600 active:bg-primary-700 text-white text-xs py-2 rounded-lg font-semibold"
+          >
+            {isSell ? 'Place Your Bid' : 'Make Offer'}
+          </button>
+          <button
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              haptic.light(); 
+              if (navigator.share) {
+                navigator.share({ 
+                  title: listing.companyName, 
+                  url: window.location.origin + `/listing/${listing._id}`
+                }).catch(() => {});
+              } else {
+                toast.success('Link copied!');
+              }
+            }}
+            className="bg-gray-100 active:bg-gray-200 text-gray-700 text-xs py-2 px-3 rounded-lg font-medium flex items-center justify-center"
+          >
+            Share
+          </button>
         </div>
-        <div className="bg-gray-50 rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1">Quantity</p>
-          <p className="text-lg font-bold text-gray-900">{formatNumber(listing.quantity)}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Min: {formatNumber(listing.minLot)}
-          </p>
-        </div>
-      </div>
 
-      {/* Total Amount */}
-      <div className="bg-primary-50 rounded-lg p-3 mb-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Total Amount:</span>
-          <span className="text-xl font-bold text-primary-700">
-            {formatCurrency(totalAmount)}
-          </span>
-        </div>
-      </div>
-
-      {/* Meta Info */}
-      <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-        <div className="flex items-center gap-1">
-          <Calendar size={14} />
-          {formatDate(listing.createdAt)}
-        </div>
-        <div className="flex items-center gap-1">
-          <MessageCircle size={14} />
-          {bidsCount} {isSell ? 'Bids' : 'Offers'}
-        </div>
-        <div className="flex items-center gap-1">
-          <Package size={14} />
-          @{listing.username}
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2">
-        <button
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            haptic.medium();
-            navigate(`/listing/${listing._id}`);
-          }}
-          className="flex-1 bg-primary-600 active:bg-primary-700 text-white text-sm py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2"
-        >
-          <TrendingUp size={18} />
-          {isSell ? 'Place Bid' : 'Make Offer'}
-        </button>
-        
-        <button
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            haptic.medium();
-            navigate(`/listing/${listing._id}`);
-          }}
-          className="flex-1 bg-green-600 active:bg-green-700 text-white text-sm py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2"
-        >
-          Accept
-        </button>
-        
-        <button
-          onClick={(e) => { 
-            e.stopPropagation(); 
-            haptic.light(); 
-            if (navigator.share) {
-              navigator.share({ 
-                title: listing.companyName, 
-                url: window.location.origin + `/listing/${listing._id}`
-              }).catch(() => {});
-            } else {
-              toast.success('Link copied!');
-            }
-          }}
-          className="bg-gray-100 active:bg-gray-200 text-gray-700 text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 px-4"
-        >
-          <Share2 size={18} />
-        </button>
+        {/* Bids Count & Wishlist */}
+        {bidsCount > 0 && (
+          <div className="flex items-center justify-center gap-1 mt-2 text-[10px] text-gray-500">
+            <MessageCircle size={10} />
+            <span>{bidsCount} {isSell ? 'bids' : 'offers'}</span>
+          </div>
+        )}
       </div>
     </div>
   );

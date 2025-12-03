@@ -92,7 +92,13 @@ export const getPriceDisplay = (price, listingType, isOwner = false) => {
 };
 
 // Format date
-export const formatDate = (date) => {
+export const formatDate = (date, short = false) => {
+  if (short) {
+    return new Date(date).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short'
+    });
+  }
   return new Date(date).toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
