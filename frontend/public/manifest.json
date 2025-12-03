@@ -9,13 +9,13 @@
       "type": "image/png"
     },
     {
-      "src": "new_logo.png",
+      "src": "Logo.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "new_logo.png",
+      "src": "Logo.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -34,14 +34,14 @@
       "short_name": "Market",
       "description": "Browse unlisted shares",
       "url": "/marketplace",
-      "icons": [{ "src": "new_logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Logo.png", "sizes": "192x192" }]
     },
     {
       "name": "My Posts",
       "short_name": "Posts",
       "description": "View your listings",
       "url": "/my-posts",
-      "icons": [{ "src": "new_logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Logo.png", "sizes": "192x192" }]
     }
   ]
 }

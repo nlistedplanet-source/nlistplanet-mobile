@@ -8,7 +8,7 @@ function BrandLogo({ size = 64, className = '', rounded = '2xl', alt = 'NlistPla
       style={{ width: px, height: px, borderRadius: rounded === 'full' ? '9999px' : '16px' }}
     >
       <img
-        src={process.env.PUBLIC_URL + '/logo192.png'}
+        src={process.env.PUBLIC_URL + '/Logo.png'}
         alt={alt}
         width={px}
         height={px}
