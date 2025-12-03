@@ -201,30 +201,34 @@ const ListingCard = ({ listing, onClick }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {(listing.companyId?.logo || listing.companyId?.Logo) ? (
-            <img
-              src={listing.companyId.logo || listing.companyId.Logo}
-              alt={listing.companyName}
-              className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          {!(listing.companyId?.logo || listing.companyId?.Logo) ? (
-            <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-700 font-bold text-lg">
-                {listing.companyName?.[0] || 'C'}
-              </span>
+          <div className="relative group">
+            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
+              <img
+                src={listing.companyId.logo || listing.companyId.Logo}
+                alt={listing.companyName}
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 cursor-pointer"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0 cursor-pointer">
+                <span className="text-primary-700 font-bold text-lg">
+                  {listing.companyName?.[0] || 'C'}
+                </span>
+              </div>
+            )}
+            {/* Tooltip for company details */}
+            <div className="absolute left-14 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex flex-col bg-white border border-gray-200 rounded-xl shadow-lg p-3 min-w-[180px]">
+              <span className="font-bold text-gray-900 mb-1">{listing.companyId?.scriptName || listing.companyName}</span>
+              <span className="text-xs text-gray-500 mb-1">Sector: {listing.companyId?.sector || 'N/A'}</span>
+              {listing.companyId?.isin && <span className="text-xs text-gray-500 mb-1">ISIN: {listing.companyId.isin}</span>}
+              {listing.companyId?.pan && <span className="text-xs text-gray-500 mb-1">PAN: {listing.companyId.pan}</span>}
+              {listing.companyId?.cin && <span className="text-xs text-gray-500 mb-1">CIN: {listing.companyId.cin}</span>}
+              {listing.companyId?.description && <span className="text-xs text-gray-500">{listing.companyId.description}</span>}
             </div>
-          ) : (
-            <div className="w-12 h-12 rounded-lg bg-primary-100 items-center justify-center hidden flex-shrink-0">
-              <span className="text-primary-700 font-bold text-lg">
-                {listing.companyName?.[0] || 'C'}
-              </span>
-            </div>
-          )}
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-base text-gray-900 leading-tight truncate">
               {listing.companyId?.scriptName || listing.companyName}
@@ -264,18 +268,37 @@ const ListingCard = ({ listing, onClick }) => {
         </div>
       </div>
 
-      {/* Total Amount */}
-      <div className="bg-primary-50 rounded-lg p-3 mb-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">Total Amount:</span>
-          <span className="text-xl font-bold text-primary-700">
-            {formatCurrency(totalPrice * listing.quantity)}
-          </span>
-        </div>
-      </div>
+      {/* ...removed Total Amount section... */}
 
+      {/* Action Buttons */}
+      <div className="flex items-center justify-between gap-2 mt-2">
+        <button
+          className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
+          onClick={(e) => { e.stopPropagation(); haptic.medium(); navigate(`/listing/${listing._id}?action=bid`); }}
+        >
+          Place Bid
+        </button>
+        <button
+          className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
+          onClick={(e) => { e.stopPropagation(); haptic.medium(); navigate(`/listing/${listing._id}?action=accept`); }}
+        >
+          Accept
+        </button>
+        <button
+          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
+          onClick={(e) => { e.stopPropagation(); haptic.light(); navigator.share ? navigator.share({ title: listing.companyName, url: window.location.href }) : toast('Share link copied!'); }}
+        >
+          <Share2 size={14} /> Share
+        </button>
+        <button
+          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
+          onClick={(e) => { e.stopPropagation(); haptic.light(); toast('Liked!'); }}
+        >
+          <TrendingUp size={14} /> Like
+        </button>
+      </div>
       {/* Meta Info */}
-      <div className="flex items-center gap-4 text-xs text-gray-500">
+      <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
         <div className="flex items-center gap-1">
           <Calendar size={14} />
           {formatDate(listing.createdAt)}
