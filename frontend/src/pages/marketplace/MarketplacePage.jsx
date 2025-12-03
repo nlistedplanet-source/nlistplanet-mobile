@@ -10,7 +10,9 @@ import {
   Package,
   Share2,
   Zap,
-  MessageCircle
+  MessageCircle,
+  Heart,
+  Info
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, debounce, formatDate, formatNumber, calculateTotalWithFee } from '../../utils/helpers';
@@ -180,6 +182,7 @@ const MarketplacePage = () => {
 
 // Listing Card Component
 const ListingCard = ({ listing, onClick, navigate }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
   const isSell = listing.type === 'sell';
   const totalPrice = calculateTotalWithFee(listing.price);
   const bidsCount = isSell ? listing.bids?.length || 0 : listing.offers?.length || 0;
@@ -202,38 +205,40 @@ const ListingCard = ({ listing, onClick, navigate }) => {
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative group">
+          <div className="relative">
             {(listing.companyId?.logo || listing.companyId?.Logo) ? (
               <img
                 src={listing.companyId.logo || listing.companyId.Logo}
                 alt={listing.companyName}
-                className="w-12 h-12 rounded-lg object-cover flex-shrink-0 cursor-pointer"
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'flex';
                 }}
               />
             ) : (
-              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0 cursor-pointer">
+              <div className="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
                 <span className="text-primary-700 font-bold text-lg">
                   {listing.companyName?.[0] || 'C'}
                 </span>
               </div>
             )}
-            {/* Tooltip for company details */}
-            <div className="absolute left-14 top-1/2 -translate-y-1/2 z-10 hidden group-hover:flex flex-col bg-white border border-gray-200 rounded-xl shadow-lg p-3 min-w-[180px]">
-              <span className="font-bold text-gray-900 mb-1">{listing.companyId?.scriptName || listing.companyName}</span>
-              <span className="text-xs text-gray-500 mb-1">Sector: {listing.companyId?.sector || 'N/A'}</span>
-              {listing.companyId?.isin && <span className="text-xs text-gray-500 mb-1">ISIN: {listing.companyId.isin}</span>}
-              {listing.companyId?.pan && <span className="text-xs text-gray-500 mb-1">PAN: {listing.companyId.pan}</span>}
-              {listing.companyId?.cin && <span className="text-xs text-gray-500 mb-1">CIN: {listing.companyId.cin}</span>}
-              {listing.companyId?.description && <span className="text-xs text-gray-500">{listing.companyId.description}</span>}
-            </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-base text-gray-900 leading-tight truncate">
-              {listing.companyId?.scriptName || listing.companyName}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-gray-900 leading-tight truncate">
+                {listing.companyId?.scriptName || listing.companyName}
+              </h3>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTooltip(!showTooltip);
+                }}
+                className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+              >
+                <Info size={12} className="text-gray-600" />
+              </button>
+            </div>
             <p className="text-xs text-gray-500">{listing.companyId?.sector || 'Company'}</p>
           </div>
         </div>
@@ -244,6 +249,31 @@ const ListingCard = ({ listing, onClick, navigate }) => {
           {isSell ? 'SELL' : 'BUY'}
         </span>
       </div>
+
+      {/* Mobile Tooltip */}
+      {showTooltip && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+          <div className="flex items-start justify-between mb-2">
+            <h4 className="font-bold text-sm text-gray-900">{listing.companyId?.scriptName || listing.companyName}</h4>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowTooltip(false);
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+          </div>
+          <div className="space-y-1 text-xs text-gray-600">
+            <p><span className="font-semibold">Sector:</span> {listing.companyId?.sector || 'N/A'}</p>
+            {listing.companyId?.isin && <p><span className="font-semibold">ISIN:</span> {listing.companyId.isin}</p>}
+            {listing.companyId?.pan && <p><span className="font-semibold">PAN:</span> {listing.companyId.pan}</p>}
+            {listing.companyId?.cin && <p><span className="font-semibold">CIN:</span> {listing.companyId.cin}</p>}
+            {listing.companyId?.description && <p className="mt-2 text-gray-700">{listing.companyId.description}</p>}
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       {listing.description && (
@@ -272,21 +302,29 @@ const ListingCard = ({ listing, onClick, navigate }) => {
       {/* ...removed Total Amount section... */}
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-between gap-2 mt-2">
+      <div className="flex items-center gap-2 mt-2">
         <button
-          className="bg-primary-600 hover:bg-primary-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
-          onClick={(e) => { e.stopPropagation(); haptic.medium(); onClick(); }}
+          className="bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex-1 transition-colors"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            haptic.medium();
+            navigate(`/listing/${listing._id}`);
+          }}
         >
           Place Bid
         </button>
         <button
-          className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-xs font-semibold flex-1"
-          onClick={(e) => { e.stopPropagation(); haptic.medium(); onClick(); }}
+          className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex-1 transition-colors"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            haptic.medium();
+            navigate(`/listing/${listing._id}`);
+          }}
         >
           Accept
         </button>
         <button
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
+          className="w-10 h-10 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-700 rounded-lg flex items-center justify-center transition-colors"
           onClick={(e) => { 
             e.stopPropagation(); 
             haptic.light(); 
@@ -297,17 +335,21 @@ const ListingCard = ({ listing, onClick, navigate }) => {
                 url: window.location.origin + `/listing/${listing._id}`
               }).catch(() => {});
             } else {
-              toast.success('Share link copied!');
+              toast.success('Link copied!');
             }
           }}
         >
-          <Share2 size={14} /> Share
+          <Share2 size={18} />
         </button>
         <button
-          className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1"
-          onClick={(e) => { e.stopPropagation(); haptic.light(); toast.success('Liked!'); }}
+          className="w-10 h-10 bg-gray-100 hover:bg-gray-200 active:bg-red-50 text-gray-700 hover:text-red-600 rounded-lg flex items-center justify-center transition-colors"
+          onClick={(e) => { 
+            e.stopPropagation(); 
+            haptic.light(); 
+            toast.success('Added to favorites!'); 
+          }}
         >
-          <TrendingUp size={14} /> Like
+          <Heart size={18} />
         </button>
       </div>
       {/* Meta Info */}

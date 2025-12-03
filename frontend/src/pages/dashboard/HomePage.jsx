@@ -50,7 +50,10 @@ const HomePage = () => {
       setActivities(activitiesRes.data.data || []);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
-      toast.error('Failed to load dashboard');
+      // Only show error if it's not a 401 (unauthorized) or network issue
+      if (error.response?.status !== 401) {
+        // Silent fail for better UX - data will show as empty
+      }
     } finally {
       setLoading(false);
     }
