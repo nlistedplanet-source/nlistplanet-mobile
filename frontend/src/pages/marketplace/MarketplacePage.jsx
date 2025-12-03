@@ -20,6 +20,7 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import BidOfferModal from '../../components/modals/BidOfferModal';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -75,6 +76,7 @@ const MarketplacePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [selectedListing, setSelectedListing] = useState(null); // For popup modal
   const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
+  const [showBidModal, setShowBidModal] = useState(false); // Bid modal
 
   useEffect(() => {
     fetchListings();
@@ -222,15 +224,30 @@ const MarketplacePage = () => {
       </div>
 
       {/* Popup Modal */}
-      {selectedListing && (
+      {selectedListing && !showBidModal && (
         <PopupModal 
           listing={selectedListing} 
           onClose={closeModal}
           navigate={navigate}
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
+          onBidClick={() => setShowBidModal(true)}
         />
       )}
+
+      {/* Bid/Offer Modal */}
+      <BidOfferModal
+        isOpen={showBidModal}
+        listing={selectedListing}
+        onClose={() => {
+          setShowBidModal(false);
+        }}
+        onSuccess={() => {
+          setShowBidModal(false);
+          setSelectedListing(null);
+          fetchListings(); // Refresh listings
+        }}
+      />
     </div>
   );
 };
@@ -328,7 +345,7 @@ const CompactCard = ({ listing, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 // POPUP MODAL - Card click opens animated popup with full details
 // ═══════════════════════════════════════════════════════════════
-const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation }) => {
+const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
@@ -382,7 +399,11 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleBidClick = (e) => {
     e.stopPropagation();
     haptic.medium();
-    navigate(`/listing/${listing._id}?action=bid`);
+    if (onBidClick) {
+      onBidClick(); // Open Bid Modal inline
+    } else {
+      navigate(`/listing/${listing._id}?action=bid`);
+    }
   };
 
   const handleConfirmPurchase = () => {
