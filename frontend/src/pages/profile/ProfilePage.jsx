@@ -113,7 +113,7 @@ const ProfilePage = () => {
               </span>
             </div>
             <div className="absolute -bottom-1 -right-1">
-              <BrandLogo size={28} className="rounded-full shadow-md" />
+              <BrandLogo size={28} />
             </div>
           </div>
 

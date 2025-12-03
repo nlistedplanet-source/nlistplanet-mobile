@@ -81,7 +81,7 @@ const HomePage = () => {
       <div className="bg-gradient-to-br from-primary-600 to-primary-700 px-6 pt-safe pb-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <BrandLogo size={40} className="shadow-md" />
+            <BrandLogo size={40} />
             <div>
               <p className="text-primary-100 text-sm font-medium">Welcome back,</p>
               <h1 className="text-white text-2xl font-bold">{user?.fullName || user?.username}</h1>

@@ -98,7 +98,7 @@ const RegisterPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-primary-50 overflow-y-auto pb-safe">
       {/* Header */}
       <div className="px-6 pt-8 pb-6">
-        <BrandLogo size={64} className="mb-4 rounded-2xl" />
+        <BrandLogo size={64} className="mb-4" />
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
         <p className="text-gray-600">Join the marketplace today</p>
       </div>
