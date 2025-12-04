@@ -79,21 +79,20 @@ const LandingPage = () => {
       </div>
 
       {/* Header */}
-      <header className="relative z-20 px-5 py-4 flex items-center justify-between border-b border-gray-800/50 bg-gray-950/80 backdrop-blur-lg sticky top-0">
+      <header className="relative z-20 px-5 py-4 flex items-center justify-between bg-transparent sticky top-0">
         <div className="flex items-center gap-2">
           <img 
             src="/new_logo.png" 
             alt="NlistPlanet" 
-            className="w-9 h-9 object-contain"
+            className="w-12 h-12 object-contain"
             onError={(e) => {
               e.target.style.display = 'none';
               e.target.nextSibling.style.display = 'flex';
             }}
           />
-          <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
-            <span className="text-lg font-bold text-white">N</span>
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
+            <span className="text-xl font-bold text-white">N</span>
           </div>
-          <span className="text-white font-bold text-lg">NlistPlanet</span>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -113,30 +112,6 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <div className="relative z-10 px-6 pt-8 pb-6">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative bg-gray-900 p-3 rounded-2xl border border-gray-800">
-              <img 
-                src="/new_logo.png" 
-                alt="NlistPlanet" 
-                className="w-14 h-14 object-contain"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center" style={{display: 'none'}}>
-                <span className="text-2xl font-bold text-white">N</span>
-              </div>
-            </div>
-            <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-            </div>
-          </div>
-        </div>
-
         {/* Hero Text */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-2 mb-5">
