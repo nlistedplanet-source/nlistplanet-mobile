@@ -643,26 +643,9 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
 
             {/* Total Amount */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600">Total Value</span>
-                <span className="font-bold text-gray-900 text-lg">{formatCurrency(totalAmount)}</span>
-              </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-blue-600">Platform Fee (2%)</span>
-                <span className="text-blue-700 font-medium">{formatCurrency(platformFee)}</span>
-              </div>
-              <div className="border-t border-blue-200 mt-3 pt-3">
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-900">
-                    {type === 'sell' ? 'You receive' : 'You pay'}
-                  </span>
-                  <span className="font-bold text-primary-600 text-xl">
-                    {type === 'sell' 
-                      ? formatCurrency(totalAmount - platformFee)
-                      : formatCurrency(totalAmount + platformFee)
-                    }
-                  </span>
-                </div>
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-900">Total Value</span>
+                <span className="font-bold text-primary-600 text-xl">{formatCurrency(totalAmount)}</span>
               </div>
             </div>
 
