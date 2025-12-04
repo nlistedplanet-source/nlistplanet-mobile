@@ -250,7 +250,7 @@ const MarketplacePage = () => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// COMPACT CARD - Logo left, SELL right, Script name top, Price/Qty bottom
+// COMPACT CARD - Vibrant design with distinct BUY/SELL styling
 // ═══════════════════════════════════════════════════════════════
 const CompactCard = ({ listing, onClick }) => {
   const [showQtyTooltip, setShowQtyTooltip] = useState(false);
@@ -262,77 +262,111 @@ const CompactCard = ({ listing, onClick }) => {
   const fullQty = formatNumber(qty);
   const qtyInWords = numberToWords(qty);
   
+  // BUY opportunity = green theme (seller is selling, user can buy)
+  // SELL opportunity = blue theme (buyer is buying, user can sell to them)
+  const cardStyles = isSell ? {
+    border: 'border-blue-200',
+    gradient: 'from-blue-50 to-white',
+    tagBg: 'bg-gradient-to-r from-blue-500 to-blue-600',
+    tagText: 'text-white',
+    priceColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
+    shadow: 'shadow-blue-100/50'
+  } : {
+    border: 'border-green-200',
+    gradient: 'from-green-50 to-white',
+    tagBg: 'bg-gradient-to-r from-green-500 to-emerald-500',
+    tagText: 'text-white',
+    priceColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600',
+    shadow: 'shadow-green-100/50'
+  };
+  
   return (
     <div
       onClick={onClick}
-      className="relative bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98] p-2.5"
+      className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border}`}
     >
-      {/* Top Row: Logo left, SELL/BUY right */}
-      <div className="flex items-start justify-between mb-1.5">
-        {/* Logo - Left Corner */}
-        <div className="flex-shrink-0">
-          {(listing.companyId?.logo || listing.companyId?.Logo) ? (
-            <img
-              src={listing.companyId.logo || listing.companyId.Logo}
-              alt={listing.companyName}
-              className="w-12 h-12 rounded-lg object-contain bg-gray-50 border border-gray-100"
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
-                {listing.companyName?.[0] || 'C'}
-              </span>
-            </div>
-          )}
-        </div>
-        
-        {/* Type Badge - Right Corner (Flipped for marketplace: SELL post = BUY opportunity) */}
-        <div className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
-          isSell ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'
-        }`}>
-          {isSell ? 'BUY' : 'SELL'}
-        </div>
+      {/* Type Badge - Top Right Corner with Ribbon Effect */}
+      <div className={`absolute top-0 right-0 ${cardStyles.tagBg} ${cardStyles.tagText} px-3 py-1 text-[10px] font-bold rounded-bl-xl shadow-sm`}>
+        {isSell ? '🛒 BUY' : '💰 SELL'}
       </div>
 
-      {/* Script Name - Bigger */}
-      <h3 className="font-bold text-[13px] text-gray-900 leading-tight truncate mb-2">
-        {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
-      </h3>
-
-      {/* Price & Qty Row */}
-      <div className="flex items-end justify-between">
-        {/* Left: Price */}
-        <div>
-          <p className="text-[9px] text-gray-400 mb-0.5">Price</p>
-          <p className="text-sm font-bold text-gray-900">
-            {formatCurrency(displayPrice)}
-          </p>
-        </div>
-        
-        {/* Right: Qty with hover tooltip */}
-        <div 
-          className="relative text-right"
-          onMouseEnter={() => setShowQtyTooltip(true)}
-          onMouseLeave={() => setShowQtyTooltip(false)}
-          onTouchStart={() => setShowQtyTooltip(true)}
-          onTouchEnd={() => setTimeout(() => setShowQtyTooltip(false), 2000)}
-        >
-          <p className="text-[9px] text-gray-400 mb-0.5">Qty</p>
-          <p className="text-sm font-bold text-gray-700 cursor-help">
-            {formattedQty}
-          </p>
-          
-          {/* Quantity Tooltip */}
-          {showQtyTooltip && (
-            <div className="absolute bottom-full right-0 mb-1 z-50 animate-fadeIn">
-              <div className="bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-1.5 shadow-lg whitespace-nowrap">
-                <p className="font-medium">{fullQty} shares</p>
-                <p className="text-gray-300 text-[9px]">{qtyInWords}</p>
+      <div className="p-3">
+        {/* Top Row: Logo and Company Info */}
+        <div className="flex items-start gap-2.5 mb-3">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
+              <img
+                src={listing.companyId.logo || listing.companyId.Logo}
+                alt={listing.companyName}
+                className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className={`w-11 h-11 rounded-xl ${cardStyles.iconBg} flex items-center justify-center border-2 border-white shadow-sm`}>
+                <span className={`${cardStyles.iconColor} font-bold text-lg`}>
+                  {listing.companyName?.[0] || 'C'}
+                </span>
               </div>
-              <div className="absolute -bottom-1 right-3 w-2 h-2 bg-gray-900 rotate-45"></div>
-            </div>
-          )}
+            )}
+          </div>
+          
+          {/* Company Name */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2">
+              {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
+            </h3>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className={`h-px ${isSell ? 'bg-blue-100' : 'bg-green-100'} mb-2.5`}></div>
+
+        {/* Price & Qty Row */}
+        <div className="flex items-center justify-between">
+          {/* Left: Price */}
+          <div>
+            <p className="text-[9px] text-gray-400 uppercase tracking-wide mb-0.5">Price</p>
+            <p className={`text-base font-bold ${cardStyles.priceColor}`}>
+              {formatCurrency(displayPrice)}
+            </p>
+          </div>
+          
+          {/* Right: Qty with hover tooltip */}
+          <div 
+            className="relative text-right"
+            onMouseEnter={() => setShowQtyTooltip(true)}
+            onMouseLeave={() => setShowQtyTooltip(false)}
+            onTouchStart={() => setShowQtyTooltip(true)}
+            onTouchEnd={() => setTimeout(() => setShowQtyTooltip(false), 2000)}
+          >
+            <p className="text-[9px] text-gray-400 uppercase tracking-wide mb-0.5">Qty</p>
+            <p className="text-base font-bold text-gray-700 cursor-help">
+              {formattedQty}
+            </p>
+            
+            {/* Quantity Tooltip */}
+            {showQtyTooltip && (
+              <div className="absolute bottom-full right-0 mb-1 z-50 animate-fadeIn">
+                <div className="bg-gray-900 text-white text-[10px] rounded-lg px-2.5 py-1.5 shadow-lg whitespace-nowrap">
+                  <p className="font-medium">{fullQty} shares</p>
+                  <p className="text-gray-300 text-[9px]">{qtyInWords}</p>
+                </div>
+                <div className="absolute -bottom-1 right-3 w-2 h-2 bg-gray-900 rotate-45"></div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Action Hint */}
+        <div className={`mt-2.5 py-1.5 rounded-lg ${isSell ? 'bg-blue-50' : 'bg-green-50'} text-center`}>
+          <p className={`text-[10px] font-semibold ${isSell ? 'text-blue-600' : 'text-green-600'}`}>
+            {isSell ? 'Tap to Buy Shares →' : 'Tap to Sell Shares →'}
+          </p>
         </div>
       </div>
     </div>
