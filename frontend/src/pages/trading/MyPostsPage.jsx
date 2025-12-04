@@ -804,6 +804,9 @@ const ModifyModal = ({ listing, onClose, onSuccess }) => {
 // SHARE MODAL - Beautiful card with deep tracking link
 // ═══════════════════════════════════════════════════════════════
 const ShareModal = ({ listing, userId, onClose }) => {
+  const [highlights, setHighlights] = useState([]);
+  const [loadingHighlights, setLoadingHighlights] = useState(true);
+  
   const isSell = listing.type === 'sell';
   const price = formatCurrency(listing.price);
   const qty = listing.quantity >= 100000 
@@ -811,47 +814,89 @@ const ShareModal = ({ listing, userId, onClose }) => {
     : listing.quantity >= 1000 
     ? (listing.quantity / 1000).toFixed(1) + 'K' 
     : listing.quantity?.toLocaleString('en-IN');
-  const totalValue = listing.price * listing.quantity;
-  const totalFormatted = totalValue >= 10000000 
-    ? '₹' + (totalValue / 10000000).toFixed(2) + ' Cr'
-    : totalValue >= 100000 
-    ? '₹' + (totalValue / 100000).toFixed(2) + ' Lakh'
-    : formatCurrency(totalValue);
   
   // Deep tracking link with referral
   const deepLink = `${window.location.origin}/listing/${listing._id}?ref=${userId || 'guest'}&source=share`;
   
-  // Clean company name for hashtag (remove special chars)
-  const cleanCompanyName = (listing.companyName || '').replace(/[^a-zA-Z0-9]/g, '');
+  // Fetch company highlights
+  useEffect(() => {
+    const fetchHighlights = async () => {
+      try {
+        if (listing.companyId?._id || listing.companyId) {
+          const companyId = listing.companyId?._id || listing.companyId;
+          const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/companies/${companyId}/highlights`);
+          const data = await response.json();
+          if (data.success && data.data.highlights) {
+            setHighlights(data.data.highlights);
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch highlights:', error);
+        // Use default highlights
+        setHighlights([
+          `Sector: ${listing.companyId?.Sector || 'Unlisted'}`,
+          'Pre-IPO Opportunity',
+          'Trade on NlistPlanet'
+        ]);
+      } finally {
+        setLoadingHighlights(false);
+      }
+    };
+    fetchHighlights();
+  }, [listing.companyId]);
+
+  // Default highlights if none fetched
+  const displayHighlights = highlights.length > 0 ? highlights : [
+    `Sector: ${listing.companyId?.Sector || 'Unlisted Share'}`,
+    'Pre-IPO Investment Opportunity',
+    'Verified on NlistPlanet'
+  ];
   
-  // Professional, Compliant Share Caption
+  // Professional Share Caption with Company Points
   const caption = `━━━━━━━━━━━━━━━━━━━━━
-📈 *NlistPlanet - Trade Unlisted Shares*
+   📈 N L I S T P L A N E T
+      Trade Unlisted Shares
 ━━━━━━━━━━━━━━━━━━━━━
 
-${isSell ? '🟢 SELLING' : '🔵 BUYING'} Unlisted Shares!
+🏷️ *UNLISTED SHARE*
+
+═══════════════════════════
+
+        ${isSell ? '🟢 *SELLING*' : '🔵 *BUYING*'}
+
+━━━━━━━━━━━━━━━━━━━━━
 
 🏢 *${listing.companyName}*
-${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
+    ${listing.companyId?.Sector || 'Unlisted Share'}
 
-💰 Price: *${price}*/share
-📦 Quantity: *${qty}* shares
-💎 Total Value: *${totalFormatted}*
-
-👉 View & Trade: ${deepLink}
+${displayHighlights.map(h => `✦ ${h}`).join('\n')}
 
 ━━━━━━━━━━━━━━━━━━━━━
-⚠️ *Disclaimer:* Unlisted shares are high-risk investments. Please do your own research before investing. Past performance is not indicative of future results.
-
-✅ Trade safely on NlistPlanet
-🔒 Verified listings • Secure transactions
+  💰 PRICE       ${price}/share
+  📦 QUANTITY    ${qty} shares
 ━━━━━━━━━━━━━━━━━━━━━
 
-#UnlistedShares #PreIPO #${cleanCompanyName} #NlistPlanet`;
+👉 *View & Trade:* ${deepLink}
 
-  // Short caption for Twitter (character limit)
+═══════════════════════════
+
+⚠️ *IMPORTANT DISCLAIMER*
+
+• Unlisted shares are NOT traded 
+  on NSE/BSE exchanges
+• HIGH RISK investment
+• Past performance ≠ future returns
+• Do your own research (DYOR)
+• NlistPlanet is a marketplace only,
+  not a financial advisor
+
+━━━━━━━━━━━━━━━━━━━━━
+🔒 Verified • Secure • Trusted
+━━━━━━━━━━━━━━━━━━━━━`;
+
+  // Short caption for Twitter
   const shortCaption = `${isSell ? '🟢 SELLING' : '🔵 BUYING'}: ${listing.companyName}\n\n` +
-    `💰 ${price}/share • 📦 ${qty} shares\n\n` +
+    `💰 ${price}/share • 📦 ${qty}\n\n` +
     `Trade on @NlistPlanet 👇\n${deepLink}\n\n` +
     `#UnlistedShares #PreIPO`;
 
@@ -905,25 +950,45 @@ ${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
     }
   };
 
+  // Colors based on type
+  const themeColors = isSell 
+    ? {
+        gradient: 'from-green-600 to-emerald-600',
+        bg: 'bg-green-50',
+        border: 'border-green-200',
+        text: 'text-green-700',
+        badge: 'bg-green-500',
+        light: 'bg-green-100'
+      }
+    : {
+        gradient: 'from-blue-600 to-indigo-600',
+        bg: 'bg-blue-50',
+        border: 'border-blue-200',
+        text: 'text-blue-700',
+        badge: 'bg-blue-500',
+        light: 'bg-blue-100'
+      };
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 text-white relative">
+        <div className={`bg-gradient-to-r ${themeColors.gradient} p-4 text-white relative`}>
           <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <X size={18} />
           </button>
           <h3 className="text-lg font-bold">📤 Share Listing</h3>
-          <p className="text-emerald-100 text-xs">Share with referral tracking link</p>
+          <p className="text-white/80 text-xs">Share with referral tracking link</p>
         </div>
 
-        {/* Professional Preview Card */}
+        {/* Instagram-Style Preview Card */}
         <div className="p-4">
-          <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 mb-4">
-            {/* Card Header with Brand */}
+          <div className={`rounded-2xl overflow-hidden shadow-lg border-2 ${themeColors.border} mb-4`}>
+            
+            {/* Card Header - NlistPlanet Brand */}
             <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                <div className={`w-8 h-8 bg-gradient-to-br ${themeColors.gradient} rounded-lg flex items-center justify-center`}>
                   <TrendingUp size={16} className="text-white" />
                 </div>
                 <div>
@@ -931,21 +996,25 @@ ${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
                   <p className="text-gray-400 text-[8px]">Trade Unlisted Shares</p>
                 </div>
               </div>
-              <span className={`px-2 py-1 rounded-full text-[9px] font-bold ${
-                isSell 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-blue-500 text-white'
-              }`}>
-                {isSell ? '🟢 SELLING' : '🔵 BUYING'}
+              {/* Unlisted Share Tag */}
+              <span className="px-2 py-1 bg-amber-500 text-white rounded-full text-[8px] font-bold">
+                🏷️ UNLISTED
               </span>
             </div>
             
+            {/* Type Badge */}
+            <div className={`${themeColors.bg} py-2 border-b ${themeColors.border}`}>
+              <div className="flex justify-center">
+                <span className={`px-4 py-1.5 ${themeColors.badge} text-white rounded-full text-xs font-bold shadow-md`}>
+                  {isSell ? '🟢 SELLING' : '🔵 BUYING'}
+                </span>
+              </div>
+            </div>
+            
             {/* Company Info */}
-            <div className="p-4 bg-gradient-to-br from-gray-50 to-white">
+            <div className="p-4 bg-white">
               <div className="flex items-start gap-3 mb-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl ${
-                  isSell ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
-                }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl ${themeColors.light} ${themeColors.text}`}>
                   {listing.companyName?.charAt(0) || 'C'}
                 </div>
                 <div className="flex-1">
@@ -954,28 +1023,56 @@ ${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
                 </div>
               </div>
               
-              {/* Price Grid */}
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
-                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Price/Share</p>
-                  <p className="text-sm font-bold text-gray-900">{price}</p>
+              {/* Company Highlights */}
+              <div className={`${themeColors.bg} rounded-xl p-3 mb-3 border ${themeColors.border}`}>
+                {loadingHighlights ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Loader size={16} className="animate-spin text-gray-400" />
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    {displayHighlights.slice(0, 4).map((highlight, index) => (
+                      <p key={index} className="text-[11px] text-gray-700 flex items-start gap-2">
+                        <span className={`${themeColors.text}`}>✦</span>
+                        <span>{highlight}</span>
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Price & Quantity Grid - Only 2 */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className={`${themeColors.light} rounded-xl p-3 text-center border ${themeColors.border}`}>
+                  <p className="text-[9px] text-gray-500 uppercase font-semibold mb-1">💰 PRICE</p>
+                  <p className={`text-lg font-bold ${themeColors.text}`}>{price}</p>
+                  <p className="text-[9px] text-gray-400">per share</p>
                 </div>
-                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
-                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Quantity</p>
-                  <p className="text-sm font-bold text-gray-900">{qty}</p>
-                </div>
-                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
-                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Total Value</p>
-                  <p className="text-sm font-bold text-emerald-600">{totalFormatted}</p>
+                <div className={`${themeColors.light} rounded-xl p-3 text-center border ${themeColors.border}`}>
+                  <p className="text-[9px] text-gray-500 uppercase font-semibold mb-1">📦 QUANTITY</p>
+                  <p className={`text-lg font-bold ${themeColors.text}`}>{qty}</p>
+                  <p className="text-[9px] text-gray-400">shares</p>
                 </div>
               </div>
             </div>
             
-            {/* Footer with Compliance */}
-            <div className="bg-gray-100 px-3 py-2 border-t border-gray-200">
-              <p className="text-[8px] text-gray-500 text-center">
-                ⚠️ Unlisted shares are high-risk. Do your own research before investing.
-              </p>
+            {/* WhatsApp Business Style Disclaimer */}
+            <div className="bg-amber-50 px-3 py-2.5 border-t border-amber-200">
+              <p className="text-[9px] text-amber-800 font-medium mb-1">⚠️ IMPORTANT DISCLAIMER</p>
+              <ul className="text-[8px] text-amber-700 space-y-0.5">
+                <li>• Unlisted shares are NOT traded on NSE/BSE</li>
+                <li>• HIGH RISK investment - Do your research</li>
+                <li>• NlistPlanet is a marketplace, not an advisor</li>
+              </ul>
+            </div>
+            
+            {/* Footer */}
+            <div className="bg-slate-800 px-3 py-2 flex items-center justify-center gap-2">
+              <span className="text-[9px] text-gray-300">🔒 Verified</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-[9px] text-gray-300">Secure</span>
+              <span className="text-gray-500">•</span>
+              <span className="text-[9px] text-gray-300">Trusted</span>
             </div>
           </div>
 
@@ -1024,7 +1121,7 @@ ${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
             </button>
             <button
               onClick={handleCopyCaption}
-              className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md"
+              className={`w-full py-2.5 bg-gradient-to-r ${themeColors.gradient} text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md`}
             >
               📋 Copy Full Caption
             </button>
