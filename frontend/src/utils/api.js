@@ -29,8 +29,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Don't handle 401 here - let components/context handle authentication
-    // This prevents race conditions with AuthContext during cold backend starts
+    // Handle 401 - Token expired or invalid
+    if (error.response?.status === 401) {
+      // Clear invalid token
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Redirect to login if not already on auth pages
+      const currentPath = window.location.pathname;
+      const authPaths = ['/login', '/register', '/forgot-password', '/welcome', '/verify-email', '/verify-otp', '/check-email'];
+      if (!authPaths.some(path => currentPath.startsWith(path))) {
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   }
 );
@@ -56,6 +67,8 @@ export const listingsAPI = {
   getAll: (params) => api.get('/listings', { params }),
   getById: (id) => api.get(`/listings/${id}`),
   getMyListings: (params) => api.get('/listings/my', { params }),
+  getMyBids: () => api.get('/listings/my-bids'),
+  getReceivedBids: () => api.get('/listings/received-bids'),
   getMyPlacedBids: () => api.get('/listings/my-placed-bids'),
   create: (data) => api.post('/listings', data),
   update: (id, data) => api.put(`/listings/${id}`, data),

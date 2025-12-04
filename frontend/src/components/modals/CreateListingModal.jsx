@@ -36,6 +36,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
   const [manualEntry, setManualEntry] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showPriceTooltip, setShowPriceTooltip] = useState(false);
   
   const [formData, setFormData] = useState({
     companyId: '',
@@ -47,8 +48,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
     companySegmentation: '',
     price: '',
     quantity: '',
-    minLot: '1',
-    description: ''
+    minLot: '1'
   });
 
   // Reset form when modal opens
@@ -62,6 +62,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
       setManualEntry(false);
       setShowPreview(false);
       setAgreedToTerms(false);
+      setShowPriceTooltip(false);
       setFormData({
         companyId: '',
         companyName: '',
@@ -72,8 +73,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
         companySegmentation: '',
         price: '',
         quantity: '',
-        minLot: '1',
-        description: ''
+        minLot: '1'
       });
     }
   }, [isOpen]);
@@ -159,11 +159,10 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
         price: parseFloat(formData.price),
         quantity: parseInt(formData.quantity),
         minLot: parseInt(formData.minLot) || 1,
-        companyPan: formData.companyPan,
-        companyISIN: formData.companyISIN,
-        companyCIN: formData.companyCIN,
-        companySegmentation: formData.companySegmentation || null,
-        description: formData.description || ''
+        companyPan: formData.companyPan || undefined,
+        companyISIN: formData.companyISIN || undefined,
+        companyCIN: formData.companyCIN || undefined,
+        companySegmentation: formData.companySegmentation || undefined
       };
 
       if (formData.companyId) {
@@ -379,20 +378,44 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
 
             {/* Price */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Price per Share (₹) <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center gap-2 mb-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  Price per Share (₹) <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onMouseEnter={() => setShowPriceTooltip(true)}
+                    onMouseLeave={() => setShowPriceTooltip(false)}
+                    onTouchStart={() => setShowPriceTooltip(true)}
+                    onTouchEnd={() => setTimeout(() => setShowPriceTooltip(false), 2000)}
+                    className="w-5 h-5 bg-primary-100 rounded-full flex items-center justify-center"
+                  >
+                    <Info size={12} className="text-primary-600" />
+                  </button>
+                  {showPriceTooltip && (
+                    <div className="absolute left-6 top-1/2 -translate-y-1/2 z-50 animate-fade-in">
+                      <div className="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">
+                        <p className="font-medium">Platform Fee: 2%</p>
+                        <p className="text-gray-300 text-[10px]">Charged on successful trade</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               <div className="relative">
                 <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    setFormData({ ...formData, price: val });
+                  }}
                   placeholder="Enter price"
                   className="w-full px-4 py-3.5 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
                   required
-                  min="1"
-                  step="0.01"
                 />
               </div>
               {formData.price && (
@@ -410,13 +433,16 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
               <div className="relative">
                 <Package className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={formData.quantity}
-                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setFormData({ ...formData, quantity: val });
+                  }}
                   placeholder="Enter quantity"
                   className="w-full px-4 py-3.5 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
                   required
-                  min="1"
                 />
               </div>
               {formData.quantity && (
@@ -432,12 +458,15 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
                 Minimum Lot Size
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={formData.minLot}
-                onChange={(e) => setFormData({ ...formData, minLot: e.target.value })}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setFormData({ ...formData, minLot: val });
+                }}
                 placeholder="1"
                 className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base"
-                min="1"
               />
             </div>
 
@@ -504,54 +533,6 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
                 maxLength="21"
               />
             </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Description (Optional)
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Add any additional details..."
-                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-base min-h-[100px] resize-none"
-                rows={3}
-              />
-            </div>
-
-            {/* Price Summary */}
-            {totalAmount > 0 && (
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2 text-primary-600 mb-3">
-                  <AlertCircle size={18} />
-                  <p className="text-sm font-semibold">Price Breakdown</p>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Base Amount</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</span>
-                </div>
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Platform Fee (2%)</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(platformFee)}</span>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-2 mt-2">
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-900">
-                      {type === 'sell' ? 'You will receive' : 'Total you will pay'}
-                    </span>
-                    <span className="font-bold text-primary-600 text-lg">
-                      {type === 'sell' 
-                        ? formatCurrency(totalAmount - platformFee)
-                        : formatCurrency(totalAmount + platformFee)
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Terms & Conditions */}
             <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl">
