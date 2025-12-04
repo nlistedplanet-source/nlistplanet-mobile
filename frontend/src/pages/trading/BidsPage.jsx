@@ -2,18 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   RefreshCw,
-  Eye,
-  Trash2,
+  TrendingUp,
+  TrendingDown,
   Clock,
   CheckCircle,
   XCircle,
   Package,
-  X,
-  Check,
-  MessageSquare
+  RotateCcw,
+  MessageCircle,
+  Loader,
+  ChevronDown,
+  ChevronUp,
+  Eye
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, formatNumber } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import LoadingScreen from '../../components/common/LoadingScreen';
 
@@ -21,22 +24,23 @@ const BidsPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [bids, setBids] = useState([]);
-  const [activeFilter, setActiveFilter] = useState('all'); // all, pending, countered, accepted, rejected
-  const [selectedBid, setSelectedBid] = useState(null);
-  const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
-  const [showActionModal, setShowActionModal] = useState(false);
-  const [actionType, setActionType] = useState(null); // 'accept' or 'reject'
+  const [activities, setActivities] = useState([]);
+  const [activeSubmenu, setActiveSubmenu] = useState('bids'); // 'bids' or 'offers'
+  const [actionLoading, setActionLoading] = useState(null);
+  const [showCounterModal, setShowCounterModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [counterPrice, setCounterPrice] = useState('');
+  const [counterQuantity, setCounterQuantity] = useState('');
 
   useEffect(() => {
-    fetchMyBids();
+    fetchMyActivity();
   }, []);
 
-  const fetchMyBids = async () => {
+  const fetchMyActivity = async () => {
     try {
       setLoading(true);
-      const response = await listingsAPI.getMyBids();
-      setBids(response.data.data || []);
+      const response = await listingsAPI.getMyPlacedBids();
+      setActivities(response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch bids:', error);
       toast.error('Failed to load your bids');
@@ -48,96 +52,82 @@ const BidsPage = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     haptic.light();
-    await fetchMyBids();
+    await fetchMyActivity();
     setRefreshing(false);
     haptic.success();
   };
 
-  const handleWithdrawBid = async () => {
-    if (!selectedBid) return;
-
+  const handleAccept = async (activity) => {
     try {
+      setActionLoading(activity._id);
       haptic.medium();
-      await listingsAPI.withdrawBid(selectedBid.listingId, selectedBid._id);
+      await listingsAPI.acceptBid(activity.listing._id, activity._id);
       haptic.success();
-      toast.success('Bid withdrawn successfully');
-      setShowWithdrawConfirm(false);
-      setSelectedBid(null);
-      fetchMyBids();
+      toast.success('Counter offer accepted! 🎉');
+      fetchMyActivity();
     } catch (error) {
       haptic.error();
-      console.error('Failed to withdraw bid:', error);
-      toast.error(error.response?.data?.message || 'Failed to withdraw bid');
+      toast.error(error.response?.data?.message || 'Failed to accept counter offer');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  // Handle accept counter from seller
-  const handleAcceptCounter = async () => {
-    if (!selectedBid) return;
-
+  const handleReject = async (activity) => {
     try {
+      setActionLoading(activity._id);
       haptic.medium();
-      await listingsAPI.acceptBid(selectedBid.listingId, selectedBid._id);
-      haptic.success();
-      toast.success('Counter-offer accepted successfully!');
-      setShowActionModal(false);
-      setSelectedBid(null);
-      setActionType(null);
-      fetchMyBids();
+      await listingsAPI.rejectBid(activity.listing._id, activity._id);
+      toast.success('Counter offer rejected');
+      fetchMyActivity();
     } catch (error) {
       haptic.error();
-      console.error('Failed to accept counter:', error);
-      toast.error(error.response?.data?.message || 'Failed to accept counter-offer');
+      toast.error(error.response?.data?.message || 'Failed to reject counter offer');
+    } finally {
+      setActionLoading(null);
     }
   };
 
-  // Handle reject counter from seller
-  const handleRejectCounter = async () => {
-    if (!selectedBid) return;
-
-    try {
-      haptic.medium();
-      await listingsAPI.rejectBid(selectedBid.listingId, selectedBid._id);
-      haptic.success();
-      toast.success('Counter-offer rejected');
-      setShowActionModal(false);
-      setSelectedBid(null);
-      setActionType(null);
-      fetchMyBids();
-    } catch (error) {
-      haptic.error();
-      console.error('Failed to reject counter:', error);
-      toast.error(error.response?.data?.message || 'Failed to reject counter-offer');
-    }
-  };
-
-  const openActionModal = (bid, type) => {
+  const handleCounterClick = (activity) => {
     haptic.light();
-    setSelectedBid(bid);
-    setActionType(type);
-    setShowActionModal(true);
+    setSelectedActivity(activity);
+    setCounterPrice(activity.price.toString());
+    setCounterQuantity(activity.quantity.toString());
+    setShowCounterModal(true);
   };
 
-  const filteredBids = bids.filter(bid => {
-    if (activeFilter === 'all') return true;
-    return bid.status === activeFilter;
-  });
+  const handleCounterSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setActionLoading(selectedActivity._id);
+      haptic.medium();
+      await listingsAPI.counterBid(selectedActivity.listing._id, selectedActivity._id, {
+        price: parseFloat(counterPrice),
+        quantity: parseInt(counterQuantity)
+      });
+      haptic.success();
+      toast.success('Counter offer sent! 💬');
+      setShowCounterModal(false);
+      setSelectedActivity(null);
+      setCounterPrice('');
+      setCounterQuantity('');
+      fetchMyActivity();
+    } catch (error) {
+      haptic.error();
+      toast.error(error.response?.data?.message || 'Failed to send counter offer');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
-  const FilterButton = ({ value, label }) => (
-    <button
-      onClick={() => {
-        haptic.light();
-        setActiveFilter(value);
-      }}
-      className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
-        activeFilter === value
-          ? 'bg-primary-600 text-white shadow-lg'
-          : 'bg-white text-gray-700 border border-gray-200'
-      }`}
-    >
-      {label}
-    </button>
-  );
+  // Filter activities based on submenu
+  const filteredActivities = activities.filter(activity => {
+    if (activeSubmenu === 'bids') {
+      return activity.type === 'bid'; // Bids placed on SELL listings
+    } else {
+      return activity.type === 'offer'; // Offers made on BUY listings
+    }
+  });
 
   if (loading) {
     return <LoadingScreen message="Loading My Bids..." />;
@@ -148,76 +138,99 @@ const BidsPage = () => {
       <div className="min-h-screen bg-gray-50 pb-24">
         {/* Header */}
         <div className="bg-white sticky top-0 z-10 shadow-sm">
-          <div className="px-6 pt-safe pb-4">
-            <div className="flex items-center justify-between mb-4">
-              <h1 className="text-2xl font-bold text-gray-900">My Bids</h1>
+          <div className="px-4 pt-safe pb-3">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">My Bids & Offers</h1>
+                <p className="text-xs text-gray-500">{activities.length} Total</p>
+              </div>
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+                className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
               >
-                <RefreshCw className={`w-5 h-5 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
             </div>
 
-            {/* Filter Tabs */}
-            <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
-              <FilterButton value="all" label={`All (${bids.length})`} />
-              <FilterButton 
-                value="pending" 
-                label={`Pending (${bids.filter(b => b.status === 'pending').length})`} 
-              />
-              <FilterButton 
-                value="countered" 
-                label={`Countered (${bids.filter(b => b.status === 'countered').length})`} 
-              />
-              <FilterButton 
-                value="accepted" 
-                label={`Accepted (${bids.filter(b => b.status === 'accepted').length})`} 
-              />
-              <FilterButton 
-                value="rejected" 
-                label={`Rejected (${bids.filter(b => b.status === 'rejected').length})`} 
-              />
+            {/* Submenu Tabs */}
+            <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+              <button
+                onClick={() => {
+                  haptic.light();
+                  setActiveSubmenu('bids');
+                }}
+                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  activeSubmenu === 'bids'
+                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md'
+                    : 'text-gray-600'
+                }`}
+              >
+                <TrendingUp size={16} />
+                Bids Placed
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  activeSubmenu === 'bids' ? 'bg-white/20' : 'bg-gray-300'
+                }`}>
+                  {activities.filter(a => a.type === 'bid').length}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  haptic.light();
+                  setActiveSubmenu('offers');
+                }}
+                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  activeSubmenu === 'offers'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                    : 'text-gray-600'
+                }`}
+              >
+                <TrendingDown size={16} />
+                Offers Made
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                  activeSubmenu === 'offers' ? 'bg-white/20' : 'bg-gray-300'
+                }`}>
+                  {activities.filter(a => a.type === 'offer').length}
+                </span>
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Bids List */}
-        <div className="px-6 pt-4">
-          {filteredBids.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Package className="w-10 h-10 text-gray-400" />
+        {/* Content */}
+        <div className="px-4 pt-3">
+          {filteredActivities.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Bids Found</h3>
-              <p className="text-gray-500 mb-6">
-                {activeFilter === 'all' 
-                  ? "You haven't placed any bids yet"
-                  : `No ${activeFilter} bids found`
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
+                No {activeSubmenu === 'bids' ? 'Bids Placed' : 'Offers Made'} Yet
+              </h3>
+              <p className="text-gray-500 text-sm mb-4">
+                {activeSubmenu === 'bids' 
+                  ? 'Bids you place on sell listings will appear here'
+                  : 'Offers you make on buy requests will appear here'
                 }
               </p>
               <button
                 onClick={() => navigate('/marketplace')}
-                className="btn-primary inline-flex"
+                className="btn-primary inline-flex text-sm px-4 py-2"
               >
                 Browse Marketplace
               </button>
             </div>
           ) : (
-            <div className="space-y-4 pb-4">
-              {filteredBids.map((bid) => (
-                <BidCard 
-                  key={bid._id} 
-                  bid={bid}
-                  onViewClick={() => navigate(`/listing/${bid.listingId}`)}
-                  onWithdrawClick={() => {
-                    haptic.light();
-                    setSelectedBid(bid);
-                    setShowWithdrawConfirm(true);
-                  }}
-                  onAcceptClick={() => openActionModal(bid, 'accept')}
-                  onRejectClick={() => openActionModal(bid, 'reject')}
+            <div className="space-y-3 pb-4">
+              {filteredActivities.map((activity) => (
+                <ActivityCard 
+                  key={activity._id} 
+                  activity={activity}
+                  actionLoading={actionLoading}
+                  onAccept={() => handleAccept(activity)}
+                  onReject={() => handleReject(activity)}
+                  onCounter={() => handleCounterClick(activity)}
+                  onView={() => navigate(`/listing/${activity.listing._id}`)}
                 />
               ))}
             </div>
@@ -225,105 +238,95 @@ const BidsPage = () => {
         </div>
       </div>
 
-      {/* Withdraw Confirmation */}
-      {showWithdrawConfirm && selectedBid && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in">
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Trash2 className="w-8 h-8 text-orange-600" />
+      {/* Counter Modal */}
+      {showCounterModal && selectedActivity && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setShowCounterModal(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3">
+              <h3 className="text-lg font-bold">💬 Send Counter Offer</h3>
+              <p className="text-sm opacity-90">{selectedActivity.listing.companyName}</p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Withdraw Bid?</h3>
-            <p className="text-gray-600 text-center mb-6">
-              Are you sure you want to withdraw this bid? The seller will be notified.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setShowWithdrawConfirm(false);
-                  setSelectedBid(null);
-                }}
-                className="flex-1 btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleWithdrawBid}
-                className="flex-1 bg-orange-600 text-white rounded-2xl py-3 px-6 font-semibold hover:bg-orange-700 transition-colors touch-feedback"
-              >
-                Withdraw
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Accept/Reject Counter Modal */}
-      {showActionModal && selectedBid && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in">
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              actionType === 'accept' ? 'bg-green-100' : 'bg-red-100'
-            }`}>
-              {actionType === 'accept' ? (
-                <Check className="w-8 h-8 text-green-600" />
-              ) : (
-                <X className="w-8 h-8 text-red-600" />
+            <form onSubmit={handleCounterSubmit} className="p-4">
+              <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
+                <p className="text-xs font-bold text-gray-700 mb-2">Current {selectedActivity.type === 'bid' ? 'Bid' : 'Offer'}</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-white rounded-lg p-2 border border-blue-200">
+                    <span className="text-gray-500 text-xs block">Price</span>
+                    <span className="font-bold text-gray-900">{formatCurrency(selectedActivity.price)}</span>
+                  </div>
+                  <div className="bg-white rounded-lg p-2 border border-blue-200">
+                    <span className="text-gray-500 text-xs block">Quantity</span>
+                    <span className="font-bold text-gray-900">{selectedActivity.quantity} shares</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <label className="block text-sm font-bold text-gray-700 mb-1">Counter Price *</label>
+                <input 
+                  type="number" 
+                  required 
+                  min="1" 
+                  step="0.01" 
+                  value={counterPrice} 
+                  onChange={(e) => setCounterPrice(e.target.value)} 
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold text-gray-900" 
+                  placeholder="Enter counter price" 
+                />
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-1">Quantity *</label>
+                <input 
+                  type="number" 
+                  required 
+                  min="1" 
+                  value={counterQuantity} 
+                  onChange={(e) => setCounterQuantity(e.target.value)} 
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold text-gray-900" 
+                  placeholder="Enter quantity" 
+                />
+              </div>
+              
+              {counterPrice && counterQuantity && (
+                <div className="bg-purple-50 rounded-xl p-3 mb-4 border border-purple-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-purple-800 font-semibold text-sm">Total:</span>
+                    <span className="text-lg font-bold text-purple-900">
+                      {formatCurrency(parseFloat(counterPrice) * parseInt(counterQuantity))}
+                    </span>
+                  </div>
+                </div>
               )}
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
-              {actionType === 'accept' ? 'Accept Counter-Offer?' : 'Reject Counter-Offer?'}
-            </h3>
-            <p className="text-gray-600 text-center mb-4">
-              {actionType === 'accept' 
-                ? 'By accepting this counter-offer, you agree to the new terms. The deal will be finalized.'
-                : 'Are you sure you want to reject this counter-offer? The seller will be notified.'
-              }
-            </p>
-            
-            {/* Counter Summary */}
-            <div className="bg-gray-50 rounded-2xl p-4 mb-6">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Company</span>
-                <span className="font-semibold text-gray-900">{selectedBid.companyName}</span>
+              
+              <div className="flex gap-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowCounterModal(false)} 
+                  className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={actionLoading === selectedActivity._id || !counterPrice || !counterQuantity} 
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-2.5 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {actionLoading === selectedActivity._id ? (
+                    <Loader className="animate-spin" size={18} />
+                  ) : (
+                    <MessageCircle size={18} />
+                  )}
+                  Send
+                </button>
               </div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Quantity</span>
-                <span className="font-semibold text-gray-900">{selectedBid.quantity} shares</span>
-              </div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Counter Price</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(selectedBid.price)}/share</span>
-              </div>
-              <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-                <span className="text-gray-900 font-semibold">Total Amount</span>
-                <span className="font-bold text-primary-600">{formatCurrency(selectedBid.price * selectedBid.quantity)}</span>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setShowActionModal(false);
-                  setSelectedBid(null);
-                  setActionType(null);
-                }}
-                className="flex-1 btn-secondary"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={actionType === 'accept' ? handleAcceptCounter : handleRejectCounter}
-                className={`flex-1 rounded-2xl py-3 px-6 font-semibold transition-colors touch-feedback text-white ${
-                  actionType === 'accept' 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-red-600 hover:bg-red-700'
-                }`}
-              >
-                {actionType === 'accept' ? 'Accept' : 'Reject'}
-              </button>
-            </div>
+            </form>
           </div>
         </div>
       )}
@@ -331,157 +334,196 @@ const BidsPage = () => {
   );
 };
 
-// Bid Card Component
-const BidCard = ({ bid, onViewClick, onWithdrawClick, onAcceptClick, onRejectClick }) => {
+// Activity Card Component - Desktop Style
+const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, onView }) => {
+  const [expanded, setExpanded] = useState(false);
+  
+  const isBid = activity.type === 'bid';
+  const counterHistory = activity.counterHistory || [];
+  const listingPrice = activity.listing.displayPrice || activity.listing.listingPrice || activity.listing.price;
+  const hasCounterHistory = counterHistory.length > 0;
+  const showActions = activity.status === 'countered';
+  
+  // Check if latest counter is from seller (they need to respond)
+  const latestCounter = hasCounterHistory ? counterHistory[counterHistory.length - 1] : null;
+  const isLatestFromSeller = latestCounter?.by === 'seller';
+  const canTakeAction = showActions && isLatestFromSeller;
+
   const statusConfig = {
-    pending: {
-      icon: Clock,
-      bgColor: 'bg-yellow-50',
-      textColor: 'text-yellow-700',
-      label: 'Pending'
-    },
-    countered: {
-      icon: MessageSquare,
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      label: 'Countered'
-    },
-    accepted: {
-      icon: CheckCircle,
-      bgColor: 'bg-green-50',
-      textColor: 'text-green-700',
-      label: 'Accepted'
-    },
-    rejected: {
-      icon: XCircle,
-      bgColor: 'bg-red-50',
-      textColor: 'text-red-700',
-      label: 'Rejected'
-    }
+    pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
+    accepted: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
+    rejected: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
+    countered: { bg: 'bg-purple-100', text: 'text-purple-700', icon: RotateCcw },
   };
-
-  const status = statusConfig[bid.status] || statusConfig.pending;
+  
+  const status = statusConfig[activity.status] || statusConfig.pending;
   const StatusIcon = status.icon;
-  const canWithdraw = bid.status === 'pending';
-  const canRespondToCounter = bid.status === 'countered';
-
-  // Get latest counter price if countered
-  const latestPrice = bid.counterHistory && bid.counterHistory.length > 0
-    ? bid.counterHistory[bid.counterHistory.length - 1].price
-    : bid.price;
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-mobile">
-      <div className="flex items-start gap-4">
-        {/* Listing Type Badge */}
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-          bid.listingType === 'sell'
-            ? 'bg-gradient-to-br from-red-50 to-red-100' 
-            : 'bg-gradient-to-br from-green-50 to-green-100'
-        }`}>
-          <span className={`text-xl font-bold ${
-            bid.listingType === 'sell' ? 'text-red-700' : 'text-green-700'
-          }`}>
-            {bid.companyName?.charAt(0) || '?'}
-          </span>
-        </div>
-
-        {/* Bid Details */}
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-gray-100 bg-gray-50">
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 text-base truncate">
-                {bid.companyName}
-              </h3>
-              <p className="text-sm text-gray-500">
-                {bid.quantity} shares • {timeAgo(bid.createdAt)}
-              </p>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ml-2 ${status.bgColor} ${status.textColor}`}>
-              <StatusIcon size={12} />
-              {status.label}
-            </span>
+          <h4 className="font-bold text-gray-900 text-sm truncate">{activity.listing.companyName}</h4>
+          <p className="text-[10px] text-gray-500">
+            {isBid ? 'Seller' : 'Buyer'}: @{activity.listing.owner?.username || 'Unknown'}
+          </p>
+          <p className="text-[10px] text-gray-500">
+            Listed: {formatCurrency(listingPrice)} × {activity.listing.quantity} shares
+          </p>
+        </div>
+        <div className="flex items-center gap-2 ml-2">
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${status.bg} ${status.text}`}>
+            <StatusIcon size={10} />
+            {activity.status}
+          </span>
+          <button 
+            onClick={onView}
+            className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center"
+          >
+            <Eye size={14} className="text-blue-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Your Bid Info */}
+      <div className="px-3 py-2 border-b border-gray-100">
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="bg-green-50 rounded-lg p-2">
+            <p className="text-[9px] text-gray-500 uppercase font-semibold">Your {isBid ? 'Bid' : 'Offer'}</p>
+            <p className="text-xs font-bold text-green-700">{formatCurrency(activity.price)}</p>
           </div>
-
-          {/* Price Info */}
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-xs text-gray-500 mb-0.5">
-                {canRespondToCounter ? 'Counter offer' : 'Your offer'}
-              </p>
-              <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(latestPrice)}
-                <span className="text-sm text-gray-500 font-normal">/share</span>
-              </p>
-              {canRespondToCounter && bid.originalPrice !== latestPrice && (
-                <p className="text-xs text-gray-400 line-through">
-                  Your bid: {formatCurrency(bid.originalPrice)}
-                </p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500 mb-0.5">Total</p>
-              <p className="text-lg font-bold text-primary-600">
-                {formatCurrency(latestPrice * bid.quantity)}
-              </p>
-            </div>
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-[9px] text-gray-500 uppercase font-semibold">Qty</p>
+            <p className="text-xs font-bold text-gray-900">{activity.quantity}</p>
           </div>
-
-          {/* Counter History Indicator */}
-          {bid.counterHistory && bid.counterHistory.length > 0 && (
-            <div className="mb-3 p-2 bg-purple-50 rounded-lg">
-              <p className="text-xs text-purple-700 font-medium">
-                {bid.counterHistory.length} counter{bid.counterHistory.length > 1 ? 's' : ''} exchanged
-                {canRespondToCounter && ' - Seller countered!'}
-              </p>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="flex gap-2">
-            <button 
-              onClick={onViewClick}
-              className="flex-1 btn-secondary text-sm py-2 flex items-center justify-center gap-1"
-            >
-              <Eye size={14} />
-              View Listing
-            </button>
-            {canWithdraw && (
-              <button 
-                onClick={onWithdrawClick}
-                className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors touch-feedback flex items-center gap-1"
-              >
-                <Trash2 size={14} />
-                Withdraw
-              </button>
-            )}
-            {canRespondToCounter && (
-              <>
-                <button 
-                  onClick={onRejectClick}
-                  className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-semibold text-sm hover:bg-red-100 transition-colors touch-feedback flex items-center gap-1"
-                >
-                  <X size={14} />
-                  Reject
-                </button>
-                <button 
-                  onClick={onAcceptClick}
-                  className="px-4 py-2 bg-green-50 text-green-600 rounded-xl font-semibold text-sm hover:bg-green-100 transition-colors touch-feedback flex items-center gap-1"
-                >
-                  <Check size={14} />
-                  Accept
-                </button>
-              </>
-            )}
+          <div className="bg-blue-50 rounded-lg p-2">
+            <p className="text-[9px] text-gray-500 uppercase font-semibold">Total</p>
+            <p className="text-xs font-bold text-blue-700">{formatCurrency(activity.price * activity.quantity)}</p>
           </div>
         </div>
       </div>
 
-      {/* Message if present */}
-      {bid.message && (
-        <div className="mt-3 p-3 bg-gray-50 rounded-xl">
-          <p className="text-xs text-gray-500 mb-1">Your message:</p>
-          <p className="text-sm text-gray-700">{bid.message}</p>
+      {/* Counter History - Collapsible */}
+      {hasCounterHistory && (
+        <div className="px-3 py-2">
+          <button 
+            onClick={() => setExpanded(!expanded)}
+            className="w-full bg-purple-50 px-3 py-2 rounded-lg border border-purple-200 flex items-center justify-between"
+          >
+            <span className="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+              <RotateCcw size={12} />
+              Negotiation History ({counterHistory.length})
+            </span>
+            {expanded ? <ChevronUp size={16} className="text-purple-600" /> : <ChevronDown size={16} className="text-purple-600" />}
+          </button>
+          
+          {expanded && (
+            <div className="mt-2 space-y-2">
+              {counterHistory.map((counter, idx) => {
+                const isSellerCounter = counter.by === 'seller';
+                const isLatest = idx === counterHistory.length - 1;
+                
+                return (
+                  <div 
+                    key={idx} 
+                    className={`p-2 rounded-lg border ${
+                      isSellerCounter 
+                        ? 'bg-orange-50 border-orange-200' 
+                        : 'bg-blue-50 border-blue-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`text-[10px] font-bold ${isSellerCounter ? 'text-orange-700' : 'text-blue-700'}`}>
+                        {counter.round ? `Round ${counter.round}` : `#${idx + 1}`} - {isSellerCounter ? (isBid ? 'Seller' : 'Buyer') : 'You'}
+                      </span>
+                      {isLatest && canTakeAction && (
+                        <span className="text-[9px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded font-bold">
+                          RESPOND
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className="text-gray-700">
+                        <span className="text-gray-500">Price:</span> <strong>{formatCurrency(counter.price)}</strong>
+                      </span>
+                      <span className="text-gray-700">
+                        <span className="text-gray-500">Qty:</span> <strong>{counter.quantity}</strong>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Actions */}
+      {canTakeAction && (
+        <div className="px-3 py-2 border-t border-gray-100 bg-gray-50">
+          <p className="text-[10px] text-orange-700 font-semibold mb-2 text-center">
+            ⚡ {isBid ? 'Seller' : 'Buyer'} sent a counter offer - Respond now!
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onAccept}
+              disabled={actionLoading === activity._id}
+              className="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+            >
+              <CheckCircle size={14} />
+              Accept
+            </button>
+            <button
+              onClick={onReject}
+              disabled={actionLoading === activity._id}
+              className="flex-1 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+            >
+              <XCircle size={14} />
+              Reject
+            </button>
+            <button
+              onClick={onCounter}
+              disabled={actionLoading === activity._id}
+              className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
+            >
+              <RotateCcw size={14} />
+              Counter
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Status Footer */}
+      {!canTakeAction && (
+        <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+          <p className="text-[10px] text-gray-500">
+            {timeAgo(activity.createdAt)}
+          </p>
+          {activity.status === 'accepted' && (
+            <span className="text-[10px] font-bold text-green-700 flex items-center gap-1">
+              <CheckCircle size={12} />
+              Deal Accepted!
+            </span>
+          )}
+          {activity.status === 'rejected' && (
+            <span className="text-[10px] font-bold text-red-700 flex items-center gap-1">
+              <XCircle size={12} />
+              Rejected
+            </span>
+          )}
+          {activity.status === 'pending' && (
+            <span className="text-[10px] font-bold text-yellow-700 flex items-center gap-1">
+              <Clock size={12} />
+              Waiting for response...
+            </span>
+          )}
+          {activity.status === 'countered' && !canTakeAction && (
+            <span className="text-[10px] font-bold text-blue-700 flex items-center gap-1">
+              <Clock size={12} />
+              Waiting for their response...
+            </span>
+          )}
         </div>
       )}
     </div>
