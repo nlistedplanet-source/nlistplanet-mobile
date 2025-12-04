@@ -21,6 +21,7 @@ import {
 import { portfolioAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
+import CreateListingModal from '../../components/modals/CreateListingModal';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
@@ -28,6 +29,7 @@ const HomePage = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [stats, setStats] = useState({
     totalValue: 0,
     totalInvested: 0,
@@ -194,7 +196,7 @@ const HomePage = () => {
           <button
             onClick={() => {
               haptic.medium();
-              navigate('/create');
+              setShowCreateModal(true);
             }}
             className="bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 text-white rounded-2xl p-4 shadow-lg shadow-amber-200/50 active:scale-95 transition-transform"
           >
@@ -367,6 +369,16 @@ const HomePage = () => {
           </div>
         </div>
       )}
+
+      {/* Create Listing Modal */}
+      <CreateListingModal 
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={() => {
+          setShowCreateModal(false);
+          navigate('/marketplace');
+        }}
+      />
     </div>
   );
 };

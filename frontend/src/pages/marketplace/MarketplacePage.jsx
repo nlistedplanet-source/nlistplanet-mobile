@@ -143,9 +143,9 @@ const MarketplacePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header - Compact Light Theme */}
-      <div className="bg-white sticky top-0 z-20 shadow-sm">
+    <div className="min-h-screen bg-amber-50/50 pb-24">
+      {/* Header - Compact Amber Theme */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-20 shadow-sm border-b border-amber-100">
         <div className="px-3 pt-safe pb-2">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-base font-bold text-gray-900">Marketplace</h1>

@@ -84,9 +84,9 @@ const SettingsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-amber-50/50 pb-24">
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 shadow-sm sticky top-0 z-10 border-b border-amber-100">
         <div className="px-6 pt-safe pb-4">
           <div className="flex items-center gap-4">
             <button
@@ -94,7 +94,7 @@ const SettingsPage = () => {
                 haptic.light();
                 navigate(-1);
               }}
-              className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
             >
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>

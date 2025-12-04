@@ -118,16 +118,16 @@ const MyPostsPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 pb-24">
+      <div className="min-h-screen bg-amber-50/50 pb-24">
         {/* Header */}
-        <div className="bg-white sticky top-0 z-10 shadow-sm">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
           <div className="px-4 pt-safe pb-3">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-xl font-bold text-gray-900">My Listings</h1>
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+                className="w-9 h-9 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
               >
                 <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
@@ -143,7 +143,7 @@ const MyPostsPage = () => {
                 className={`flex-1 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
                   subTab === 'sell'
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white text-gray-600 border border-amber-100'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -157,7 +157,7 @@ const MyPostsPage = () => {
                 className={`flex-1 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
                   subTab === 'buy'
                     ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600'
+                    : 'bg-white text-gray-600 border border-amber-100'
                 }`}
               >
                 <Package size={16} />

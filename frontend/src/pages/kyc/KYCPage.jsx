@@ -126,7 +126,7 @@ const KYCPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-amber-50/50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -135,9 +135,9 @@ const KYCPage = () => {
   const StatusIcon = statusConfig?.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-amber-50/50 pb-24">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 shadow-sm border-b border-amber-100">
         <div className="px-6 pt-safe pb-4">
           <div className="flex items-center gap-4 mb-4">
             <button
@@ -145,7 +145,7 @@ const KYCPage = () => {
                 haptic.light();
                 navigate(-1);
               }}
-              className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
             >
               <ArrowLeft className="w-5 h-5 text-gray-700" />
             </button>

@@ -135,9 +135,9 @@ const BidsPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 pb-24">
+      <div className="min-h-screen bg-amber-50/50 pb-24">
         {/* Header */}
-        <div className="bg-white sticky top-0 z-10 shadow-sm">
+        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
           <div className="px-4 pt-safe pb-3">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -147,14 +147,14 @@ const BidsPage = () => {
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center touch-feedback"
+                className="w-9 h-9 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
               >
                 <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
             </div>
 
             {/* Submenu Tabs */}
-            <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+            <div className="flex gap-2 bg-white p-1 rounded-xl border border-amber-100">
               <button
                 onClick={() => {
                   haptic.light();
@@ -162,7 +162,7 @@ const BidsPage = () => {
                 }}
                 className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
                   activeSubmenu === 'bids'
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
                     : 'text-gray-600'
                 }`}
               >
@@ -181,7 +181,7 @@ const BidsPage = () => {
                 }}
                 className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
                   activeSubmenu === 'offers'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
                     : 'text-gray-600'
                 }`}
               >

@@ -80,9 +80,9 @@ const ReferralsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-amber-50/50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary-600 to-primary-700">
+      <div className="bg-gradient-to-br from-amber-500 to-orange-500">
         <div className="px-6 pt-safe pb-6">
           <button
             onClick={() => {
@@ -103,8 +103,8 @@ const ReferralsPage = () => {
         <div className="bg-white rounded-3xl p-6 shadow-lg mb-6">
           <div className="text-center mb-6">
             <p className="text-sm text-gray-500 mb-2">Your Referral Code</p>
-            <div className="inline-flex items-center gap-3 bg-primary-50 border-2 border-primary-200 rounded-2xl px-6 py-3 mb-4">
-              <span className="text-2xl font-bold text-primary-700 tracking-wider">
+            <div className="inline-flex items-center gap-3 bg-amber-50 border-2 border-amber-200 rounded-2xl px-6 py-3 mb-4">
+              <span className="text-2xl font-bold text-amber-700 tracking-wider">
                 {user?.referralCode || 'N/A'}
               </span>
             </div>
