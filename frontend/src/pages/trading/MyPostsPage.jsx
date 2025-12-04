@@ -807,21 +807,53 @@ const ShareModal = ({ listing, userId, onClose }) => {
   const isSell = listing.type === 'sell';
   const price = formatCurrency(listing.price);
   const qty = listing.quantity >= 100000 
-    ? (listing.quantity / 100000).toFixed(1) + 'L' 
+    ? (listing.quantity / 100000).toFixed(1) + ' Lakh' 
     : listing.quantity >= 1000 
     ? (listing.quantity / 1000).toFixed(1) + 'K' 
-    : listing.quantity;
+    : listing.quantity?.toLocaleString('en-IN');
+  const totalValue = listing.price * listing.quantity;
+  const totalFormatted = totalValue >= 10000000 
+    ? '₹' + (totalValue / 10000000).toFixed(2) + ' Cr'
+    : totalValue >= 100000 
+    ? '₹' + (totalValue / 100000).toFixed(2) + ' Lakh'
+    : formatCurrency(totalValue);
   
   // Deep tracking link with referral
   const deepLink = `${window.location.origin}/listing/${listing._id}?ref=${userId || 'guest'}&source=share`;
-  const hashtags = `#UnlistedShares #NlistPlanet #${(listing.companyName || '').replace(/[^a-zA-Z0-9]/g, '')} #PreIPO`;
   
-  const caption = `🚀 ${isSell ? 'SELLING' : 'BUYING'} Unlisted Shares!\n\n` +
-    `📊 *${listing.companyName}*\n` +
-    `💰 Price: ${price}/share\n` +
-    `📦 Quantity: ${qty} shares\n\n` +
-    `👉 View & Trade: ${deepLink}\n\n` +
-    `${hashtags}`;
+  // Clean company name for hashtag (remove special chars)
+  const cleanCompanyName = (listing.companyName || '').replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Professional, Compliant Share Caption
+  const caption = `━━━━━━━━━━━━━━━━━━━━━
+📈 *NlistPlanet - Trade Unlisted Shares*
+━━━━━━━━━━━━━━━━━━━━━
+
+${isSell ? '🟢 SELLING' : '🔵 BUYING'} Unlisted Shares!
+
+🏢 *${listing.companyName}*
+${listing.companyId?.Sector ? `📁 Sector: ${listing.companyId.Sector}` : ''}
+
+💰 Price: *${price}*/share
+📦 Quantity: *${qty}* shares
+💎 Total Value: *${totalFormatted}*
+
+👉 View & Trade: ${deepLink}
+
+━━━━━━━━━━━━━━━━━━━━━
+⚠️ *Disclaimer:* Unlisted shares are high-risk investments. Please do your own research before investing. Past performance is not indicative of future results.
+
+✅ Trade safely on NlistPlanet
+🔒 Verified listings • Secure transactions
+━━━━━━━━━━━━━━━━━━━━━
+
+#UnlistedShares #PreIPO #${cleanCompanyName} #NlistPlanet`;
+
+  // Short caption for Twitter (character limit)
+  const shortCaption = `${isSell ? '🟢 SELLING' : '🔵 BUYING'}: ${listing.companyName}\n\n` +
+    `💰 ${price}/share • 📦 ${qty} shares\n\n` +
+    `Trade on @NlistPlanet 👇\n${deepLink}\n\n` +
+    `#UnlistedShares #PreIPO`;
 
   const handleCopyLink = async () => {
     haptic.light();
@@ -849,7 +881,7 @@ const ShareModal = ({ listing, userId, onClose }) => {
 
   const handleTwitter = () => {
     haptic.medium();
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(caption)}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shortCaption)}`;
     window.open(twitterUrl, '_blank');
   };
 
@@ -877,62 +909,106 @@ const ShareModal = ({ listing, userId, onClose }) => {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white relative">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 text-white relative">
           <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
             <X size={18} />
           </button>
           <h3 className="text-lg font-bold">📤 Share Listing</h3>
-          <p className="text-blue-100 text-xs">Share with deep tracking link</p>
+          <p className="text-emerald-100 text-xs">Share with referral tracking link</p>
         </div>
 
-        {/* Preview Card */}
+        {/* Professional Preview Card */}
         <div className="p-4">
-          <div className={`rounded-2xl p-4 mb-4 border-4 ${isSell ? 'bg-orange-50 border-orange-300' : 'bg-green-50 border-green-300'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${isSell ? 'bg-orange-500 text-white' : 'bg-green-500 text-white'}`}>
-                {isSell ? '🔥 SELLING' : '💰 BUYING'}
+          <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 mb-4">
+            {/* Card Header with Brand */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
+                  <TrendingUp size={16} className="text-white" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-xs">NlistPlanet</p>
+                  <p className="text-gray-400 text-[8px]">Trade Unlisted Shares</p>
+                </div>
+              </div>
+              <span className={`px-2 py-1 rounded-full text-[9px] font-bold ${
+                isSell 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-blue-500 text-white'
+              }`}>
+                {isSell ? '🟢 SELLING' : '🔵 BUYING'}
               </span>
-              <span className="text-[10px] text-gray-500">nlistplanet.com</span>
             </div>
             
-            <h4 className="text-lg font-bold text-gray-900 mb-2">{listing.companyName}</h4>
-            <p className="text-xs text-gray-500 mb-3">{listing.companyId?.Sector || 'Unlisted Share'}</p>
+            {/* Company Info */}
+            <div className="p-4 bg-gradient-to-br from-gray-50 to-white">
+              <div className="flex items-start gap-3 mb-3">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xl ${
+                  isSell ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'
+                }`}>
+                  {listing.companyName?.charAt(0) || 'C'}
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-base font-bold text-gray-900 leading-tight">{listing.companyName}</h4>
+                  <p className="text-xs text-gray-500 mt-0.5">{listing.companyId?.Sector || 'Unlisted Share'}</p>
+                </div>
+              </div>
+              
+              {/* Price Grid */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
+                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Price/Share</p>
+                  <p className="text-sm font-bold text-gray-900">{price}</p>
+                </div>
+                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
+                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Quantity</p>
+                  <p className="text-sm font-bold text-gray-900">{qty}</p>
+                </div>
+                <div className="bg-white rounded-xl p-2.5 text-center border border-gray-100 shadow-sm">
+                  <p className="text-[8px] text-gray-400 uppercase font-semibold">Total Value</p>
+                  <p className="text-sm font-bold text-emerald-600">{totalFormatted}</p>
+                </div>
+              </div>
+            </div>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white rounded-xl p-2 text-center border border-gray-200">
-                <p className="text-[9px] text-gray-500">Price</p>
-                <p className="text-sm font-bold text-gray-900">{price}</p>
-              </div>
-              <div className="bg-white rounded-xl p-2 text-center border border-gray-200">
-                <p className="text-[9px] text-gray-500">Quantity</p>
-                <p className="text-sm font-bold text-gray-900">{qty}</p>
-              </div>
+            {/* Footer with Compliance */}
+            <div className="bg-gray-100 px-3 py-2 border-t border-gray-200">
+              <p className="text-[8px] text-gray-500 text-center">
+                ⚠️ Unlisted shares are high-risk. Do your own research before investing.
+              </p>
             </div>
           </div>
 
           {/* Share Buttons */}
+          <p className="text-xs text-gray-500 text-center mb-3 font-medium">Share via</p>
           <div className="grid grid-cols-4 gap-2 mb-4">
-            <button onClick={handleWhatsApp} className="flex flex-col items-center gap-1 p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg">📱</span>
+            <button onClick={handleWhatsApp} className="flex flex-col items-center gap-1.5 p-2 bg-green-50 rounded-xl hover:bg-green-100 transition-colors border border-green-100">
+              <div className="w-11 h-11 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-md">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
               </div>
               <span className="text-[10px] font-semibold text-gray-700">WhatsApp</span>
             </button>
-            <button onClick={handleTelegram} className="flex flex-col items-center gap-1 p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors">
-              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg">✈️</span>
+            <button onClick={handleTelegram} className="flex flex-col items-center gap-1.5 p-2 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors border border-blue-100">
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
               </div>
               <span className="text-[10px] font-semibold text-gray-700">Telegram</span>
             </button>
-            <button onClick={handleTwitter} className="flex flex-col items-center gap-1 p-3 bg-sky-50 rounded-xl hover:bg-sky-100 transition-colors">
-              <div className="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg">🐦</span>
+            <button onClick={handleTwitter} className="flex flex-col items-center gap-1.5 p-2 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors border border-slate-100">
+              <div className="w-11 h-11 bg-gradient-to-br from-slate-800 to-black rounded-full flex items-center justify-center shadow-md">
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
               </div>
-              <span className="text-[10px] font-semibold text-gray-700">Twitter</span>
+              <span className="text-[10px] font-semibold text-gray-700">X / Twitter</span>
             </button>
-            <button onClick={handleNativeShare} className="flex flex-col items-center gap-1 p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors">
-              <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                <Share2 size={18} className="text-white" />
+            <button onClick={handleNativeShare} className="flex flex-col items-center gap-1.5 p-2 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors border border-purple-100">
+              <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center shadow-md">
+                <Share2 size={20} className="text-white" />
               </div>
               <span className="text-[10px] font-semibold text-gray-700">More</span>
             </button>
@@ -942,23 +1018,23 @@ const ShareModal = ({ listing, userId, onClose }) => {
           <div className="space-y-2">
             <button
               onClick={handleCopyLink}
-              className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border border-gray-200"
             >
               🔗 Copy Tracking Link
             </button>
             <button
               onClick={handleCopyCaption}
-              className="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md"
             >
               📋 Copy Full Caption
             </button>
           </div>
 
-          {/* Tracking Info */}
-          <div className="mt-4 bg-amber-50 rounded-xl p-3 border border-amber-200">
+          {/* Referral Tracking Info */}
+          <div className="mt-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200">
             <p className="text-[10px] text-amber-800 flex items-start gap-2">
-              <Info size={14} className="mt-0.5 flex-shrink-0" />
-              <span>Anyone who clicks your link will be tracked as your referral. You'll earn rewards when they trade!</span>
+              <span className="text-base">🎯</span>
+              <span><strong>Referral Tracking:</strong> Anyone who clicks your link will be tracked as your referral. Earn rewards when they trade!</span>
             </p>
           </div>
         </div>
