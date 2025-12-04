@@ -472,43 +472,67 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
         </div>
       </div>
 
-      {/* Actions - Same as Desktop */}
-      <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-        <div className="flex items-center justify-end gap-1.5 flex-wrap">
+      {/* Actions - Icon with Label below, all in one row */}
+      <div className="px-3 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-slate-50">
+        <div className="flex items-center justify-center gap-3">
+          {/* Share */}
           <button 
             onClick={onShare}
-            className="px-2.5 py-1.5 bg-blue-600 text-white rounded-lg text-[10px] font-semibold flex items-center gap-1"
+            className="flex flex-col items-center gap-1 min-w-[50px]"
           >
-            <Share2 size={12} /> Share
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition-colors">
+              <Share2 size={18} className="text-white" />
+            </div>
+            <span className="text-[10px] font-semibold text-gray-600">Share</span>
           </button>
+
+          {/* Boost */}
           <button 
             onClick={onBoost}
-            className="px-2.5 py-1.5 bg-orange-500 text-white rounded-lg text-[10px] font-semibold flex items-center gap-1"
+            className="flex flex-col items-center gap-1 min-w-[50px]"
           >
-            <Zap size={12} /> Boost
+            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors">
+              <Zap size={18} className="text-white" />
+            </div>
+            <span className="text-[10px] font-semibold text-gray-600">Boost</span>
           </button>
+
+          {/* Modify - only if no bids */}
           {activeBidsCount === 0 && listing.status === 'active' && (
-            <>
-              <button 
-                onClick={onModify}
-                className="px-2.5 py-1.5 bg-purple-600 text-white rounded-lg text-[10px] font-semibold flex items-center gap-1"
-              >
-                <Edit size={12} /> Modify
-              </button>
-              <button 
-                onClick={onDelete}
-                className="px-2.5 py-1.5 bg-red-600 text-white rounded-lg text-[10px] font-semibold flex items-center gap-1"
-              >
-                <Trash2 size={12} /> Delete
-              </button>
-            </>
+            <button 
+              onClick={onModify}
+              className="flex flex-col items-center gap-1 min-w-[50px]"
+            >
+              <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center shadow-md hover:bg-purple-600 transition-colors">
+                <Edit size={18} className="text-white" />
+              </div>
+              <span className="text-[10px] font-semibold text-gray-600">Modify</span>
+            </button>
           )}
+
+          {/* Delete - only if no bids */}
+          {activeBidsCount === 0 && listing.status === 'active' && (
+            <button 
+              onClick={onDelete}
+              className="flex flex-col items-center gap-1 min-w-[50px]"
+            >
+              <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors">
+                <Trash2 size={18} className="text-white" />
+              </div>
+              <span className="text-[10px] font-semibold text-gray-600">Delete</span>
+            </button>
+          )}
+
+          {/* Sold */}
           {listing.status === 'active' && (
             <button 
               onClick={onMarkSold}
-              className="px-2.5 py-1.5 bg-amber-500 text-white rounded-lg text-[10px] font-semibold flex items-center gap-1"
+              className="flex flex-col items-center gap-1 min-w-[50px]"
             >
-              <CheckCircle size={12} /> Sold
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-md hover:bg-green-600 transition-colors">
+                <CheckCircle size={18} className="text-white" />
+              </div>
+              <span className="text-[10px] font-semibold text-gray-600">Sold</span>
             </button>
           )}
         </div>
