@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { storage } from './helpers';
 
 // API Base URL - Update for production
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -14,7 +15,8 @@ const api = axios.create({
 // Request interceptor - Add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Use storage.get to properly parse the JSON-stringified token
+    const token = storage.get('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,9 +33,9 @@ api.interceptors.response.use(
   (error) => {
     // Handle 401 - Token expired or invalid
     if (error.response?.status === 401) {
-      // Clear invalid token
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      // Clear invalid token using storage helper
+      storage.remove('token');
+      storage.remove('user');
       
       // Redirect to login if not already on auth pages
       const currentPath = window.location.pathname;
