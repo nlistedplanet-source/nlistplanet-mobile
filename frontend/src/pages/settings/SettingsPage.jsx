@@ -50,18 +50,21 @@ const SettingsPage = () => {
   const SettingItem = ({ icon: Icon, title, subtitle, onClick, rightElement }) => (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors touch-feedback"
+      className="w-full flex items-center justify-between p-4 transition-colors touch-feedback"
+      style={{ backgroundColor: 'transparent' }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--hover-bg)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
     >
       <div className="flex items-center gap-4">
-        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-          <Icon className="w-5 h-5 text-gray-700" />
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+          <Icon className="w-5 h-5" style={{ color: 'var(--text-secondary)' }} />
         </div>
         <div className="text-left">
-          <p className="font-semibold text-gray-900">{title}</p>
-          {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+          <p className="font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
+          {subtitle && <p className="text-sm" style={{ color: 'var(--muted)' }}>{subtitle}</p>}
         </div>
       </div>
-      {rightElement || <ChevronRight className="w-5 h-5 text-gray-400" />}
+      {rightElement || <ChevronRight className="w-5 h-5" style={{ color: 'var(--muted)' }} />}
     </button>
   );
 
@@ -72,11 +75,12 @@ const SettingsPage = () => {
         onToggle();
       }}
       className={`relative w-12 h-7 rounded-full transition-colors ${
-        enabled ? 'bg-primary-600' : 'bg-gray-300'
+        enabled ? 'bg-primary-600' : ''
       }`}
+      style={{ backgroundColor: enabled ? undefined : 'var(--border)' }}
     >
       <div
-        className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
+        className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform shadow-sm ${
           enabled ? 'translate-x-6' : 'translate-x-1'
         }`}
       />
@@ -84,9 +88,9 @@ const SettingsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen pb-24" style={{ backgroundColor: 'var(--bg)' }}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 shadow-sm sticky top-0 z-10 border-b border-amber-100">
+      <div className="shadow-sm sticky top-0 z-10" style={{ backgroundColor: 'var(--header-bg)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)' }}>
         <div className="px-6 pt-safe pb-4">
           <div className="flex items-center gap-4">
             <button
@@ -94,20 +98,21 @@ const SettingsPage = () => {
                 haptic.light();
                 navigate(-1);
               }}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
+              className="w-10 h-10 rounded-full flex items-center justify-center touch-feedback shadow-sm"
+              style={{ backgroundColor: 'var(--surface)' }}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-700" />
+              <ArrowLeft className="w-5 h-5" style={{ color: 'var(--text)' }} />
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text)' }}>Settings</h1>
           </div>
         </div>
       </div>
 
       <div className="px-6 pt-6">
         {/* App Preferences */}
-        <div className="bg-white rounded-2xl shadow-mobile mb-6 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900">App Preferences</h2>
+        <div className="rounded-2xl mb-6 overflow-hidden" style={{ backgroundColor: 'var(--surface)', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-light)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-light)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--text)' }}>App Preferences</h2>
           </div>
 
           <SettingItem
@@ -118,7 +123,7 @@ const SettingsPage = () => {
             rightElement={<ToggleSwitch enabled={notificationsEnabled} onToggle={handleNotificationToggle} />}
           />
 
-          <div className="border-t border-gray-100">
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
               icon={Vibrate}
               title="Haptic Feedback"
@@ -128,7 +133,7 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div className="border-t border-gray-100">
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
               icon={theme === 'light' ? Moon : Sun}
               title="Theme"
@@ -140,7 +145,7 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div className="border-t border-gray-100">
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
               icon={Globe}
               title="Language"
@@ -151,9 +156,9 @@ const SettingsPage = () => {
         </div>
 
         {/* Legal & Support */}
-        <div className="bg-white rounded-2xl shadow-mobile mb-6 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900">Legal & Support</h2>
+        <div className="rounded-2xl mb-6 overflow-hidden" style={{ backgroundColor: 'var(--surface)', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-light)' }}>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-light)' }}>
+            <h2 className="font-bold" style={{ color: 'var(--text)' }}>Legal & Support</h2>
           </div>
 
           <SettingItem
@@ -163,7 +168,7 @@ const SettingsPage = () => {
             onClick={() => toast('Opening Privacy Policy...', { icon: '📄' })}
           />
 
-          <div className="border-t border-gray-100">
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
               icon={FileText}
               title="Terms of Service"
@@ -172,7 +177,7 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div className="border-t border-gray-100">
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
               icon={HelpCircle}
               title="Help & Support"
@@ -183,13 +188,13 @@ const SettingsPage = () => {
         </div>
 
         {/* App Info */}
-        <div className="bg-white rounded-2xl shadow-mobile p-6 text-center">
-          <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-            <span className="text-2xl font-bold text-primary-700">NP</span>
+        <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--surface)', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-light)' }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+            <span className="text-2xl font-bold text-primary-600">NP</span>
           </div>
-          <h3 className="font-bold text-gray-900 mb-1">NlistPlanet Mobile</h3>
-          <p className="text-sm text-gray-500 mb-1">Version 1.0.0</p>
-          <p className="text-xs text-gray-400">© 2025 NlistPlanet. All rights reserved.</p>
+          <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
+          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.0</p>
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>© 2025 NlistPlanet. All rights reserved.</p>
         </div>
       </div>
     </div>
