@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme variables - light defaults, and dark overrides below */
+:root {
+  --bg: #f8fafc; /* gray-50 */
+  --surface: #ffffff; /* card / surface */
+  --text: #0f172a; /* gray-900 */
+  --muted: #6b7280; /* gray-500 */
+  --muted-2: #94a3b8; /* gray-400 */
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --card-shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+  --primary-600: #0284c7;
+  --header-bg: rgba(255,255,255,0.95);
+  --nav-bg: rgba(255,255,255,0.95);
+}
+
+.dark {
+  --bg: #061122; /* darker page background */
+  --surface: #071826; /* surface / cards */
+  --text: #e6eef6; /* light text */
+  --muted: #94a3b8; /* muted text */
+  --muted-2: #94a3b8;
+  --card-shadow: 0 2px 12px rgba(0,0,0,0.45);
+  --card-shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+  --primary-600: #38bdf8;
+  --header-bg: rgba(8,10,12,0.6);
+  --nav-bg: rgba(6,8,10,0.6);
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
@@ -17,7 +44,12 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 font-sans antialiased;
+    /* light/dark background & text via variables */
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: theme('fontFamily.sans');
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
@@ -44,7 +76,10 @@
   }
 
   .btn-secondary {
-    @apply bg-gray-100 text-gray-900 px-6 py-3.5 rounded-2xl font-semibold active:scale-95 transition-all duration-200 hover:bg-gray-200;
+    /* uses surface variable for both light and dark */
+    background-color: var(--surface);
+    color: var(--text);
+    @apply px-6 py-3.5 rounded-2xl font-semibold active:scale-95 transition-all duration-200;
   }
 
   .btn-outline {
@@ -53,21 +88,32 @@
 
   /* Input styles */
   .input-field {
-    @apply w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent focus:bg-white transition-all text-base;
+    background-color: var(--bg);
+    color: var(--text);
+    border: 1px solid rgba(148,163,184,0.15);
+    @apply w-full px-4 py-3.5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-base;
   }
 
   /* Card styles */
   .card {
-    @apply bg-white rounded-3xl shadow-mobile p-5 active:scale-[0.98] transition-transform duration-200;
+    background-color: var(--surface);
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+    @apply p-5 active:scale-[0.98] transition-transform duration-200;
   }
 
   .card-hover {
-    @apply bg-white rounded-3xl shadow-mobile p-5 hover:shadow-mobile-lg transition-shadow duration-200;
+    background-color: var(--surface);
+    border-radius: 1rem;
+    box-shadow: var(--card-shadow);
+    @apply p-5 hover:shadow-mobile-lg transition-shadow duration-200;
   }
 
   /* Bottom sheet */
   .bottom-sheet {
-    @apply fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-bottom-sheet z-50 animate-slide-up;
+    @apply fixed bottom-0 left-0 right-0 rounded-t-3xl z-50 animate-slide-up;
+    background-color: var(--surface);
+    box-shadow: var(--card-shadow-lg);
     max-height: 90vh;
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -95,17 +141,25 @@
 
   /* Glass effect */
   .glass {
-    @apply bg-white/80 backdrop-blur-xl;
+    background-color: rgba(255,255,255,0.8);
+    backdrop-filter: blur(8px);
   }
 
   /* Page container with bottom nav spacing */
   .page-container {
-    @apply min-h-screen bg-gray-50 pb-24;
+    min-height: 100vh;
+    background-color: var(--bg);
+    padding-bottom: 6rem;
   }
 
   /* Header sticky */
   .header-sticky {
-    @apply bg-white/95 backdrop-blur-lg sticky top-0 z-10 border-b border-gray-100;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(148,163,184,0.08);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(6px);
   }
 }
 

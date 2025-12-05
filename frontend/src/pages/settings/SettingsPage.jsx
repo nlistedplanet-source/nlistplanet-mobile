@@ -13,13 +13,14 @@ import {
   Vibrate
 } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [hapticEnabled, setHapticEnabled] = useState(true);
-  const [theme, setTheme] = useState('light');
+  const { theme, toggle } = useTheme();
 
   const handleNotificationToggle = () => {
     haptic.light();
@@ -37,9 +38,8 @@ const SettingsPage = () => {
 
   const handleThemeChange = () => {
     haptic.light();
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    toast('Dark mode coming soon!', { icon: '🌙' });
+    toggle();
+    toast.success(`Switched to ${theme === 'light' ? 'dark' : 'light'} theme`);
   };
 
   const navigateToPage = (path) => {
@@ -131,11 +131,11 @@ const SettingsPage = () => {
           <div className="border-t border-gray-100">
             <SettingItem
               icon={theme === 'light' ? Moon : Sun}
-              title="Dark Mode"
-              subtitle="Coming soon"
+              title="Theme"
+              subtitle={theme === 'light' ? 'Light mode' : 'Dark mode'}
               onClick={handleThemeChange}
               rightElement={
-                <span className="text-sm text-gray-400 font-semibold">Soon</span>
+                <ToggleSwitch enabled={theme === 'dark'} onToggle={handleThemeChange} />
               }
             />
           </div>

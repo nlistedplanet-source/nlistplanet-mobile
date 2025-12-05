@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, PlusCircle, Bell, User } from 'lucide-react';
+import { Home, TrendingUp, PlusCircle, Bell, User, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import { notificationsAPI } from '../../utils/api';
 import { haptic } from '../../utils/helpers';
 import CreateListingModal from '../modals/CreateListingModal';
@@ -116,7 +117,23 @@ const BottomNav = () => {
       onClose={() => setShowCreateModal(false)}
       onSuccess={handleCreateSuccess}
     />
+    {/* Theme toggle - quick access */}
+    <ThemeToggle />
     </>
+  );
+};
+
+const ThemeToggle = () => {
+  const { theme, toggle } = useTheme();
+
+  return (
+    <button
+      onClick={() => toggle()}
+      className="fixed bottom-24 right-4 w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white z-50 shadow-lg touch-feedback"
+      title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
+    >
+      {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
   );
 };
 
