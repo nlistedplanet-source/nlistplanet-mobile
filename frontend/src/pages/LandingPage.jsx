@@ -1,11 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu } from 'lucide-react';
+import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const [displayText, setDisplayText] = useState('Buy');
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // PWA Install States
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
+
+  // Check if already installed
+  useEffect(() => {
+    // Check if running in standalone mode (already installed)
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      setIsInstalled(true);
+    }
+
+    // Check if iOS
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    setIsIOS(isIOSDevice);
+
+    // Listen for beforeinstallprompt event (Android/Chrome)
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBanner(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    // Listen for app installed event
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true);
+      setShowInstallBanner(false);
+      setDeferredPrompt(null);
+    });
+
+    // Show banner after 2 seconds if not installed
+    const timer = setTimeout(() => {
+      if (!isInstalled && (deferredPrompt || isIOSDevice)) {
+        setShowInstallBanner(true);
+      }
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  // Handle Install Click
+  const handleInstallClick = async () => {
+    if (isIOS) {
+      setShowIOSInstructions(true);
+      return;
+    }
+
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setShowInstallBanner(false);
+      }
+    }
+  };
   
   useEffect(() => {
     const texts = ['Buy', 'Sell', 'Trade'];
@@ -68,6 +132,99 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-950 relative overflow-hidden">
+      {/* iOS Instructions Modal */}
+      {showIOSInstructions && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-end justify-center p-4">
+          <div className="bg-white rounded-t-3xl w-full max-w-md overflow-hidden animate-slide-up">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 text-white relative">
+              <button 
+                onClick={() => setShowIOSInstructions(false)}
+                className="absolute top-3 right-3 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center"
+              >
+                <X size={18} />
+              </button>
+              <h3 className="text-lg font-bold">📲 Install NlistPlanet App</h3>
+              <p className="text-emerald-100 text-xs">Add to Home Screen on iOS</p>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">1</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Tap the Share button</p>
+                  <p className="text-sm text-gray-500">Located at the bottom of Safari</p>
+                  <div className="mt-2 bg-gray-100 rounded-lg p-2 inline-flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    <span className="text-sm text-gray-600">Share Icon</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">2</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Tap "Add to Home Screen"</p>
+                  <p className="text-sm text-gray-500">Scroll down in the share menu</p>
+                  <div className="mt-2 bg-gray-100 rounded-lg p-2 inline-flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span className="text-sm text-gray-600">Add to Home Screen</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 font-bold">3</div>
+                <div>
+                  <p className="font-semibold text-gray-900">Tap "Add"</p>
+                  <p className="text-sm text-gray-500">Confirm to install the app</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowIOSInstructions(false)}
+                className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Install App Banner - Floating */}
+      {showInstallBanner && !isInstalled && (
+        <div className="fixed bottom-20 left-4 right-4 z-50 animate-slide-up">
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-4 shadow-2xl shadow-emerald-500/30 border border-emerald-400/30">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
+                <img src="/new_logo.png" alt="NlistPlanet" className="w-10 h-10 object-contain" 
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-white font-bold text-sm">Install NlistPlanet App</h4>
+                <p className="text-emerald-100 text-xs truncate">Trade faster with our app!</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowInstallBanner(false)}
+                  className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center text-white"
+                >
+                  <X size={16} />
+                </button>
+                <button
+                  onClick={handleInstallClick}
+                  className="px-4 py-2 bg-white text-emerald-600 font-bold text-sm rounded-xl flex items-center gap-1.5 shadow-lg"
+                >
+                  <Download size={16} />
+                  Install
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-gradient-to-b from-emerald-500/20 via-teal-500/10 to-transparent rounded-full blur-3xl"></div>
@@ -95,6 +252,16 @@ const LandingPage = () => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Install App Button */}
+          {!isInstalled && (deferredPrompt || isIOS) && (
+            <button
+              onClick={handleInstallClick}
+              className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Download size={14} />
+              App
+            </button>
+          )}
           <Link
             to="/login"
             className="px-4 py-2 text-gray-300 hover:text-white text-sm font-medium transition-colors"
@@ -329,6 +496,19 @@ const LandingPage = () => {
         }
         .animate-scroll-mobile:hover {
           animation-play-state: paused;
+        }
+        @keyframes slide-up {
+          0% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-up {
+          animation: slide-up 0.4s ease-out forwards;
         }
       `}</style>
     </div>
