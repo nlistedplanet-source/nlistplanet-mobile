@@ -9,7 +9,8 @@ const BlogDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_BASE = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'https://nlistplanet-usm-v8dc.onrender.com';
+  // News API is on desktop backend
+  const NEWS_API = 'https://nlistplanet-usm-v8dc.onrender.com';
 
   useEffect(() => {
     fetchArticle();
@@ -18,7 +19,7 @@ const BlogDetailPage = () => {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE}/api/news/${id}`);
+      const response = await fetch(`${NEWS_API}/api/news/${id}`);
       
       if (!response.ok) throw new Error('Article not found');
       
