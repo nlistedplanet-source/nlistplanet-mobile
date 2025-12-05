@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [displayText, setDisplayText] = useState('Buy');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   
   // PWA Install States
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -469,7 +472,7 @@ const LandingPage = () => {
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 px-6 pb-8">
+      <div className="relative z-10 px-6 pb-24">
         <div className="text-center text-xs text-gray-500">
           <p className="mb-3">© 2024 NlistPlanet. All rights reserved.</p>
           <div className="flex items-center justify-center gap-4">
@@ -481,6 +484,86 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Bottom Navigation Bar - Website Style */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 safe-area-bottom">
+        <div className="flex items-center justify-around py-2 px-2">
+          <button
+            onClick={() => {
+              setActiveTab('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              activeTab === 'home' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <Home size={20} />
+            <span className="text-[10px] font-medium">Home</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('blog');
+              navigate('/blog');
+            }}
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              activeTab === 'blog' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <BookOpen size={20} />
+            <span className="text-[10px] font-medium">Blog</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('about');
+              navigate('/about');
+            }}
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              activeTab === 'about' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <Info size={20} />
+            <span className="text-[10px] font-medium">About</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('contact');
+              navigate('/contact');
+            }}
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              activeTab === 'contact' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <Mail size={20} />
+            <span className="text-[10px] font-medium">Contact</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('help');
+              navigate('/faq');
+            }}
+            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+              activeTab === 'help' 
+                ? 'bg-emerald-500/20 text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <HelpCircle size={20} />
+            <span className="text-[10px] font-medium">FAQ</span>
+          </button>
+        </div>
+      </nav>
 
       <style jsx>{`
         @keyframes scroll-mobile {
