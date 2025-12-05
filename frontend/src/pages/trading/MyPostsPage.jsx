@@ -818,13 +818,16 @@ const ShareModal = ({ listing, userId, onClose }) => {
   // Deep tracking link with referral
   const deepLink = `${window.location.origin}/listing/${listing._id}?ref=${userId || 'guest'}&source=share`;
   
+  // API Base URL
+  const API_BASE_URL = process.env.REACT_APP_API_URL || '';
+  
   // Fetch company highlights
   useEffect(() => {
     const fetchHighlights = async () => {
       try {
         if (listing.companyId?._id || listing.companyId) {
           const companyId = listing.companyId?._id || listing.companyId;
-          const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/companies/${companyId}/highlights`);
+          const response = await fetch(`${API_BASE_URL}/api/companies/${companyId}/highlights`);
           const data = await response.json();
           if (data.success && data.data.highlights) {
             setHighlights(data.data.highlights);
@@ -843,7 +846,7 @@ const ShareModal = ({ listing, userId, onClose }) => {
       }
     };
     fetchHighlights();
-  }, [listing.companyId]);
+  }, [listing.companyId, API_BASE_URL]);
 
   // Default highlights if none fetched
   const displayHighlights = highlights.length > 0 ? highlights : [
