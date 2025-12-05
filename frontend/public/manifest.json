@@ -5,26 +5,27 @@
   "icons": [
     {
       "src": "Logo.png",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/png"
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "Logo.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "Logo.png",
       "type": "image/png",
       "sizes": "512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#10b981",
-  "background_color": "#ffffff",
+  "theme_color": "#0a1628",
+  "background_color": "#0a1628",
   "orientation": "portrait",
   "scope": "/",
   "categories": ["finance", "business"],
