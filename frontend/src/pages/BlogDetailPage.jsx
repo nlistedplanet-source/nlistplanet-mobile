@@ -9,8 +9,12 @@ const BlogDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Use mobile backend API
-  const API_URL = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com';
+  // Get base API URL without /api suffix
+  const getBaseUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com/api';
+    return envUrl.replace(/\/api\/?$/, '');
+  };
+  const BASE_URL = getBaseUrl();
 
   useEffect(() => {
     fetchArticle();
@@ -19,7 +23,7 @@ const BlogDetailPage = () => {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/news/${id}`);
+      const response = await fetch(`${BASE_URL}/api/news/${id}`);
       
       if (!response.ok) throw new Error('Article not found');
       

@@ -1,30 +1,34 @@
 // Format currency
 export const formatCurrency = (amount) => {
+  const num = Number(amount) || 0;
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(amount);
+  }).format(num);
 };
 
 // Format number
 export const formatNumber = (num) => {
-  return new Intl.NumberFormat('en-IN').format(num);
+  const n = Number(num) || 0;
+  return new Intl.NumberFormat('en-IN').format(n);
 };
 
 // Format number in short form (1K, 1L, 1Cr)
 export const formatShortNumber = (num) => {
-  if (num >= 10000000) {
-    return (num / 10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
+  if (num === undefined || num === null) return '0';
+  const n = Number(num) || 0;
+  if (n >= 10000000) {
+    return (n / 10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
   }
-  if (num >= 100000) {
-    return (num / 100000).toFixed(1).replace(/\.0$/, '') + ' L';
+  if (n >= 100000) {
+    return (n / 100000).toFixed(1).replace(/\.0$/, '') + ' L';
   }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + ' K';
+  if (n >= 1000) {
+    return (n / 1000).toFixed(1).replace(/\.0$/, '') + ' K';
   }
-  return num.toString();
+  return n.toString();
 };
 
 // Platform fee percentage
@@ -130,7 +134,9 @@ export const timeAgo = (date) => {
 
 // Format percentage
 export const formatPercentage = (value) => {
-  return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+  if (value === undefined || value === null) return '+0.00%';
+  const v = Number(value) || 0;
+  return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 };
 
 // Validate email

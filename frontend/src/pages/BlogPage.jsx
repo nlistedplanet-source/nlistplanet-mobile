@@ -12,8 +12,13 @@ const BlogPage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // Use mobile backend API (process.env.REACT_APP_API_URL from Vercel env vars)
-  const API_URL = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com';
+  // Get base API URL without /api suffix for news endpoint
+  const getBaseUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com/api';
+    // Remove /api suffix if present to avoid double /api/api
+    return envUrl.replace(/\/api\/?$/, '');
+  };
+  const BASE_URL = getBaseUrl();
 
   const categories = ['All', 'IPO', 'Market', 'Unlisted', 'Startup', 'Regulatory'];
 
@@ -25,7 +30,7 @@ const BlogPage = () => {
     try {
       setLoading(true);
       const categoryParam = activeCategory !== 'All' ? `?category=${activeCategory}&limit=50` : '?limit=50';
-      const response = await fetch(`${API_URL}/api/news${categoryParam}`);
+      const response = await fetch(`${BASE_URL}/api/news${categoryParam}`);
       
       if (!response.ok) throw new Error('Failed to fetch news');
       
