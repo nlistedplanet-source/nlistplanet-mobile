@@ -565,7 +565,7 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      <style jsx>{`
+      <style>{`
         @keyframes scroll-mobile {
           0% {
             transform: translateX(0);
