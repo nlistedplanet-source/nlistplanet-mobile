@@ -12,8 +12,8 @@ const BlogPage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // News API is on desktop backend, not mobile backend
-  const NEWS_API = 'https://nlistplanet-usm-v8dc.onrender.com';
+  // Use mobile backend API (process.env.REACT_APP_API_URL from Vercel env vars)
+  const API_URL = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com';
 
   const categories = ['All', 'IPO', 'Market', 'Unlisted', 'Startup', 'Regulatory'];
 
@@ -25,7 +25,7 @@ const BlogPage = () => {
     try {
       setLoading(true);
       const categoryParam = activeCategory !== 'All' ? `?category=${activeCategory}&limit=50` : '?limit=50';
-      const response = await fetch(`${NEWS_API}/api/news${categoryParam}`);
+      const response = await fetch(`${API_URL}/api/news${categoryParam}`);
       
       if (!response.ok) throw new Error('Failed to fetch news');
       

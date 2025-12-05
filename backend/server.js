@@ -22,6 +22,7 @@ import portfolioRoutes from './routes/portfolio.js';
 import adminRoutes from './routes/admin.js';
 import adminCompaniesRoutes from './routes/adminCompanies.js';
 import adsRoutes from './routes/ads.js';
+import newsRoutes from './routes/news.js';
 
 // Load environment variables
 dotenv.config();
@@ -186,7 +187,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: 'UnlistedHub USM API',
+    message: 'NlistPlanet Mobile API',
     version: '1.0.0',
     endpoints: {
       health: '/api/health',
@@ -197,6 +198,7 @@ app.get('/', (req, res) => {
       transactions: '/api/transactions',
       referrals: '/api/referrals',
       portfolio: '/api/portfolio',
+      news: '/api/news',
       admin: '/api/admin'
     }
   });
@@ -211,6 +213,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/referrals', referralRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/ads', adsRoutes);
+app.use('/api/news', newsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminCompaniesRoutes);
 
