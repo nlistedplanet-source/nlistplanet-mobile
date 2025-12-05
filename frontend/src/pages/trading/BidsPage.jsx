@@ -9,7 +9,7 @@ import {
   XCircle,
   Package,
   RotateCcw,
-  MessageCircle,
+  Send,
   Loader,
   ChevronDown,
   ChevronUp,
@@ -321,7 +321,7 @@ const BidsPage = () => {
                   {actionLoading === selectedActivity._id ? (
                     <Loader className="animate-spin" size={18} />
                   ) : (
-                    <MessageCircle size={18} />
+                    <Send size={18} />
                   )}
                   Send
                 </button>

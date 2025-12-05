@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { X, AlertCircle, Check, TrendingUp, TrendingDown } from 'lucide-react';
+import { X, Check, TrendingUp, TrendingDown } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, calculatePlatformFee, haptic } from '../../utils/helpers';
+import { formatCurrency, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
   const [formData, setFormData] = useState({
     quantity: '',
     price: '',
-    message: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -19,9 +18,7 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
   
   const quantity = parseInt(formData.quantity) || 0;
   const price = parseFloat(formData.price) || 0;
-  const baseAmount = quantity * price;
-  const platformFee = calculatePlatformFee(baseAmount);
-  const totalAmount = isSell ? baseAmount + platformFee : baseAmount - platformFee;
+  const totalAmount = quantity * price;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,7 +45,6 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
       const payload = {
         quantity: quantity,
         price: price,
-        message: formData.message || '',
       };
 
       await listingsAPI.placeBid(listing._id, payload);
@@ -146,69 +142,18 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
             </p>
           </div>
 
-          {/* Message */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Message (Optional)
-            </label>
-            <textarea
-              placeholder="Add a message to the seller/buyer..."
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="input-field min-h-[80px] resize-none"
-              rows={3}
-            />
-          </div>
-
-          {/* Price Summary */}
-          {baseAmount > 0 && (
-            <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center gap-2 text-primary-600 mb-3">
-                <AlertCircle size={18} />
-                <p className="text-sm font-semibold">Offer Summary</p>
+          {/* Total Amount Display */}
+          {totalAmount > 0 && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-gray-900">Total Amount</span>
+                <span className="font-bold text-emerald-600 text-xl">
+                  {formatCurrency(totalAmount)}
+                </span>
               </div>
-              
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Quantity</span>
-                  <span className="font-semibold text-gray-900">{quantity} shares</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Price per share</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(price)}</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Base Amount</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(baseAmount)}</span>
-                </div>
-                
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Platform Fee (2%)</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(platformFee)}</span>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-2 mt-2">
-                  <div className="flex justify-between">
-                    <span className="font-semibold text-gray-900">
-                      {isSell ? 'Total you will pay' : 'You will receive'}
-                    </span>
-                    <span className="font-bold text-primary-600 text-lg">
-                      {formatCurrency(totalAmount)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mt-3">
-                <p className="text-xs text-blue-700">
-                  {isSell 
-                    ? `You are offering to buy ${quantity} shares at ${formatCurrency(price)} each. Total amount including fee: ${formatCurrency(totalAmount)}`
-                    : `You are offering to sell ${quantity} shares at ${formatCurrency(price)} each. You will receive ${formatCurrency(totalAmount)} after fee deduction.`
-                  }
-                </p>
-              </div>
+              <p className="text-xs text-gray-600 mt-2">
+                {quantity} shares × {formatCurrency(price)}/share
+              </p>
             </div>
           )}
 
