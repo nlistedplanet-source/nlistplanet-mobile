@@ -1,81 +1,109 @@
-const CACHE_NAME = 'nlistplanet-v1';
+// Update cache version to force refresh - Dec 5, 2025
+const CACHE_NAME = 'nlistplanet-v2';
+const STATIC_CACHE = 'nlistplanet-static-v2';
+
+// Only cache static assets, not HTML
 const urlsToCache = [
-  '/',
-  '/static/css/main.css',
-  '/static/js/main.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/Logo.png',
+  '/new_logo.png'
 ];
 
-// Install event - cache resources
+// Install event - cache resources and take over immediately
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing new version...');
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open(STATIC_CACHE)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('[SW] Caching static assets');
         return cache.addAll(urlsToCache);
       })
       .catch((error) => {
-        console.log('Cache addAll failed:', error);
+        console.log('[SW] Cache addAll failed:', error);
       })
   );
+  // Force this service worker to become active immediately
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up ALL old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating new version...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+          // Delete ALL old caches
+          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE) {
+            console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
+  // Take control of all clients immediately
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - NETWORK FIRST for HTML, cache first for static assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and API calls
   if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
+  const url = new URL(event.request.url);
+  
+  // For HTML requests (navigation) - ALWAYS try network first
+  if (event.request.mode === 'navigate' || event.request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
           return response;
-        }
+        })
+        .catch(() => {
+          // Only serve cached HTML if offline
+          return caches.match('/index.html');
+        })
+    );
+    return;
+  }
 
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+  // For static assets - cache first, then network
+  if (url.pathname.startsWith('/static/') || 
+      url.pathname.endsWith('.png') || 
+      url.pathname.endsWith('.jpg') ||
+      url.pathname.endsWith('.json')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          return fetch(event.request).then((response) => {
+            if (!response || response.status !== 200) {
+              return response;
+            }
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
+            const responseToCache = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => {
               cache.put(event.request, responseToCache);
             });
 
-          return response;
-        }).catch(() => {
-          // Return offline page if available
-          return caches.match('/');
-        });
-      })
+            return response;
+          });
+        })
+    );
+    return;
+  }
+
+  // For everything else - network first
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => response)
+      .catch(() => caches.match(event.request))
   );
 });
 
