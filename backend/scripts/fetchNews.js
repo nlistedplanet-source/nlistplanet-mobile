@@ -1,14 +1,10 @@
-/**
- * Auto News Fetcher Script for Mobile Backend
- * 
- * This script automatically fetches news from RSS feeds and APIs,
- * summarizes them (Inshorts-style 60 words max), and stores in database.
- * 
- * Run via cron job: 0 */6 * * * (every 6 hours)
- * Or manually: node scripts/fetchNews.js
- * 
- * GitHub Actions: .github/workflows/fetch-news.yml
- */
+// Auto News Fetcher Script for Mobile Backend
+// 
+// This script automatically fetches news from RSS feeds and APIs,
+// summarizes them (Inshorts-style 60 words max), and stores in database.
+// 
+// Run via cron job every 6 hours or manually: node scripts/fetchNews.js
+// GitHub Actions workflow: .github/workflows/fetch-news.yml
 
 import mongoose from 'mongoose';
 import Parser from 'rss-parser';
