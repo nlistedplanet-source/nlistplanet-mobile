@@ -19,9 +19,9 @@ import {
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
+import { useLoader } from '../../context/LoaderContext';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -69,6 +69,7 @@ const numberToWords = (num) => {
 
 const MarketplacePage = () => {
   const navigate = useNavigate();
+  const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
@@ -90,6 +91,7 @@ const MarketplacePage = () => {
   const fetchListings = async () => {
     try {
       setLoading(true);
+      showLoader(); // PBPartners style loader
       const response = await listingsAPI.getAll({ status: 'active' });
       setListings(response.data.data || []);
     } catch (error) {
@@ -97,12 +99,14 @@ const MarketplacePage = () => {
       toast.error('Failed to load listings');
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     haptic.light();
+    showLoader(); // PBPartners style loader
     await fetchListings();
     setRefreshing(false);
     haptic.success();

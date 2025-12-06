@@ -21,12 +21,14 @@ import {
 import { portfolioAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
+import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -48,6 +50,7 @@ const HomePage = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
+      showLoader(); // PBPartners style loader
       const [statsRes, holdingsRes, activitiesRes] = await Promise.all([
         portfolioAPI.getStats(),
         portfolioAPI.getHoldings(),
@@ -61,12 +64,14 @@ const HomePage = () => {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
       setLoading(false);
+      hideLoader();
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     haptic.light();
+    showLoader(); // PBPartners style loader
     await fetchData();
     setRefreshing(false);
     haptic.success();

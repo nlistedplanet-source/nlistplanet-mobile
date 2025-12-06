@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LoaderProvider } from './context/LoaderContext';
 import { 
   LoadingScreen, 
   ErrorBoundary, 
@@ -136,20 +137,22 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
-        <InstallPrompt />
-        <Toaster 
-          position="top-center"
-          toastOptions={{
-            duration: 3000,
-            style: {
-              background: '#1e293b',
-              color: '#fff',
-              borderRadius: '12px',
-              padding: '12px 16px',
-            },
-          }}
-        />
+        <LoaderProvider>
+          <AppRoutes />
+          <InstallPrompt />
+          <Toaster 
+            position="top-center"
+            toastOptions={{
+              duration: 3000,
+              style: {
+                background: '#1e293b',
+                color: '#fff',
+                borderRadius: '12px',
+                padding: '12px 16px',
+              },
+            }}
+          />
+        </LoaderProvider>
       </AuthProvider>
     </Router>
   );

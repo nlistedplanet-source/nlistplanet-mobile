@@ -4,6 +4,7 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as InstallPrompt } from './InstallPrompt';
 export { default as LoadingScreen } from './LoadingScreen';
 export { default as ApiLoader } from './ApiLoader';
+export { default as PBLoader } from './PBLoader';
 export { default as SkeletonLoader } from './SkeletonLoader';
 export { default as BrandLogo } from './BrandLogo';
 export { default as PageHeader } from './PageHeader';
