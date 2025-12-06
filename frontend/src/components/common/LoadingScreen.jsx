@@ -42,7 +42,7 @@ const LoadingScreen = ({ message = '' }) => {
   }, [countdown]);
 
   return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+    <div className="fixed inset-0 bg-transparent flex flex-col items-center justify-center z-50">
       {/* Debug indicator */}
       {DEBUG_LOADING && (
         <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
