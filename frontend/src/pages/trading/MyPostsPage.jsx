@@ -962,11 +962,12 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
             </div>
             <div className="p-4">
               <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-2">Current Bid:</p>
+                <p className="text-xs text-gray-600 mb-2">Buyer's Bid (You'll Receive):</p>
                 <div className="flex justify-between">
-                  <span className="font-bold">{formatCurrency(selectedBid.price)}</span>
+                  <span className="font-bold">{formatCurrency(calculateSellerGets(selectedBid.price))}</span>
                   <span className="font-bold">{formatShortQty(selectedBid.quantity)} shares</span>
                 </div>
+                <p className="text-[10px] text-gray-500 mt-1">After 2% platform fee</p>
               </div>
               
               <div className="space-y-3 mb-4">

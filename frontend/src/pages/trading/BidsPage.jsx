@@ -16,7 +16,7 @@ import {
   Eye
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, formatNumber } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import LoadingScreen from '../../components/common/LoadingScreen';
 
@@ -254,17 +254,32 @@ const BidsPage = () => {
             </div>
             <form onSubmit={handleCounterSubmit} className="p-4">
               <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
-                <p className="text-xs font-bold text-gray-700 mb-2">Current {selectedActivity.type === 'bid' ? 'Bid' : 'Offer'}</p>
+                <p className="text-xs font-bold text-gray-700 mb-2">
+                  {selectedActivity.status === 'countered' ? "Seller's Counter (You'll Pay)" : `Your ${selectedActivity.type === 'bid' ? 'Bid' : 'Offer'}`}
+                </p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="bg-white rounded-lg p-2 border border-blue-200">
                     <span className="text-gray-500 text-xs block">Price</span>
-                    <span className="font-bold text-gray-900">{formatCurrency(selectedActivity.price)}</span>
+                    <span className="font-bold text-gray-900">
+                      {selectedActivity.status === 'countered' && selectedActivity.counterHistory?.length > 0
+                        ? formatCurrency(calculateBuyerPays(selectedActivity.counterHistory[selectedActivity.counterHistory.length - 1].price))
+                        : formatCurrency(selectedActivity.price)
+                      }
+                    </span>
                   </div>
                   <div className="bg-white rounded-lg p-2 border border-blue-200">
                     <span className="text-gray-500 text-xs block">Quantity</span>
-                    <span className="font-bold text-gray-900">{selectedActivity.quantity} shares</span>
+                    <span className="font-bold text-gray-900">
+                      {selectedActivity.status === 'countered' && selectedActivity.counterHistory?.length > 0
+                        ? selectedActivity.counterHistory[selectedActivity.counterHistory.length - 1].quantity
+                        : selectedActivity.quantity
+                      } shares
+                    </span>
                   </div>
                 </div>
+                {selectedActivity.status === 'countered' && (
+                  <p className="text-[10px] text-gray-500 mt-2">After 2% platform fee</p>
+                )}
               </div>
               
               <div className="mb-3">
@@ -423,6 +438,11 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
               {counterHistory.map((counter, idx) => {
                 const isSellerCounter = counter.by === 'seller';
                 const isLatest = idx === counterHistory.length - 1;
+                // For buyer's view: seller's counter price should show +2% (what buyer will pay)
+                // buyer's own counter price is shown as-is (what they offered)
+                const displayCounterPrice = isSellerCounter 
+                  ? calculateBuyerPays(counter.price) 
+                  : counter.price;
                 
                 return (
                   <div 
@@ -445,7 +465,8 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
                     </div>
                     <div className="flex items-center gap-4 text-xs">
                       <span className="text-gray-700">
-                        <span className="text-gray-500">Price:</span> <strong>{formatCurrency(counter.price)}</strong>
+                        <span className="text-gray-500">Price:</span> <strong>{formatCurrency(displayCounterPrice)}</strong>
+                        {isSellerCounter && <span className="text-[9px] text-gray-400 ml-1">(incl. fee)</span>}
                       </span>
                       <span className="text-gray-700">
                         <span className="text-gray-500">Qty:</span> <strong>{counter.quantity}</strong>
