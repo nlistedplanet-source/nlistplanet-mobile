@@ -9,8 +9,12 @@ import {
   PieChart,
   Plus,
   ChevronRight,
-  Wallet
+  Wallet,
+  X,
+  Search,
+  Loader
 } from 'lucide-react';
+import { companiesAPI } from '../../utils/api';
 import { portfolioAPI } from '../../utils/api';
 import { formatCurrency, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
@@ -26,6 +30,12 @@ const PortfolioPage = () => {
     gainPercentage: 0
   });
   const [holdings, setHoldings] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState({ companyName: '', quantity: '', buyPrice: '', companyId: null });
+  const [companies, setCompanies] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchPortfolioData();
@@ -66,6 +76,72 @@ const PortfolioPage = () => {
     await fetchPortfolioData();
     setRefreshing(false);
     haptic.success();
+  };
+
+  // Search companies for manual add
+  useEffect(() => {
+    const searchCompanies = async () => {
+      if (searchTerm.length < 2) {
+        setCompanies([]);
+        return;
+      }
+      setSearching(true);
+      try {
+        const response = await companiesAPI.search(searchTerm);
+        setCompanies(response.data.data || []);
+      } catch (error) {
+        console.error('Search failed:', error);
+      } finally {
+        setSearching(false);
+      }
+    };
+    const debounce = setTimeout(searchCompanies, 300);
+    return () => clearTimeout(debounce);
+  }, [searchTerm]);
+
+  const handleCompanySelect = (company) => {
+    setAddForm(prev => ({
+      ...prev,
+      companyName: company.CompanyName || company.name || company.ScriptName,
+      companyId: company._id
+    }));
+    setSearchTerm('');
+    setCompanies([]);
+  };
+
+  const handleAddHolding = async () => {
+    if (!addForm.companyName || !addForm.quantity || !addForm.buyPrice) {
+      toast.error('Please fill all fields');
+      return;
+    }
+    setSaving(true);
+    try {
+      // Add to local holdings (backend integration can be added later)
+      const newHolding = {
+        companyName: addForm.companyName,
+        quantity: parseInt(addForm.quantity),
+        buyPrice: parseFloat(addForm.buyPrice),
+        currentValue: parseInt(addForm.quantity) * parseFloat(addForm.buyPrice),
+        gain: 0,
+        gainPercentage: 0,
+        logo: null,
+        companyId: addForm.companyId
+      };
+      setHoldings(prev => [...prev, newHolding]);
+      setStats(prev => ({
+        ...prev,
+        totalValue: prev.totalValue + newHolding.currentValue,
+        totalInvested: prev.totalInvested + newHolding.currentValue
+      }));
+      toast.success('Share added to portfolio!');
+      setShowAddModal(false);
+      setAddForm({ companyName: '', quantity: '', buyPrice: '', companyId: null });
+      haptic.success();
+    } catch (error) {
+      toast.error('Failed to add share');
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -212,7 +288,143 @@ const PortfolioPage = () => {
             <p className="text-xs text-gray-500 mt-1">Manage your posts</p>
           </button>
         </div>
+        {/* Add Share Manually Button */}
+        <button
+          onClick={() => {
+            haptic.medium();
+            setShowAddModal(true);
+          }}
+          className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl p-4 shadow-lg flex items-center justify-center gap-2 font-semibold"
+        >
+          <Plus className="w-5 h-5" />
+          Add Share Manually
+        </button>
       </div>
+
+      {/* Add Share Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md max-h-[85vh] overflow-y-auto animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Add Share Manually</h3>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setAddForm({ companyName: '', quantity: '', buyPrice: '', companyId: null });
+                  setSearchTerm('');
+                }}
+                className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Company Search */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Company Name *</label>
+                {addForm.companyName ? (
+                  <div className="flex items-center gap-2 p-3 bg-green-50 rounded-xl border border-green-200">
+                    <span className="flex-1 font-semibold text-green-800">{addForm.companyName}</span>
+                    <button
+                      onClick={() => setAddForm(prev => ({ ...prev, companyName: '', companyId: null }))}
+                      className="text-green-600 text-sm font-medium"
+                    >
+                      Change
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Search or type company name..."
+                      className="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    {searching && <Loader className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-gray-400" size={20} />}
+                  </div>
+                )}
+                {/* Company Suggestions */}
+                {companies.length > 0 && !addForm.companyName && (
+                  <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-xl bg-white">
+                    {companies.map((company) => (
+                      <button
+                        key={company._id}
+                        onClick={() => handleCompanySelect(company)}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                      >
+                        <p className="font-semibold text-gray-900">{company.CompanyName || company.name || company.ScriptName}</p>
+                        <p className="text-xs text-gray-500">{company.Sector || company.sector || 'Unlisted'}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {/* Manual entry if no suggestions */}
+                {searchTerm.length >= 2 && companies.length === 0 && !searching && !addForm.companyName && (
+                  <button
+                    onClick={() => setAddForm(prev => ({ ...prev, companyName: searchTerm, companyId: null }))}
+                    className="w-full mt-2 text-left px-4 py-3 bg-blue-50 rounded-xl border border-blue-200"
+                  >
+                    <p className="font-semibold text-blue-800">+ Add "{searchTerm}" as new company</p>
+                  </button>
+                )}
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity (Shares) *</label>
+                <input
+                  type="number"
+                  value={addForm.quantity}
+                  onChange={(e) => setAddForm(prev => ({ ...prev, quantity: e.target.value }))}
+                  placeholder="Enter number of shares"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  min="1"
+                />
+              </div>
+
+              {/* Buy Price */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Buy Price (per share) *</label>
+                <input
+                  type="number"
+                  value={addForm.buyPrice}
+                  onChange={(e) => setAddForm(prev => ({ ...prev, buyPrice: e.target.value }))}
+                  placeholder="Enter price per share"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  min="0.01"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Total Value Preview */}
+              {addForm.quantity && addForm.buyPrice && (
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-200">
+                  <p className="text-sm text-purple-700">Total Investment Value</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {formatCurrency(parseInt(addForm.quantity) * parseFloat(addForm.buyPrice))}
+                  </p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <button
+                onClick={handleAddHolding}
+                disabled={saving || !addForm.companyName || !addForm.quantity || !addForm.buyPrice}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {saving ? (
+                  <><Loader className="animate-spin" size={20} /> Adding...</>
+                ) : (
+                  <><Plus size={20} /> Add to Portfolio</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

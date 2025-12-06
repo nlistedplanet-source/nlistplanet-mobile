@@ -85,6 +85,11 @@ export const listingsAPI = {
   like: (id) => api.post(`/listings/${id}/like`),
   unlike: (id) => api.delete(`/listings/${id}/like`),
   boost: (id) => api.put(`/listings/${id}/boost`),
+  getCompletedDeals: () => api.get('/listings/completed-deals'),
+  getMy: (params) => api.get('/listings/my', { params }),
+  // New actions
+  markAsSold: (id, data) => api.put(`/listings/${id}/mark-sold`, data),
+  cancel: (id, data) => api.put(`/listings/${id}/cancel`, data),
 };
 
 // Portfolio API

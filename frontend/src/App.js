@@ -42,6 +42,7 @@ const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
+const HelpSupport = lazy(() => import('./pages/legal/HelpSupport'));
 
 // Protected Route wrapper
 function ProtectedRoute({ children }) {
@@ -128,6 +129,7 @@ function AppRoutes() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/cookies" element={<CookiePolicy />} />
+          <Route path="/help" element={<HelpSupport />} />
 
           {/* Catch all - redirect to landing/welcome */}
           <Route path="*" element={<Navigate to="/welcome" replace />} />

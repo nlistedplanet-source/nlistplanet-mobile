@@ -36,9 +36,9 @@ const MyPostsPage = () => {
   const [listings, setListings] = useState([]);
   const [subTab, setSubTab] = useState('sell'); // sell or buy
   const [selectedListing, setSelectedListing] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [showSoldModal, setShowSoldModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   const fetchMyListings = useCallback(async () => {
     try {
@@ -70,16 +70,19 @@ const MyPostsPage = () => {
 
     try {
       haptic.medium();
-      await listingsAPI.delete(selectedListing._id);
+      // Use cancel API instead of delete to preserve in history
+      await listingsAPI.cancel(selectedListing._id, { 
+        reason: 'User cancelled - no longer interested' 
+      });
       haptic.success();
-      toast.success('Post deleted successfully');
-      setShowDeleteConfirm(false);
+      toast.success('Listing cancelled successfully');
+      setShowCancelModal(false);
       setSelectedListing(null);
       fetchMyListings();
     } catch (error) {
       haptic.error();
-      console.error('Failed to delete listing:', error);
-      toast.error(error.response?.data?.message || 'Failed to delete post');
+      console.error('Failed to cancel listing:', error);
+      toast.error(error.response?.data?.message || 'Failed to cancel listing');
     }
   };
 
@@ -275,7 +278,7 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
                   onModify={() => handleModify(listing)}
                   onDelete={() => {
                     setSelectedListing(listing);
-                    setShowDeleteConfirm(true);
+                    setShowCancelModal(true);
                   }}
                   onMarkSold={() => handleMarkSold(listing)}
                   onRefresh={fetchMyListings}
@@ -286,56 +289,20 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
         </div>
       </div>
 
-      {/* Delete Confirmation */}
-      {showDeleteConfirm && selectedListing && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-scale-in">
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 p-4 text-white">
-              <div className="flex items-center gap-3">
-                <div className="bg-white/20 p-2 rounded-xl">
-                  <Trash2 size={20} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold">Delete Listing</h3>
-                  <p className="text-red-100 text-xs">This action cannot be undone</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-4">
-              <p className="text-gray-700 text-sm mb-2">
-                Are you sure you want to delete this listing?
-              </p>
-              <p className="text-gray-600 text-sm mb-3">
-                <strong>{selectedListing.companyName}</strong> • {formatCurrency(selectedListing.price)}
-              </p>
-              <div className="bg-slate-50 border border-slate-300 rounded-lg p-2 mb-4">
-                <p className="text-blue-800 text-xs flex items-start gap-2">
-                  <Info size={14} className="mt-0.5 flex-shrink-0" />
-                  <span>All active bids will be cancelled.</span>
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    haptic.light();
-                    setShowDeleteConfirm(false);
-                    setSelectedListing(null);
-                  }}
-                  className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteListing}
-                  className="flex-1 bg-red-600 text-white rounded-xl py-2.5 font-semibold flex items-center justify-center gap-2"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Delete/Cancel Confirmation */}
+      {showCancelModal && selectedListing && (
+        <CancelModal
+          listing={selectedListing}
+          onClose={() => {
+            setShowCancelModal(false);
+            setSelectedListing(null);
+          }}
+          onSuccess={() => {
+            setShowCancelModal(false);
+            setSelectedListing(null);
+            fetchMyListings();
+          }}
+        />
       )}
 
       {/* Modify Modal */}
@@ -1124,20 +1091,158 @@ const ModifyModal = ({ listing, onClose, onSuccess }) => {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// SOLD MODAL
+// CANCEL MODAL - For cancelling/deleting listing
 // ═══════════════════════════════════════════════════════════════
-const SoldModal = ({ listing, onClose, onSuccess }) => {
-  const [soldPrice, setSoldPrice] = useState(listing.price?.toString() || '');
+const CancelModal = ({ listing, onClose, onSuccess }) => {
+  const isSell = listing.type === 'sell';
+  const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const reasonOptions = [
+    'No longer interested',
+    'Found better price elsewhere',
+    'Changed my mind',
+    'Shares already sold/bought',
+    'Other'
+  ];
 
   const handleSubmit = async () => {
     try {
       setLoading(true);
       haptic.medium();
-      // Mark as sold API call (you may need to add this endpoint)
-      await listingsAPI.update(listing._id, { status: 'sold', soldPrice: parseFloat(soldPrice) });
+      
+      await listingsAPI.cancel(listing._id, { 
+        reason: reason || 'User cancelled' 
+      });
+      
       haptic.success();
-      toast.success('Marked as Sold! 🎉');
+      toast.success('Listing cancelled successfully');
+      onSuccess();
+    } catch (error) {
+      haptic.error();
+      toast.error(error.response?.data?.message || 'Failed to cancel listing');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden animate-scale-in">
+        <div className="bg-gradient-to-r from-red-500 to-rose-600 p-4 text-white">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-xl">
+              <Trash2 size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Cancel Listing</h3>
+              <p className="text-red-100 text-xs">This will move listing to history</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4">
+          {/* Listing Info */}
+          <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                isSell ? 'bg-red-50' : 'bg-green-50'
+              }`}>
+                <span className={`text-lg font-bold ${isSell ? 'text-red-600' : 'text-green-600'}`}>
+                  {listing.companyName?.charAt(0) || 'C'}
+                </span>
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 text-sm">{listing.companyName}</p>
+                <p className="text-xs text-gray-500">
+                  {formatCurrency(listing.price)} × {listing.quantity} shares
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Warning */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+            <div className="flex items-start gap-2">
+              <AlertCircle size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-amber-800">
+                All pending {isSell ? 'bids' : 'offers'} will be rejected and bidders will be notified.
+              </p>
+            </div>
+          </div>
+          
+          {/* Reason Selection */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-700 mb-2">
+              Reason for cancellation (optional)
+            </label>
+            <div className="space-y-2">
+              {reasonOptions.map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setReason(opt)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-all ${
+                    reason === opt 
+                      ? 'bg-red-50 border-red-300 text-red-700 font-medium' 
+                      : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-gray-100 text-gray-700 rounded-xl py-2.5 font-semibold"
+            >
+              Keep Listing
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex-1 bg-red-600 text-white rounded-xl py-2.5 font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? <Loader size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              Cancel Listing
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SOLD MODAL - For marking listing as sold externally
+// ═══════════════════════════════════════════════════════════════
+const SoldModal = ({ listing, onClose, onSuccess }) => {
+  const isSell = listing.type === 'sell';
+  const [soldPrice, setSoldPrice] = useState(listing.price?.toString() || '');
+  const [soldQuantity, setSoldQuantity] = useState(listing.quantity?.toString() || '');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!soldPrice || parseFloat(soldPrice) <= 0) {
+      toast.error('Please enter a valid price');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      haptic.medium();
+      
+      await listingsAPI.markAsSold(listing._id, {
+        soldPrice: parseFloat(soldPrice),
+        soldQuantity: parseInt(soldQuantity) || listing.quantity,
+        notes: notes.trim()
+      });
+      
+      haptic.success();
+      toast.success(`Successfully marked as ${isSell ? 'sold' : 'bought'}! 🎉`);
       onSuccess();
     } catch (error) {
       haptic.error();
@@ -1147,40 +1252,112 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
     }
   };
 
+  const totalAmount = (parseFloat(soldPrice) || 0) * (parseInt(soldQuantity) || listing.quantity);
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
-          <h3 className="text-lg font-bold">✅ Mark as Sold</h3>
-          <p className="text-blue-100 text-xs">{listing.companyName}</p>
+        <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-4 text-white">
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-2 rounded-xl">
+              <CheckCircle size={20} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">
+                {isSell ? '✅ Mark as Sold' : '✅ Mark as Bought'}
+              </h3>
+              <p className="text-green-100 text-xs">{listing.companyName}</p>
+            </div>
+          </div>
         </div>
+        
         <div className="p-4">
-          <p className="text-sm text-gray-600 mb-4">
-            Mark this listing as sold. This will deactivate the listing and cancel all pending bids.
-          </p>
+          {/* Info Box */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+            <div className="flex items-start gap-2">
+              <Info size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-amber-800">
+                {isSell 
+                  ? "Use this if you've sold your shares outside our platform. This will close the listing and cancel all pending bids."
+                  : "Use this if you've bought shares outside our platform. This will close the request and cancel all pending offers."
+                }
+              </p>
+            </div>
+          </div>
           
-          <div className="mb-4">
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Final Sale Price (per share)</label>
-            <input
-              type="number"
-              value={soldPrice}
-              onChange={(e) => setSoldPrice(e.target.value)}
-              className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 text-sm font-semibold"
-              placeholder="Enter final price"
-            />
+          <div className="space-y-3 mb-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                {isSell ? 'Sold Price (per share) *' : 'Bought Price (per share) *'}
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₹</span>
+                <input
+                  type="number"
+                  value={soldPrice}
+                  onChange={(e) => setSoldPrice(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-sm font-semibold"
+                  placeholder="Enter final price"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Quantity {isSell ? 'Sold' : 'Bought'}
+              </label>
+              <input
+                type="number"
+                value={soldQuantity}
+                onChange={(e) => setSoldQuantity(e.target.value)}
+                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-sm font-semibold"
+                placeholder={`Max: ${listing.quantity}`}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Notes (optional)
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-sm resize-none"
+                rows={2}
+                placeholder="Any additional details..."
+              />
+            </div>
           </div>
 
+          {/* Total Summary */}
+          {soldPrice && (
+            <div className="bg-green-50 rounded-xl p-3 mb-4 border border-green-200">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-600">Total Amount:</span>
+                <span className="text-lg font-bold text-green-700">
+                  {formatCurrency(totalAmount)}
+                </span>
+              </div>
+              <p className="text-[10px] text-gray-500">
+                {formatNumber(parseInt(soldQuantity) || listing.quantity)} shares × ₹{parseFloat(soldPrice).toLocaleString('en-IN')}
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-3">
-            <button onClick={onClose} className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold">
+            <button 
+              onClick={onClose} 
+              className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold"
+            >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading || !soldPrice}
-              className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-              Confirm Sold
+              Confirm
             </button>
           </div>
         </div>

@@ -233,7 +233,7 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
                   }`}
                 >
                   <TrendingDown className="mx-auto mb-2" size={24} />
-                  SELL Post
+                  Sell Your Share
                 </button>
                 <button
                   onClick={() => { haptic.light(); setType('buy'); }}

@@ -8,6 +8,7 @@ import Settings from '../models/Settings.js';
 import Ad from '../models/Ad.js';
 import ReferralTracking from '../models/ReferralTracking.js';
 import UsernameHistory from '../models/UsernameHistory.js';
+import CompletedDeal from '../models/CompletedDeal.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -1223,6 +1224,141 @@ router.get('/check-username/:username', async (req, res, next) => {
           changedAt: history.changedAt,
           reason: history.reason
         } : null
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============ COMPLETED DEALS MANAGEMENT ============
+
+// @route   GET /api/admin/completed-deals
+// @desc    Get all completed deals with verification codes
+// @access  Admin only
+router.get('/completed-deals', async (req, res, next) => {
+  try {
+    const { status, page = 1, limit = 20 } = req.query;
+    
+    const query = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+    
+    const deals = await CompletedDeal.find(query)
+      .populate('buyerId', 'username fullName email phone')
+      .populate('sellerId', 'username fullName email phone')
+      .populate('companyId', 'CompanyName Logo Sector')
+      .populate('assignedRM', 'username fullName')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
+    
+    const total = await CompletedDeal.countDocuments(query);
+    
+    // Get status counts
+    const statusCounts = await CompletedDeal.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } }
+    ]);
+    
+    res.json({
+      success: true,
+      data: deals,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit)
+      },
+      statusCounts: statusCounts.reduce((acc, curr) => {
+        acc[curr._id] = curr.count;
+        return acc;
+      }, {})
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   PUT /api/admin/completed-deals/:id/status
+// @desc    Update completed deal status
+// @access  Admin only
+router.put('/completed-deals/:id/status', async (req, res, next) => {
+  try {
+    const { status, adminNotes, rmName } = req.body;
+    
+    const deal = await CompletedDeal.findById(req.params.id);
+    
+    if (!deal) {
+      return res.status(404).json({
+        success: false,
+        message: 'Deal not found'
+      });
+    }
+    
+    deal.status = status;
+    if (adminNotes) deal.adminNotes = adminNotes;
+    if (rmName) deal.rmName = rmName;
+    
+    if (status === 'rm_contacted') {
+      deal.rmContactedAt = new Date();
+    } else if (status === 'completed') {
+      deal.completedAt = new Date();
+    } else if (status === 'cancelled') {
+      deal.cancelledAt = new Date();
+      if (req.body.cancelReason) deal.cancelReason = req.body.cancelReason;
+    }
+    
+    await deal.save();
+    
+    res.json({
+      success: true,
+      message: 'Deal status updated',
+      data: deal
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// @route   GET /api/admin/completed-deals/stats
+// @desc    Get completed deals statistics
+// @access  Admin only
+router.get('/completed-deals/stats', async (req, res, next) => {
+  try {
+    const stats = await CompletedDeal.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalDeals: { $sum: 1 },
+          totalValue: { $sum: '$totalAmount' },
+          totalFees: { $sum: '$platformFee' },
+          pendingRMContact: {
+            $sum: { $cond: [{ $eq: ['$status', 'pending_rm_contact'] }, 1, 0] }
+          },
+          rmContacted: {
+            $sum: { $cond: [{ $eq: ['$status', 'rm_contacted'] }, 1, 0] }
+          },
+          completed: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
+          },
+          cancelled: {
+            $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] }
+          }
+        }
+      }
+    ]);
+    
+    res.json({
+      success: true,
+      data: stats[0] || {
+        totalDeals: 0,
+        totalValue: 0,
+        totalFees: 0,
+        pendingRMContact: 0,
+        rmContacted: 0,
+        completed: 0,
+        cancelled: 0
       }
     });
   } catch (error) {

@@ -18,7 +18,7 @@ import {
   PieChart,
   ArrowRight
 } from 'lucide-react';
-import { portfolioAPI } from '../../utils/api';
+import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
@@ -51,15 +51,36 @@ const HomePage = () => {
     try {
       setLoading(true);
       showLoader(); // PBPartners style loader
-      const [statsRes, holdingsRes, activitiesRes] = await Promise.all([
+      const [statsRes, holdingsRes, activitiesRes, myListingsRes] = await Promise.all([
         portfolioAPI.getStats(),
         portfolioAPI.getHoldings(),
         portfolioAPI.getActivities({ limit: 5 }),
+        listingsAPI.getMyListings({ status: 'active' }),
       ]);
 
-      setStats(statsRes.data.data || {});
+      // Get active listings count from my listings
+      const myActiveListings = myListingsRes.data.data || [];
+      const activeListingsCount = myActiveListings.filter(l => l.status === 'active').length;
+
+      setStats({
+        ...(statsRes.data.data || {}),
+        activeListings: activeListingsCount,
+        completedTrades: statsRes.data.data?.totalTransactions || 0
+      });
       setHoldings(holdingsRes.data.data || []);
-      setActivities(activitiesRes.data.data || []);
+      
+      // Format activities for display
+      const rawActivities = activitiesRes.data.data || [];
+      const formattedActivities = rawActivities.map(activity => ({
+        title: activity.type === 'transaction' 
+          ? `${activity.action === 'buy' ? 'Bought' : 'Sold'} ${activity.quantity} shares of ${activity.companyName}`
+          : activity.type === 'bid'
+          ? `Placed bid on ${activity.companyName}`
+          : `Placed offer on ${activity.companyName}`,
+        amount: activity.price * activity.quantity,
+        createdAt: activity.date
+      }));
+      setActivities(formattedActivities);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {

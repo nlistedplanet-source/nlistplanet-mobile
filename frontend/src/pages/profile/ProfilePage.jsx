@@ -75,7 +75,7 @@ const ProfilePage = () => {
       description: 'View privacy terms',
       onClick: () => {
         haptic.light();
-        toast('Opening Privacy Policy...', { icon: '📄' });
+        navigate('/privacy');
       }
     },
     {
@@ -85,7 +85,7 @@ const ProfilePage = () => {
       description: 'View terms and conditions',
       onClick: () => {
         haptic.light();
-        toast('Opening Terms of Service...', { icon: '📋' });
+        navigate('/terms');
       }
     },
     {
@@ -95,7 +95,7 @@ const ProfilePage = () => {
       description: 'Get help with your account',
       onClick: () => {
         haptic.light();
-        toast('Support: support@nlistplanet.com', { icon: '💬' });
+        navigate('/help');
       }
     },
   ];
@@ -126,21 +126,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">{user?.stats?.activePosts || 0}</p>
-            <p className="text-blue-100 text-xs mt-1">Active Posts</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">{user?.stats?.completedTrades || 0}</p>
-            <p className="text-blue-100 text-xs mt-1">Completed</p>
-          </div>
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
-            <p className="text-2xl font-bold text-white">{user?.stats?.referrals || 0}</p>
-            <p className="text-blue-100 text-xs mt-1">Referrals</p>
-          </div>
-        </div>
+        {/* Stats - REMOVED as per user request */}
       </div>
 
       {/* Account Information */}

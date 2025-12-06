@@ -43,11 +43,14 @@ const KYCPage = () => {
   const handleFileChange = (type, event) => {
     const file = event.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size should be less than 5MB');
+      // Validate file type for security
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error('Invalid file type. Please upload JPG, PNG or PDF only.');
         return;
       }
       haptic.light();
+      toast.success('Document uploaded successfully!');
       setDocuments(prev => ({ ...prev, [type]: file }));
     }
   };
@@ -266,8 +269,8 @@ const KYCPage = () => {
                   <p className="font-semibold text-blue-900 mb-2">Guidelines</p>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li>• Documents should be clear and readable</li>
-                    <li>• File size should be less than 5MB</li>
                     <li>• Accepted formats: JPG, PNG, PDF</li>
+                    <li>• Documents are scanned for security</li>
                     <li>• Verification takes 24-48 hours</li>
                   </ul>
                 </div>

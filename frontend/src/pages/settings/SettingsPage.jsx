@@ -145,7 +145,7 @@ const SettingsPage = () => {
             icon={Shield}
             title="Privacy Policy"
             subtitle="How we handle your data"
-            onClick={() => toast('Opening Privacy Policy...', { icon: '📄' })}
+            onClick={() => { haptic.light(); navigate('/privacy'); }}
           />
 
           <div style={{ borderTop: '1px solid var(--border-light)' }}>
@@ -153,7 +153,7 @@ const SettingsPage = () => {
               icon={FileText}
               title="Terms of Service"
               subtitle="Platform terms and conditions"
-              onClick={() => toast('Opening Terms of Service...', { icon: '📋' })}
+              onClick={() => { haptic.light(); navigate('/terms'); }}
             />
           </div>
 
@@ -162,15 +162,15 @@ const SettingsPage = () => {
               icon={HelpCircle}
               title="Help & Support"
               subtitle="Get help with your account"
-              onClick={() => toast('Support: support@nlistplanet.com', { icon: '💬' })}
+              onClick={() => { haptic.light(); navigate('/help'); }}
             />
           </div>
         </div>
 
         {/* App Info */}
         <div className="rounded-2xl p-6 text-center" style={{ backgroundColor: 'var(--surface)', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-light)' }}>
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: 'var(--bg-secondary)' }}>
-            <span className="text-2xl font-bold text-primary-600">NP</span>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-gradient-to-br from-emerald-500 to-teal-600">
+            <span className="text-3xl font-bold text-white">N</span>
           </div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
           <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.0</p>
