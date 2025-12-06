@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
-// Loading items - rotating in square container
-const LOADING_ITEMS = [
-  {
-    type: 'logo',
-    label: 'Loading...'
-  }
-];
+// ========================================
+// 🔧 DEBUG MODE - Set to true to preview loading screen for longer
+// ========================================
+const DEBUG_LOADING = true;  // 👈 Set to false when done testing
+const DEBUG_DELAY_MS = 15000; // 15 seconds minimum display time
+// ========================================
 
 const LoadingScreen = ({ message = '' }) => {
   const [dots, setDots] = useState('');
+  const [minTimeElapsed, setMinTimeElapsed] = useState(!DEBUG_LOADING);
+
+  // Debug mode - ensure minimum display time
+  useEffect(() => {
+    if (DEBUG_LOADING) {
+      const timer = setTimeout(() => {
+        setMinTimeElapsed(true);
+      }, DEBUG_DELAY_MS);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Animate dots
   useEffect(() => {
@@ -21,8 +31,25 @@ const LoadingScreen = ({ message = '' }) => {
 
   const displayMessage = message || 'Loading';
 
+  // In debug mode, show remaining time
+  const [countdown, setCountdown] = useState(DEBUG_DELAY_MS / 1000);
+  
+  useEffect(() => {
+    if (DEBUG_LOADING && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
   return (
     <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-50">
+      {/* Debug indicator */}
+      {DEBUG_LOADING && (
+        <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
+          🔧 Debug Mode: {countdown}s
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="flex flex-col items-center">
         {/* Logo Container - White rounded square with shadow */}
