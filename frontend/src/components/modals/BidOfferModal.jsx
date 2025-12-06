@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Check, TrendingUp, TrendingDown } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, haptic } from '../../utils/helpers';
+import { formatCurrency, haptic, calculateBuyerPays, calculateSellerGets } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
@@ -15,6 +15,12 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
 
   const isSell = listing.type === 'sell';
   const maxQuantity = listing.quantity;
+  
+  // For SELL listing: Buyer sees price with 2% fee added
+  // For BUY listing: Seller sees price with 2% fee deducted (what they'll receive)
+  const displayPrice = isSell 
+    ? calculateBuyerPays(listing.price)  // Buyer will pay this
+    : calculateSellerGets(listing.price); // Seller will receive this
   
   const quantity = parseInt(formData.quantity) || 0;
   const price = parseFloat(formData.price) || 0;
@@ -94,7 +100,7 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
                 <TrendingUp className="w-5 h-5 text-green-600" />
               )}
               <p className="font-semibold text-gray-900">
-                {isSell ? 'Seller' : 'Buyer'} is asking {formatCurrency(listing.price)}/share
+                {isSell ? 'Buyer pays' : 'Seller receives'} {formatCurrency(displayPrice)}/share
               </p>
             </div>
             <p className="text-sm text-gray-600">
@@ -138,7 +144,7 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Listed price: {formatCurrency(listing.price)}/share
+              {isSell ? 'Buyer pays' : 'Seller receives'}: {formatCurrency(displayPrice)}/share
             </p>
           </div>
 
