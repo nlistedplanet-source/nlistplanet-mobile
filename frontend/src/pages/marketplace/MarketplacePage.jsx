@@ -142,8 +142,9 @@ const MarketplacePage = () => {
     []
   );
 
+  // Loading state handled by global PBLoader via useLoader()
   if (loading) {
-    return <LoadingScreen message="Loading Marketplace..." />;
+    return null;
   }
 
   return (
