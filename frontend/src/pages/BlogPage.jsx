@@ -9,7 +9,7 @@ const BlogPage = () => {
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [showHindi, setShowHindi] = useState(false); // Language toggle
+  const [showHindi, setShowHindi] = useState(true); // Default to Hindi
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
