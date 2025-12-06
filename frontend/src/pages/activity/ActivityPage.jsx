@@ -6,7 +6,8 @@ import {
   Briefcase,
   Bell,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Archive
 } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
 
@@ -49,6 +50,15 @@ const ActivityPage = () => {
       iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100',
       iconColor: 'text-emerald-700',
       path: '/portfolio',
+    },
+    {
+      id: 'history',
+      title: 'History',
+      description: 'View your past listings and transactions',
+      icon: Archive,
+      iconBg: 'bg-gradient-to-br from-slate-50 to-slate-100',
+      iconColor: 'text-slate-700',
+      path: '/history',
     },
   ];
 

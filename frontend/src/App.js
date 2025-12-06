@@ -36,6 +36,7 @@ const MyPostsPage = lazy(() => import('./pages/trading/MyPostsPage'));
 const BidsPage = lazy(() => import('./pages/trading/BidsPage'));
 const OffersReceivedPage = lazy(() => import('./pages/trading/OffersReceivedPage'));
 const PortfolioPage = lazy(() => import('./pages/portfolio/PortfolioPage'));
+const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
 
 // Legal pages
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
@@ -121,6 +122,7 @@ function AppRoutes() {
           <Route path="/bids" element={<ProtectedRoute><AppLayout><BidsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/offers" element={<ProtectedRoute><AppLayout><OffersReceivedPage /></AppLayout></ProtectedRoute>} />
           <Route path="/portfolio" element={<ProtectedRoute><AppLayout><PortfolioPage /></AppLayout></ProtectedRoute>} />
+          <Route path="/history" element={<ProtectedRoute><AppLayout><HistoryPage /></AppLayout></ProtectedRoute>} />
 
           {/* Legal pages - public */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
