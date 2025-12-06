@@ -71,7 +71,7 @@ const ListingDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-amber-50/50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
       </div>
     );
@@ -87,7 +87,7 @@ const ListingDetailPage = () => {
   const platformFee = (totalAmount * 2) / 100;
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
       <div className={`${isSell ? 'bg-gradient-to-br from-red-600 to-red-700' : 'bg-gradient-to-br from-green-600 to-green-700'} px-6 pt-safe pb-6`}>
         <div className="flex items-center justify-between mb-6">

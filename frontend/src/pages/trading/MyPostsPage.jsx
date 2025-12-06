@@ -197,9 +197,9 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
 
   return (
     <>
-      <div className="min-h-screen bg-amber-50/50 pb-24">
+      <div className="min-h-screen bg-slate-50 pb-24">
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
+        <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
           <div className="px-4 pt-safe pb-3">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-xl font-bold text-gray-900">My Listings</h1>
@@ -222,7 +222,7 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
                 className={`flex-1 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
                   subTab === 'sell'
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-white text-gray-600 border border-amber-100'
+                    : 'bg-white text-gray-600 border border-slate-200'
                 }`}
               >
                 <TrendingUp size={16} />
@@ -236,7 +236,7 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
                 className={`flex-1 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${
                   subTab === 'buy'
                     ? 'bg-blue-100 text-blue-700'
-                    : 'bg-white text-gray-600 border border-amber-100'
+                    : 'bg-white text-gray-600 border border-slate-200'
                 }`}
               >
                 <Package size={16} />
@@ -309,8 +309,8 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
               <p className="text-gray-600 text-sm mb-3">
                 <strong>{selectedListing.companyName}</strong> • {formatCurrency(selectedListing.price)}
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-4">
-                <p className="text-amber-800 text-xs flex items-start gap-2">
+              <div className="bg-slate-50 border border-slate-300 rounded-lg p-2 mb-4">
+                <p className="text-blue-800 text-xs flex items-start gap-2">
                   <Info size={14} className="mt-0.5 flex-shrink-0" />
                   <span>All active bids will be cancelled.</span>
                 </p>
@@ -732,7 +732,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                   haptic.light();
                   setPendingBidsExpanded(!pendingBidsExpanded);
                 }}
-                className="w-full bg-gradient-to-r from-orange-100 to-amber-100 px-3 py-2 rounded-lg border-2 border-orange-400 flex items-center justify-between"
+                className="w-full bg-gradient-to-r from-orange-100 to-slate-100 px-3 py-2 rounded-lg border-2 border-orange-400 flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-orange-600">🟠</span>
@@ -758,7 +758,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                             <span className="text-xs font-bold text-orange-700">
                               👤 @{bid.user?.username || bid.username || `trader_${index + 1}`}
                             </span>
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-200 text-yellow-800">
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-200 text-amber-800">
                               NEW
                             </span>
                           </div>
@@ -835,7 +835,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                   <span className="text-xs text-gray-500">⭐ {selectedBid.user?.rating?.toFixed(1) || '4.5'}</span>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                  selectedBid.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-400' :
+                  selectedBid.status === 'pending' ? 'bg-amber-100 text-amber-800 border border-amber-400' :
                   selectedBid.status === 'countered' ? 'bg-blue-100 text-blue-800 border border-blue-400' :
                   'bg-gray-100 text-gray-800 border border-gray-400'
                 }`}>
@@ -1150,9 +1150,9 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white">
           <h3 className="text-lg font-bold">✅ Mark as Sold</h3>
-          <p className="text-amber-100 text-xs">{listing.companyName}</p>
+          <p className="text-blue-100 text-xs">{listing.companyName}</p>
         </div>
         <div className="p-4">
           <p className="text-sm text-gray-600 mb-4">
@@ -1165,7 +1165,7 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
               type="number"
               value={soldPrice}
               onChange={(e) => setSoldPrice(e.target.value)}
-              className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-amber-500 focus:ring-0 text-sm font-semibold"
+              className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 text-sm font-semibold"
               placeholder="Enter final price"
             />
           </div>
@@ -1177,7 +1177,7 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
             <button
               onClick={handleSubmit}
               disabled={loading || !soldPrice}
-              className="flex-1 bg-amber-500 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader size={16} className="animate-spin" /> : <CheckCircle size={16} />}
               Confirm Sold

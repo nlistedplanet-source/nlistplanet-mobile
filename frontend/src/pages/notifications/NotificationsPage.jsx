@@ -141,9 +141,9 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
+      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
         <div className="px-6 pt-safe pb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -156,7 +156,7 @@ const NotificationsPage = () => {
               {unreadCount > 0 && (
                 <button 
                   onClick={markAllAsRead}
-                  className="px-3 py-2 bg-amber-100 text-amber-700 rounded-xl font-semibold text-sm hover:bg-amber-200 transition-colors touch-feedback flex items-center gap-1"
+                  className="px-3 py-2 bg-blue-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-blue-200 transition-colors touch-feedback flex items-center gap-1"
                 >
                   <Check size={14} />
                   Mark all

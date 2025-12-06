@@ -128,7 +128,7 @@ const AboutPage = () => {
         {/* What We Offer */}
         <div className="bg-gray-800/50 rounded-2xl p-5 mb-6 border border-gray-700/50">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" />
+            <Award className="w-5 h-5 text-blue-500" />
             What We Offer
           </h3>
           <div className="space-y-3">

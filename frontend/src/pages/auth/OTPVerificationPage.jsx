@@ -167,7 +167,7 @@ const OTPVerificationPage = () => {
           <p className="text-gray-400 mb-4">{message}</p>
           <p className="text-sm text-gray-500">Redirecting to login...</p>
           <div className="mt-4">
-            <div className="w-8 h-8 mx-auto border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-8 h-8 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         </div>
       </div>
@@ -188,7 +188,7 @@ const OTPVerificationPage = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Verify Your Account</h2>
@@ -197,7 +197,7 @@ const OTPVerificationPage = () => {
           </p>
           <div className="mt-3 space-y-1">
             <div className="flex items-center justify-center text-sm text-gray-300">
-              <Mail className="w-4 h-4 mr-2 text-amber-500" />
+              <Mail className="w-4 h-4 mr-2 text-blue-600" />
               <span className="font-medium">{email}</span>
             </div>
             {phone && (
@@ -222,7 +222,7 @@ const OTPVerificationPage = () => {
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              className={`w-11 h-14 text-center text-2xl font-bold bg-zinc-800 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all text-white ${
+              className={`w-11 h-14 text-center text-2xl font-bold bg-zinc-800 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-white ${
                 status === 'error' ? 'border-red-500 bg-red-500/10' : 'border-zinc-700'
               }`}
               disabled={loading}
@@ -250,7 +250,7 @@ const OTPVerificationPage = () => {
         <button
           onClick={() => handleSubmit()}
           disabled={loading || otp.some(d => !d)}
-          className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-black rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-black rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
         >
           {loading ? (
             <>
@@ -271,7 +271,7 @@ const OTPVerificationPage = () => {
             className={`flex items-center justify-center mx-auto text-sm font-medium transition-colors ${
               countdown > 0 
                 ? 'text-gray-500 cursor-not-allowed' 
-                : 'text-amber-500 hover:text-amber-400'
+                : 'text-blue-600 hover:text-blue-500'
             }`}
           >
             {resending ? (
@@ -294,8 +294,8 @@ const OTPVerificationPage = () => {
         </div>
         
         {/* Info */}
-        <div className="mt-8 p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-          <p className="text-xs text-amber-400 text-center">
+        <div className="mt-8 p-4 bg-blue-600/10 rounded-xl border border-blue-500/20">
+          <p className="text-xs text-blue-500 text-center">
             💡 <strong>Tip:</strong> Check your spam folder if you don't see the email. 
             The OTP expires in 10 minutes.
           </p>

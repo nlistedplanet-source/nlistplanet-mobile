@@ -96,7 +96,7 @@ const KYCPage = () => {
       pending: {
         icon: Clock,
         color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100',
+        bgColor: 'bg-amber-100',
         borderColor: 'border-yellow-200',
         title: 'Verification Pending',
         description: 'Your KYC documents are under review. This usually takes 24-48 hours.'
@@ -126,7 +126,7 @@ const KYCPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-amber-50/50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -135,9 +135,9 @@ const KYCPage = () => {
   const StatusIcon = statusConfig?.icon;
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 shadow-sm border-b border-amber-100">
+      <div className="bg-gradient-to-r from-slate-100 to-gray-50 shadow-sm border-b border-slate-200">
         <div className="px-6 pt-safe pb-4">
           <div className="flex items-center gap-4 mb-4">
             <button

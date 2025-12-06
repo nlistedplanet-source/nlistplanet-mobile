@@ -143,9 +143,9 @@ const MarketplacePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header - Compact Amber Theme */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-20 shadow-sm border-b border-amber-100">
+      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-20 shadow-sm border-b border-slate-200">
         <div className="px-3 pt-safe pb-2">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-base font-bold text-gray-900">Marketplace</h1>
@@ -633,7 +633,7 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 onClick={handleFavorite}
                 className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
                   favorited 
-                    ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' 
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
                     : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
                 }`}
               >
@@ -737,8 +737,8 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
               </div>
 
               {/* Confirmation Message */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-                <p className="text-amber-800 text-xs text-center">
+              <div className="bg-slate-50 border border-slate-300 rounded-xl p-3 mb-4">
+                <p className="text-blue-800 text-xs text-center">
                   By proceeding, you confirm that you agree to purchase{' '}
                   <span className="font-bold">{formatNumber(qty)} shares</span> of{' '}
                   <span className="font-bold">{company.scriptName || listing.companyName}</span>{' '}

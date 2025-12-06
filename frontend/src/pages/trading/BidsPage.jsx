@@ -135,9 +135,9 @@ const BidsPage = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-amber-50/50 pb-24">
+      <div className="min-h-screen bg-slate-50 pb-24">
         {/* Header */}
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
+        <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
           <div className="px-4 pt-safe pb-3">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -154,7 +154,7 @@ const BidsPage = () => {
             </div>
 
             {/* Submenu Tabs */}
-            <div className="flex gap-2 bg-white p-1 rounded-xl border border-amber-100">
+            <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200">
               <button
                 onClick={() => {
                   haptic.light();
@@ -162,7 +162,7 @@ const BidsPage = () => {
                 }}
                 className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
                   activeSubmenu === 'bids'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
                     : 'text-gray-600'
                 }`}
               >
@@ -181,7 +181,7 @@ const BidsPage = () => {
                 }}
                 className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
                   activeSubmenu === 'offers'
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
                     : 'text-gray-600'
                 }`}
               >
@@ -350,7 +350,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
   const canTakeAction = showActions && isLatestFromSeller;
 
   const statusConfig = {
-    pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: Clock },
+    pending: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock },
     accepted: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
     rejected: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
     countered: { bg: 'bg-purple-100', text: 'text-purple-700', icon: RotateCcw },
@@ -513,7 +513,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
             </span>
           )}
           {activity.status === 'pending' && (
-            <span className="text-[10px] font-bold text-yellow-700 flex items-center gap-1">
+            <span className="text-[10px] font-bold text-amber-700 flex items-center gap-1">
               <Clock size={12} />
               Waiting for response...
             </span>

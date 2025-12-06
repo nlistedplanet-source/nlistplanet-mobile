@@ -58,9 +58,9 @@ const ActivityPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 sticky top-0 z-10 shadow-sm border-b border-amber-100">
+      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
         <div className="px-6 pt-safe pb-4">
           <h1 className="text-2xl font-bold text-gray-900">Activity</h1>
           <p className="text-gray-500 mt-1">Manage your trading activities</p>

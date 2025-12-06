@@ -101,14 +101,14 @@ const ProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-amber-50/50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       {/* Profile Header */}
-      <div className="bg-gradient-to-br from-amber-500 to-orange-500 px-6 pt-safe pb-8 rounded-b-3xl shadow-lg">
+      <div className="bg-gradient-to-br from-blue-600 to-indigo-600 px-6 pt-safe pb-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center gap-4 mb-4">
           {/* Avatar with Logo Overlay */}
           <div className="relative">
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-3xl font-bold text-amber-600">
+              <span className="text-3xl font-bold text-blue-600">
                 {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
               </span>
             </div>
@@ -122,7 +122,7 @@ const ProfilePage = () => {
             <h1 className="text-2xl font-bold text-white mb-1">
               {user?.fullName || 'User'}
             </h1>
-            <p className="text-amber-100 text-sm">@{user?.username}</p>
+            <p className="text-blue-100 text-sm">@{user?.username}</p>
           </div>
         </div>
 
@@ -130,15 +130,15 @@ const ProfilePage = () => {
         <div className="grid grid-cols-3 gap-4 mt-6">
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
             <p className="text-2xl font-bold text-white">{user?.stats?.activePosts || 0}</p>
-            <p className="text-amber-100 text-xs mt-1">Active Posts</p>
+            <p className="text-blue-100 text-xs mt-1">Active Posts</p>
           </div>
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
             <p className="text-2xl font-bold text-white">{user?.stats?.completedTrades || 0}</p>
-            <p className="text-amber-100 text-xs mt-1">Completed</p>
+            <p className="text-blue-100 text-xs mt-1">Completed</p>
           </div>
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-3 text-center">
             <p className="text-2xl font-bold text-white">{user?.stats?.referrals || 0}</p>
-            <p className="text-amber-100 text-xs mt-1">Referrals</p>
+            <p className="text-blue-100 text-xs mt-1">Referrals</p>
           </div>
         </div>
       </div>
@@ -278,7 +278,7 @@ const MenuItem = ({ icon: Icon, label, description, badge, onClick, isLast }) =>
       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
         badge === 'verified' 
           ? 'bg-green-50 text-green-700' 
-          : 'bg-yellow-50 text-yellow-700'
+          : 'bg-slate-50 text-amber-700'
       }`}>
         {badge}
       </span>

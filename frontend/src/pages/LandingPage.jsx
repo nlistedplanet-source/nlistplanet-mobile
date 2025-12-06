@@ -259,7 +259,7 @@ const LandingPage = () => {
           {!isInstalled && (deferredPrompt || isIOS) && (
             <button
               onClick={handleInstallClick}
-              className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
             >
               <Download size={14} />
               App
