@@ -137,7 +137,7 @@ const NotificationsPage = () => {
   );
 
   if (loading) {
-    return <LoadingScreen message="Loading Notifications..." />;
+    return <LoadingScreen />;
   }
 
   return (

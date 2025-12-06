@@ -130,7 +130,7 @@ const BidsPage = () => {
   });
 
   if (loading) {
-    return <LoadingScreen message="Loading My Bids..." />;
+    return <LoadingScreen />;
   }
 
   return (

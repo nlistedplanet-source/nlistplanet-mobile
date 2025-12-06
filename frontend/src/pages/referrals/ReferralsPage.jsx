@@ -76,7 +76,7 @@ const ReferralsPage = () => {
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading Referrals..." />;
+    return <LoadingScreen />;
   }
 
   return (

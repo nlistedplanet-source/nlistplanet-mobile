@@ -8,3 +8,4 @@ export { default as PBLoader } from './PBLoader';
 export { default as SkeletonLoader } from './SkeletonLoader';
 export { default as BrandLogo } from './BrandLogo';
 export { default as PageHeader } from './PageHeader';
+export { default as PageSkeleton, CardSkeleton, ListSkeleton, InlineLoader } from './PageSkeleton';

@@ -15,6 +15,7 @@ import { listingsAPI } from '../../utils/api';
 import { formatCurrency, formatDate, timeAgo, shareListing, haptic } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import BidOfferModal from '../../components/modals/BidOfferModal';
+import LoadingScreen from '../../components/common/LoadingScreen';
 import toast from 'react-hot-toast';
 
 const ListingDetailPage = () => {
@@ -70,11 +71,7 @@ const ListingDetailPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!listing) {

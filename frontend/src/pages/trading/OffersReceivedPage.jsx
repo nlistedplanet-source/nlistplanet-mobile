@@ -118,7 +118,7 @@ const OffersReceivedPage = () => {
   );
 
   if (loading) {
-    return <LoadingScreen message="Loading Offers..." />;
+    return <LoadingScreen />;
   }
 
   return (

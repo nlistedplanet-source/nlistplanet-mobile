@@ -23,6 +23,7 @@ import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/h
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
+import LoadingScreen from '../../components/common/LoadingScreen';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
@@ -84,16 +85,7 @@ const HomePage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse">
-            <Sparkles className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-gray-600 font-medium">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

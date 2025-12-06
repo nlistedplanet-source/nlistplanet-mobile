@@ -192,7 +192,7 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading My Posts..." />;
+    return <LoadingScreen />;
   }
 
   return (

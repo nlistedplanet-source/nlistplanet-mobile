@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Home, BookOpen, Info, Mail, HelpCircle } from 'lucide-react';
+import LoadingScreen from '../components/common/LoadingScreen';
 
 const BlogPage = () => {
   const navigate = useNavigate();
@@ -129,14 +130,7 @@ const BlogPage = () => {
   const currentArticle = news[currentIndex];
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading news...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (error || news.length === 0) {
