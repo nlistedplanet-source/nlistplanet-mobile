@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Package,
   Send,
-  Inbox,
+  Briefcase,
   Bell,
   ChevronRight,
   TrendingUp
@@ -42,13 +42,13 @@ const ActivityPage = () => {
       path: '/bids',
     },
     {
-      id: 'offers',
-      title: 'Offers Received',
-      description: 'Review and manage offers on your posts',
-      icon: Inbox,
-      iconBg: 'bg-gradient-to-br from-green-50 to-green-100',
-      iconColor: 'text-green-700',
-      path: '/offers',
+      id: 'portfolio',
+      title: 'Portfolio',
+      description: 'View your holdings and investments',
+      icon: Briefcase,
+      iconBg: 'bg-gradient-to-br from-emerald-50 to-emerald-100',
+      iconColor: 'text-emerald-700',
+      path: '/portfolio',
     },
   ];
 
@@ -118,11 +118,11 @@ const ActivityPage = () => {
             <p className="text-xs text-gray-500 mt-1">Bids</p>
           </div>
           <div className="bg-white rounded-2xl p-4 text-center shadow-mobile">
-            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Inbox className="w-5 h-5 text-green-700" />
+            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <Briefcase className="w-5 h-5 text-emerald-700" />
             </div>
             <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-xs text-gray-500 mt-1">Offers</p>
+            <p className="text-xs text-gray-500 mt-1">Holdings</p>
           </div>
         </div>
       </div>
