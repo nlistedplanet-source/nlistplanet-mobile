@@ -56,7 +56,7 @@ const NotificationsPage = () => {
     try {
       await notificationsAPI.markAsRead(id);
       setNotifications(prev =>
-        prev.map(n => n._id === id ? { ...n, read: true } : n)
+        prev.map(n => n._id === id ? { ...n, isRead: true } : n)
       );
     } catch (error) {
       console.error('Failed to mark as read:', error);
@@ -67,7 +67,7 @@ const NotificationsPage = () => {
     try {
       haptic.light();
       await notificationsAPI.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
       toast.success('All notifications marked as read');
     } catch (error) {
       console.error('Failed to mark all as read:', error);
@@ -90,7 +90,7 @@ const NotificationsPage = () => {
   };
 
   const handleNotificationClick = (notification) => {
-    if (!notification.read) {
+    if (!notification.isRead) {
       markAsRead(notification._id);
     }
 
@@ -108,7 +108,7 @@ const NotificationsPage = () => {
 
   const filteredNotifications = notifications.filter(notification => {
     if (activeFilter === 'all') return true;
-    if (activeFilter === 'unread') return !notification.read;
+    if (activeFilter === 'unread') return !notification.isRead;
     if (activeFilter === 'trading') {
       return ['bid_received', 'bid_accepted', 'bid_rejected', 'trade_completed'].includes(notification.type);
     }
@@ -118,7 +118,7 @@ const NotificationsPage = () => {
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const FilterButton = ({ value, label, count }) => (
     <button
@@ -338,7 +338,7 @@ const NotificationCard = ({ notification, onClick, onDelete, isSwiped, onSwipe }
         onTouchEnd={onTouchEnd}
         onClick={onClick}
         className={`bg-white rounded-2xl p-4 shadow-mobile cursor-pointer transition-transform ${
-          !notification.read ? 'border-l-4 border-primary-600' : ''
+          !notification.isRead ? 'border-l-4 border-primary-600' : ''
         }`}
         style={{
           transform: `translateX(-${offset}px)`,
@@ -354,10 +354,10 @@ const NotificationCard = ({ notification, onClick, onDelete, isSwiped, onSwipe }
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-1">
-              <h3 className={`font-semibold text-gray-900 text-sm ${!notification.read ? 'font-bold' : ''}`}>
+              <h3 className={`font-semibold text-gray-900 text-sm ${!notification.isRead ? 'font-bold' : ''}`}>
                 {notification.title}
               </h3>
-              {!notification.read && (
+              {!notification.isRead && (
                 <div className="w-2 h-2 bg-primary-600 rounded-full flex-shrink-0 ml-2 mt-1.5" />
               )}
             </div>

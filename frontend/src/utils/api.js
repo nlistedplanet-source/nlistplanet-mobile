@@ -105,8 +105,8 @@ export const companiesAPI = {
 // Notifications API
 export const notificationsAPI = {
   getAll: (params) => api.get('/notifications', { params }),
-  markRead: (id) => api.put(`/notifications/${id}/read`),
-  markAllRead: () => api.put('/notifications/read-all'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/notifications/read-all'),
   delete: (id) => api.delete(`/notifications/${id}`),
   clearAll: () => api.post('/notifications/clear-all'),
 };
