@@ -42,7 +42,7 @@ const LoadingScreen = ({ message = '' }) => {
   }, [countdown]);
 
   return (
-    <div className="fixed inset-0 bg-slate-50 flex flex-col items-center justify-center z-50">
+    <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
       {/* Debug indicator */}
       {DEBUG_LOADING && (
         <div className="absolute top-4 right-4 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">
@@ -54,13 +54,8 @@ const LoadingScreen = ({ message = '' }) => {
       <div className="flex flex-col items-center">
         {/* Logo Container - White rounded square with shadow */}
         <div className="relative mb-6">
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-28 h-28 rounded-3xl bg-emerald-100 animate-pulse"></div>
-          </div>
-          
-          {/* Main square container with logo */}
-          <div className="relative w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden">
+          {/* Main square container with logo - NO glow effect */}
+          <div className="w-24 h-24 rounded-2xl bg-white shadow-xl flex items-center justify-center overflow-hidden">
             <img 
               src="/Logo copy.png" 
               alt="NlistPlanet" 
