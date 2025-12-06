@@ -14,7 +14,6 @@ import { referralsAPI } from '../../utils/api';
 import { formatCurrency, haptic } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 const ReferralsPage = () => {
   const navigate = useNavigate();
@@ -76,7 +75,7 @@ const ReferralsPage = () => {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

@@ -14,7 +14,6 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 const OffersReceivedPage = () => {
   const navigate = useNavigate();
@@ -118,7 +117,7 @@ const OffersReceivedPage = () => {
   );
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

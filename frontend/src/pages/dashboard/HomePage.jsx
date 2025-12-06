@@ -23,7 +23,6 @@ import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/h
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
-import LoadingScreen from '../../components/common/LoadingScreen';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
@@ -85,7 +84,7 @@ const HomePage = () => {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

@@ -20,7 +20,6 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
 import { useLoader } from '../../context/LoaderContext';
-import LoadingScreen from '../../components/common/LoadingScreen';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
 
@@ -143,9 +142,9 @@ const MarketplacePage = () => {
     []
   );
 
-  // Loading state handled by LoadingScreen
+  // Loading state - return null to let Suspense handle it
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

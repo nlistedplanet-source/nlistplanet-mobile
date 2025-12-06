@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { kycAPI } from '../../utils/api';
 import { haptic } from '../../utils/helpers';
-import LoadingScreen from '../../components/common/LoadingScreen';
 import toast from 'react-hot-toast';
 
 const KYCPage = () => {
@@ -126,7 +125,7 @@ const KYCPage = () => {
   const statusConfig = getStatusConfig();
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   const StatusIcon = statusConfig?.icon;

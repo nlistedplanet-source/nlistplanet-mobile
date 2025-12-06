@@ -46,7 +46,7 @@ function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <LoadingScreen />;
+    return null; // Suspense fallback handles loading
   }
 
   if (!isAuthenticated) {
@@ -61,7 +61,7 @@ function PublicRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <LoadingScreen />;
+    return null; // Suspense fallback handles loading
   }
 
   if (isAuthenticated) {

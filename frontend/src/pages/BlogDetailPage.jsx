@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Eye, Share2, BookmarkPlus, ExternalLink, Home, BookOpen, Info, Mail, HelpCircle } from 'lucide-react';
-import LoadingScreen from '../components/common/LoadingScreen';
 
 const BlogDetailPage = () => {
   const navigate = useNavigate();
@@ -79,7 +78,7 @@ const BlogDetailPage = () => {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   if (error || !article) {

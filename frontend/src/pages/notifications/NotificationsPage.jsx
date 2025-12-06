@@ -17,7 +17,6 @@ import {
 import { notificationsAPI } from '../../utils/api';
 import { timeAgo, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -137,7 +136,7 @@ const NotificationsPage = () => {
   );
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

@@ -18,7 +18,6 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays } from '../../utils/helpers';
 import toast from 'react-hot-toast';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 const BidsPage = () => {
   const navigate = useNavigate();
@@ -130,7 +129,7 @@ const BidsPage = () => {
   });
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

@@ -27,7 +27,6 @@ import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
-import LoadingScreen from '../../components/common/LoadingScreen';
 
 const MyPostsPage = () => {
   const navigate = useNavigate();
@@ -192,7 +191,7 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   return (

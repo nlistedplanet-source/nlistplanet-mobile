@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Home, BookOpen, Info, Mail, HelpCircle } from 'lucide-react';
-import LoadingScreen from '../components/common/LoadingScreen';
 
 const BlogPage = () => {
   const navigate = useNavigate();
@@ -130,7 +129,7 @@ const BlogPage = () => {
   const currentArticle = news[currentIndex];
 
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   if (error || news.length === 0) {
