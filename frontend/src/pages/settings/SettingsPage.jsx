@@ -7,20 +7,16 @@ import {
   FileText,
   HelpCircle,
   ChevronRight,
-  Moon,
-  Sun,
   Globe,
   Vibrate
 } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
-import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [hapticEnabled, setHapticEnabled] = useState(true);
-  const { theme, toggle } = useTheme();
 
   const handleNotificationToggle = () => {
     haptic.light();
@@ -34,12 +30,6 @@ const SettingsPage = () => {
     }
     setHapticEnabled(!hapticEnabled);
     toast.success(`Haptic feedback ${!hapticEnabled ? 'enabled' : 'disabled'}`);
-  };
-
-  const handleThemeChange = () => {
-    haptic.light();
-    toggle();
-    toast.success(`Switched to ${theme === 'light' ? 'dark' : 'light'} theme`);
   };
 
   const navigateToPage = (path) => {
@@ -133,17 +123,7 @@ const SettingsPage = () => {
             />
           </div>
 
-          <div style={{ borderTop: '1px solid var(--border-light)' }}>
-            <SettingItem
-              icon={theme === 'light' ? Moon : Sun}
-              title="Theme"
-              subtitle={theme === 'light' ? 'Light mode' : 'Dark mode'}
-              onClick={handleThemeChange}
-              rightElement={
-                <ToggleSwitch enabled={theme === 'dark'} onToggle={handleThemeChange} />
-              }
-            />
-          </div>
+          {/* Dark theme toggle temporarily disabled - will be added later */}
 
           <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem

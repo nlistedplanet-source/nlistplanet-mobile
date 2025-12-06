@@ -16,10 +16,15 @@ import {
   Loader,
   MessageSquare,
   Info,
-  X
+  X,
+  History,
+  Clock,
+  AlertCircle,
+  XCircle,
+  ChevronRight
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, formatNumber } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import LoadingScreen from '../../components/common/LoadingScreen';
@@ -369,20 +374,55 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
   );
 };
 
-// My Post Card Component - Desktop Style with all actions
+// My Post Card Component - Mobile Design with Counter Offers & Pending Bids sections
 const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onMarkSold, onRefresh }) => {
-  const [bidsExpanded, setBidsExpanded] = useState(false);
+  const [counterOffersExpanded, setCounterOffersExpanded] = useState(true);
+  const [pendingBidsExpanded, setPendingBidsExpanded] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [showCounterModal, setShowCounterModal] = useState(false);
+  const [showBidDetailModal, setShowBidDetailModal] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
   const [counterPrice, setCounterPrice] = useState('');
   const [counterQuantity, setCounterQuantity] = useState('');
   
   const isSell = listing.type === 'sell';
   const bidsArray = (isSell ? listing.bids : listing.offers) || [];
-  const activeBidsCount = bidsArray.filter(b => b.status === 'pending' || b.status === 'countered').length;
+  
+  // Separate bids into Counter Offers (in-progress) and Pending Bids
+  const counterOfferBids = bidsArray.filter(b => b.status === 'countered');
+  const pendingBids = bidsArray.filter(b => b.status === 'pending');
+  const activeBidsCount = counterOfferBids.length + pendingBids.length;
+  
   const sellerPrice = isSell ? (listing.sellerDesiredPrice || listing.price) : (listing.buyerMaxPrice || listing.price);
   const totalAmount = sellerPrice * listing.quantity;
+
+  // Helper to get latest counter info for a bid
+  const getLatestCounterInfo = (bid) => {
+    if (!bid.counterHistory || bid.counterHistory.length === 0) {
+      return { buyerBid: bid.price, buyerQty: bid.quantity, yourPrice: null, yourQty: null, rounds: 0, latestBy: 'buyer' };
+    }
+    
+    const history = bid.counterHistory;
+    let latestBuyerCounter = null;
+    let latestSellerCounter = null;
+    
+    for (let i = history.length - 1; i >= 0; i--) {
+      if (!latestBuyerCounter && history[i].by === 'buyer') latestBuyerCounter = history[i];
+      if (!latestSellerCounter && history[i].by === 'seller') latestSellerCounter = history[i];
+      if (latestBuyerCounter && latestSellerCounter) break;
+    }
+    
+    const latestEntry = history[history.length - 1];
+    
+    return {
+      buyerBid: latestBuyerCounter ? latestBuyerCounter.price : bid.price,
+      buyerQty: latestBuyerCounter ? latestBuyerCounter.quantity : bid.quantity,
+      yourPrice: latestSellerCounter ? latestSellerCounter.price : null,
+      yourQty: latestSellerCounter ? latestSellerCounter.quantity : null,
+      rounds: history.length,
+      latestBy: latestEntry.by
+    };
+  };
 
   const handleAccept = async (bid) => {
     try {
@@ -391,6 +431,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
       await listingsAPI.acceptBid(listing._id, bid._id);
       haptic.success();
       toast.success('Bid accepted! 🎉');
+      setShowBidDetailModal(false);
+      setSelectedBid(null);
       onRefresh();
     } catch (error) {
       haptic.error();
@@ -406,6 +448,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
       haptic.medium();
       await listingsAPI.rejectBid(listing._id, bid._id);
       toast.success('Bid rejected');
+      setShowBidDetailModal(false);
+      setSelectedBid(null);
       onRefresh();
     } catch (error) {
       haptic.error();
@@ -419,6 +463,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
     setSelectedBid(bid);
     setCounterPrice(bid.price.toString());
     setCounterQuantity(bid.quantity.toString());
+    setShowBidDetailModal(false);
     setShowCounterModal(true);
   };
 
@@ -446,6 +491,12 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
     }
   };
 
+  const handleBidCardClick = (bid) => {
+    haptic.light();
+    setSelectedBid(bid);
+    setShowBidDetailModal(true);
+  };
+
   // Format short quantity
   const formatShortQty = (num) => {
     if (num >= 10000000) return (num / 10000000).toFixed(1).replace(/\.0$/, '') + ' Cr';
@@ -460,6 +511,13 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
     if (num >= 100000) return '₹' + (num / 100000).toFixed(2).replace(/\.00$/, '') + ' L';
     if (num >= 1000) return '₹' + (num / 1000).toFixed(1).replace(/\.0$/, '') + ' K';
     return formatCurrency(num);
+  };
+
+  // Format date
+  const formatDate = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' });
   };
   
   return (
@@ -519,7 +577,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
       <div className="px-3 py-2 border-b border-gray-100">
         <div className="grid grid-cols-4 gap-1 text-center">
           <div className="bg-gray-50 rounded-lg p-2">
-            <p className="text-[9px] text-gray-500 uppercase font-semibold">Price</p>
+            <p className="text-[9px] text-gray-500 uppercase font-semibold">{isSell ? 'Sell' : 'Buy'} Price</p>
             <p className="text-xs font-bold text-gray-900">{formatCurrency(sellerPrice)}</p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
@@ -541,10 +599,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
       <div className="px-3 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-slate-50">
         <div className="flex items-center justify-center gap-3">
           {/* Share */}
-          <button 
-            onClick={onShare}
-            className="flex flex-col items-center gap-1 min-w-[50px]"
-          >
+          <button onClick={onShare} className="flex flex-col items-center gap-1 min-w-[50px]">
             <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center shadow-md hover:bg-blue-600 transition-colors">
               <Share2 size={18} className="text-white" />
             </div>
@@ -552,10 +607,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
           </button>
 
           {/* Boost */}
-          <button 
-            onClick={onBoost}
-            className="flex flex-col items-center gap-1 min-w-[50px]"
-          >
+          <button onClick={onBoost} className="flex flex-col items-center gap-1 min-w-[50px]">
             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition-colors">
               <Zap size={18} className="text-white" />
             </div>
@@ -564,10 +616,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
 
           {/* Modify - only if no bids */}
           {activeBidsCount === 0 && listing.status === 'active' && (
-            <button 
-              onClick={onModify}
-              className="flex flex-col items-center gap-1 min-w-[50px]"
-            >
+            <button onClick={onModify} className="flex flex-col items-center gap-1 min-w-[50px]">
               <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center shadow-md hover:bg-purple-600 transition-colors">
                 <Edit size={18} className="text-white" />
               </div>
@@ -577,10 +626,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
 
           {/* Delete - only if no bids */}
           {activeBidsCount === 0 && listing.status === 'active' && (
-            <button 
-              onClick={onDelete}
-              className="flex flex-col items-center gap-1 min-w-[50px]"
-            >
+            <button onClick={onDelete} className="flex flex-col items-center gap-1 min-w-[50px]">
               <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-md hover:bg-red-600 transition-colors">
                 <Trash2 size={18} className="text-white" />
               </div>
@@ -590,10 +636,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
 
           {/* Sold */}
           {listing.status === 'active' && (
-            <button 
-              onClick={onMarkSold}
-              className="flex flex-col items-center gap-1 min-w-[50px]"
-            >
+            <button onClick={onMarkSold} className="flex flex-col items-center gap-1 min-w-[50px]">
               <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-md hover:bg-green-600 transition-colors">
                 <CheckCircle size={18} className="text-white" />
               </div>
@@ -603,94 +646,309 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
         </div>
       </div>
 
-      {/* Bids Section - Collapsible */}
+      {/* Two Sections: Counter Offers In-Progress + Pending Bids */}
       {bidsArray.length > 0 && (
-        <div className="px-3 py-2">
-          <button 
-            onClick={() => {
-              haptic.light();
-              setBidsExpanded(!bidsExpanded);
-            }}
-            className="w-full bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-2 rounded-lg border border-gray-200 flex items-center justify-between"
-          >
-            <span className="text-xs font-bold text-gray-900">
-              {isSell ? 'Bids' : 'Offers'} ({activeBidsCount})
-            </span>
-            {bidsExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
-          
-          {bidsExpanded && (
-            <div className="mt-2 space-y-2">
-              {bidsArray.filter(b => b.status === 'pending' || b.status === 'countered').map((bid, index) => {
-                const bidPrice = bid.originalPrice || bid.price;
-                const displayPrice = bidPrice * 0.98;
-                const bidTotal = displayPrice * bid.quantity;
+        <div className="px-3 py-2 space-y-2">
+          {/* Section 1: Counter Offers In-Progress */}
+          {counterOfferBids.length > 0 && (
+            <div>
+              <button 
+                onClick={() => {
+                  haptic.light();
+                  setCounterOffersExpanded(!counterOffersExpanded);
+                }}
+                className="w-full bg-gradient-to-r from-blue-100 to-indigo-100 px-3 py-2 rounded-lg border-2 border-blue-400 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-600">🔵</span>
+                  <span className="text-xs font-bold text-blue-800">Counter Offers ({counterOfferBids.length})</span>
+                </div>
+                {counterOffersExpanded ? <ChevronUp size={16} className="text-blue-700" /> : <ChevronDown size={16} className="text-blue-700" />}
+              </button>
+              
+              {counterOffersExpanded && (
+                <div className="mt-2 space-y-2">
+                  {counterOfferBids.map((bid, index) => {
+                    const counterInfo = getLatestCounterInfo(bid);
+                    const displayBuyerBid = calculateSellerGets ? calculateSellerGets(counterInfo.buyerBid) : counterInfo.buyerBid * 0.98;
+                    const isLatestFromBuyer = counterInfo.latestBy === 'buyer';
+                    
+                    return (
+                      <div 
+                        key={bid._id}
+                        onClick={() => handleBidCardClick(bid)}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                          isLatestFromBuyer 
+                            ? 'bg-orange-50 border-orange-300 hover:bg-orange-100' 
+                            : 'bg-blue-50 border-blue-300 hover:bg-blue-100'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-blue-700">
+                              👤 @{bid.user?.username || bid.username || `trader_${index + 1}`}
+                            </span>
+                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                              isLatestFromBuyer 
+                                ? 'bg-orange-200 text-orange-800' 
+                                : 'bg-blue-200 text-blue-800'
+                            }`}>
+                              {isLatestFromBuyer ? 'Your Turn' : 'Waiting'}
+                            </span>
+                          </div>
+                          <ChevronRight size={16} className="text-gray-400" />
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-[11px]">
+                          <div>
+                            <span className="text-gray-500">Buyer: </span>
+                            <span className="font-bold text-gray-900">{formatCurrency(displayBuyerBid)} × {formatShortQty(counterInfo.buyerQty)}</span>
+                          </div>
+                          <div className="text-gray-400">|</div>
+                          <div>
+                            <span className="text-gray-500">You: </span>
+                            <span className="font-bold text-purple-700">
+                              {counterInfo.yourPrice ? `${formatCurrency(counterInfo.yourPrice)}` : '-'}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-1 text-[10px] text-gray-500">
+                          Rounds: {counterInfo.rounds}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Section 2: Pending Bids */}
+          {pendingBids.length > 0 && (
+            <div>
+              <button 
+                onClick={() => {
+                  haptic.light();
+                  setPendingBidsExpanded(!pendingBidsExpanded);
+                }}
+                className="w-full bg-gradient-to-r from-orange-100 to-amber-100 px-3 py-2 rounded-lg border-2 border-orange-400 flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-orange-600">🟠</span>
+                  <span className="text-xs font-bold text-orange-800">Pending Bids ({pendingBids.length})</span>
+                </div>
+                {pendingBidsExpanded ? <ChevronUp size={16} className="text-orange-700" /> : <ChevronDown size={16} className="text-orange-700" />}
+              </button>
+              
+              {pendingBidsExpanded && (
+                <div className="mt-2 space-y-2">
+                  {pendingBids.map((bid, index) => {
+                    const displayPrice = calculateSellerGets ? calculateSellerGets(bid.originalPrice || bid.price) : (bid.originalPrice || bid.price) * 0.98;
+                    const bidTotal = displayPrice * bid.quantity;
+                    
+                    return (
+                      <div 
+                        key={bid._id}
+                        onClick={() => handleBidCardClick(bid)}
+                        className="p-3 rounded-lg bg-orange-50 border-2 border-orange-300 cursor-pointer hover:bg-orange-100 transition-all"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-orange-700">
+                              👤 @{bid.user?.username || bid.username || `trader_${index + 1}`}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-200 text-yellow-800">
+                              NEW
+                            </span>
+                          </div>
+                          <ChevronRight size={16} className="text-gray-400" />
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-[11px]">
+                          <div>
+                            <span className="text-gray-500">Price: </span>
+                            <span className="font-bold text-gray-900">{formatCurrency(displayPrice)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Qty: </span>
+                            <span className="font-bold">{formatShortQty(bid.quantity)}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Total: </span>
+                            <span className="font-bold text-green-600">{formatShortAmt(bidTotal)}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-1 text-[10px] text-gray-500">
+                          {formatDate(bid.createdAt)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* No Active Bids */}
+          {counterOfferBids.length === 0 && pendingBids.length === 0 && (
+            <div className="text-center py-4 text-gray-500">
+              <AlertCircle className="w-6 h-6 mx-auto mb-2 text-gray-400" />
+              <p className="text-xs">No active bids yet</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Bid Detail Popup Modal */}
+      {showBidDetailModal && selectedBid && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden max-h-[80vh] flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold">{isSell ? 'Bid Details' : 'Offer Details'}</h3>
+                  <p className="text-blue-100 text-xs">{listing.companyName}</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setShowBidDetailModal(false);
+                    setSelectedBid(null);
+                  }}
+                  className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Scrollable Content */}
+            <div className="p-4 overflow-y-auto flex-1">
+              {/* Bidder Info */}
+              <div className="bg-gray-50 rounded-xl p-3 mb-4 border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-blue-700">
+                    👤 @{selectedBid.user?.username || selectedBid.username || 'trader'}
+                  </span>
+                  <span className="text-xs text-gray-500">⭐ {selectedBid.user?.rating?.toFixed(1) || '4.5'}</span>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  selectedBid.status === 'pending' ? 'bg-yellow-100 text-yellow-800 border border-yellow-400' :
+                  selectedBid.status === 'countered' ? 'bg-blue-100 text-blue-800 border border-blue-400' :
+                  'bg-gray-100 text-gray-800 border border-gray-400'
+                }`}>
+                  {selectedBid.status}
+                </span>
+              </div>
+
+              {/* Price Summary */}
+              {(() => {
+                const counterInfo = getLatestCounterInfo(selectedBid);
+                const displayBuyerBid = calculateSellerGets ? calculateSellerGets(counterInfo.buyerBid) : counterInfo.buyerBid * 0.98;
+                const bidTotal = displayBuyerBid * counterInfo.buyerQty;
                 
                 return (
-                  <div key={bid._id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-blue-700">
-                          @{bid.user?.username || bid.username || `trader_${index + 1}`}
-                        </span>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                          bid.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          bid.status === 'countered' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {bid.status}
-                        </span>
+                  <div className="space-y-3 mb-4">
+                    <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
+                      <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{isSell ? 'Buyer Bid' : 'Seller Offer'} (You receive)</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-gray-900">{formatCurrency(displayBuyerBid)}</span>
+                        <span className="text-sm font-semibold text-gray-700">× {formatShortQty(counterInfo.buyerQty)}</span>
                       </div>
+                      <p className="text-xs text-green-600 font-bold mt-1">Total: {formatShortAmt(bidTotal)}</p>
                     </div>
-                    
-                    <div className="grid grid-cols-3 gap-2 text-center mb-3">
-                      <div>
-                        <p className="text-[9px] text-gray-500">Price</p>
-                        <p className="text-xs font-bold">{formatCurrency(displayPrice)}</p>
+
+                    {counterInfo.yourPrice && (
+                      <div className="bg-purple-50 rounded-xl p-3 border border-purple-200">
+                        <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">Your Counter</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-lg font-bold text-purple-700">{formatCurrency(counterInfo.yourPrice)}</span>
+                          <span className="text-sm font-semibold text-gray-700">× {formatShortQty(counterInfo.yourQty)}</span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[9px] text-gray-500">Qty</p>
-                        <p className="text-xs font-bold">{formatShortQty(bid.quantity)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-gray-500">Total</p>
-                        <p className="text-xs font-bold text-green-600">{formatShortAmt(bidTotal)}</p>
-                      </div>
-                    </div>
-                    
-                    {bid.status === 'pending' && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleAccept(bid)}
-                          disabled={actionLoading === bid._id}
-                          className="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
-                        >
-                          {actionLoading === bid._id ? <Loader size={14} className="animate-spin" /> : <CheckCircle size={14} />}
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleReject(bid)}
-                          disabled={actionLoading === bid._id}
-                          className="flex-1 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
-                        >
-                          <X size={14} />
-                          Reject
-                        </button>
-                        <button
-                          onClick={() => handleCounterClick(bid)}
-                          disabled={actionLoading === bid._id}
-                          className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1"
-                        >
-                          <MessageSquare size={14} />
-                          Counter
-                        </button>
+                    )}
+
+                    {counterInfo.rounds > 0 && (
+                      <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                        <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">Negotiation Rounds</p>
+                        <p className="text-lg font-bold text-gray-900">{counterInfo.rounds}</p>
                       </div>
                     )}
                   </div>
                 );
-              })}
+              })()}
+
+              {/* Counter History */}
+              {selectedBid.counterHistory && selectedBid.counterHistory.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <History size={14} className="text-gray-500" />
+                    <span className="text-xs font-bold text-gray-700">Counter History</span>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-2 border border-gray-200 max-h-32 overflow-y-auto">
+                    {selectedBid.counterHistory.map((counter, cIdx) => {
+                      const counterDisplayPrice = counter.by === 'seller' 
+                        ? counter.price 
+                        : (calculateSellerGets ? calculateSellerGets(counter.price) : counter.price * 0.98);
+                      return (
+                        <div key={cIdx} className={`py-1.5 px-2 rounded-lg mb-1 ${counter.by === 'seller' ? 'bg-purple-100' : 'bg-blue-100'}`}>
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className={`font-bold ${counter.by === 'seller' ? 'text-purple-700' : 'text-blue-700'}`}>
+                              {counter.by === 'seller' ? 'You' : 'Buyer'} #{counter.round || cIdx + 1}
+                            </span>
+                            <span className="text-gray-500">{formatDate(counter.timestamp)}</span>
+                          </div>
+                          <div className="text-xs font-semibold text-gray-800 mt-0.5">
+                            {formatCurrency(counterDisplayPrice)} × {formatShortQty(counter.quantity)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Action Buttons */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+              {(selectedBid.status === 'pending' || (selectedBid.status === 'countered' && getLatestCounterInfo(selectedBid).latestBy === 'buyer')) && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleAccept(selectedBid)}
+                    disabled={actionLoading === selectedBid._id}
+                    className="flex-1 py-2.5 bg-green-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"
+                  >
+                    {actionLoading === selectedBid._id ? <Loader size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleReject(selectedBid)}
+                    disabled={actionLoading === selectedBid._id}
+                    className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"
+                  >
+                    <XCircle size={14} />
+                    Reject
+                  </button>
+                  <button
+                    onClick={() => handleCounterClick(selectedBid)}
+                    disabled={actionLoading === selectedBid._id}
+                    className="flex-1 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1"
+                  >
+                    <MessageSquare size={14} />
+                    Counter
+                  </button>
+                </div>
+              )}
+              {selectedBid.status === 'countered' && getLatestCounterInfo(selectedBid).latestBy === 'seller' && (
+                <div className="text-center text-sm text-blue-600 py-2 flex items-center justify-center gap-2">
+                  <Clock size={16} />
+                  Waiting for buyer's response...
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -704,7 +962,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
             </div>
             <div className="p-4">
               <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-2">Original Bid:</p>
+                <p className="text-xs text-gray-600 mb-2">Current Bid:</p>
                 <div className="flex justify-between">
                   <span className="font-bold">{formatCurrency(selectedBid.price)}</span>
                   <span className="font-bold">{formatShortQty(selectedBid.quantity)} shares</span>

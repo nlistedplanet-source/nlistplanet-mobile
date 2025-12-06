@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, TrendingUp, PlusCircle, Bell, User, Sun, Moon } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import { Home, TrendingUp, PlusCircle, Bell, User } from 'lucide-react';
 import { notificationsAPI } from '../../utils/api';
 import { haptic } from '../../utils/helpers';
 import CreateListingModal from '../modals/CreateListingModal';
@@ -60,7 +59,7 @@ const BottomNav = () => {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.4)]"
+      <nav className="fixed bottom-0 left-0 right-0 z-40 safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.08)]"
            style={{ backgroundColor: 'var(--nav-bg)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--border)' }}>
       <div className="flex items-center justify-around px-2 py-1.5">
         {navItems.map((item) => {
@@ -75,8 +74,8 @@ const BottomNav = () => {
                 item.highlight 
                   ? '' 
                   : active 
-                  ? 'text-primary-600 dark:text-primary-400' 
-                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
+                  ? 'text-primary-600' 
+                  : 'text-gray-400 hover:text-gray-600'
               }`}
               style={{ minHeight: '60px' }}
             >
@@ -89,7 +88,7 @@ const BottomNav = () => {
               ) : (
                 <>
                   <div className="relative">
-                    <div className={`p-1.5 rounded-xl transition-all ${active ? 'bg-primary-50 dark:bg-primary-500/20' : ''}`}>
+                    <div className={`p-1.5 rounded-xl transition-all ${active ? 'bg-primary-50' : ''}`}>
                       <Icon 
                         size={22} 
                         strokeWidth={active ? 2.5 : 2}
@@ -118,28 +117,8 @@ const BottomNav = () => {
       onClose={() => setShowCreateModal(false)}
       onSuccess={handleCreateSuccess}
     />
-    {/* Theme toggle - quick access */}
-    <ThemeToggle />
+    {/* Theme toggle disabled for now */}
     </>
-  );
-};
-
-const ThemeToggle = () => {
-  const { theme, toggle } = useTheme();
-
-  return (
-    <button
-      onClick={() => toggle()}
-      className="fixed bottom-24 right-4 w-12 h-12 rounded-xl flex items-center justify-center text-white z-50 shadow-lg touch-feedback transition-all duration-300"
-      style={{ 
-        background: theme === 'dark' 
-          ? 'linear-gradient(135deg, #f59e0b, #d97706)' 
-          : 'linear-gradient(135deg, #6366f1, #4f46e5)'
-      }}
-      title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
-    >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-    </button>
   );
 };
 
