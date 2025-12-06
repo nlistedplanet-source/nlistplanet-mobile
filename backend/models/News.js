@@ -6,10 +6,18 @@ const newsSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  titleHindi: {
+    type: String,
+    default: ''  // Hindi title for display
+  },
   summary: {
     type: String,
     required: true,
     maxlength: 500  // Inshorts style 60-80 words
+  },
+  summaryHindi: {
+    type: String,
+    default: ''  // Hindi summary - conversational style
   },
   content: {
     type: String,
@@ -23,6 +31,10 @@ const newsSchema = new mongoose.Schema({
   thumbnail: {
     type: String,
     default: ''
+  },
+  isAiGeneratedImage: {
+    type: Boolean,
+    default: false  // Track if image was AI-generated
   },
   sourceUrl: {
     type: String,

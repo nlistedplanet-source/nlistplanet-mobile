@@ -3,11 +3,16 @@
 // This script automatically fetches news from RSS feeds and APIs,
 // summarizes them (Inshorts-style 60 words max), and stores in database.
 // 
+// NEW FEATURES:
+// - Hindi summarization using OpenAI GPT-4 (natural conversational Hindi)
+// - AI image generation using DALL-E 3 for articles without thumbnails
+// 
 // Run via cron job every 6 hours or manually: node scripts/fetchNews.js
 // GitHub Actions workflow: .github/workflows/fetch-news.yml
 
 import mongoose from 'mongoose';
 import Parser from 'rss-parser';
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -17,6 +22,17 @@ import News from '../models/News.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: join(__dirname, '..', '.env') });
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
+// Check if OpenAI is configured
+const isOpenAIConfigured = !!process.env.OPENAI_API_KEY;
+if (!isOpenAIConfigured) {
+  console.log('⚠️ OPENAI_API_KEY not set - Hindi summaries and AI images will be skipped');
+}
 
 // Connect to MongoDB
 const connectDB = async () => {
@@ -147,6 +163,98 @@ const RELEVANT_KEYWORDS = [
   'reliance', 'tata', 'hdfc', 'icici', 'bajaj', 'adani',
   'fintech', 'pharma', 'it sector', 'banking', 'insurance'
 ];
+
+// ===============================================
+// AI FUNCTIONS - Hindi Summarization & Image Gen
+// ===============================================
+
+// Generate Hindi summary using GPT-4 (Natural conversational Hindi)
+const generateHindiSummary = async (title, englishSummary) => {
+  if (!isOpenAIConfigured) return { titleHindi: '', summaryHindi: '' };
+  
+  try {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // Cost-effective for summarization
+      messages: [
+        {
+          role: 'system',
+          content: `Tum ek financial news writer ho jo Hindi mein likhte ho. Tumhara kaam hai news ko aam bolchal wali Hindi mein likhna - jaise koi friend ko bata rahe ho. 
+
+IMPORTANT RULES:
+1. Natural Hindi use karo - जैसे लोग रोज़मर्रा में बोलते हैं
+2. Google Translate jaisi Hindi NAHI chahiye - wo bahut awkward lagti hai
+3. English words jo commonly use hote hain (like IPO, shares, market, company, funding) waise hi rakho
+4. Short aur crisp rakho - max 60-70 words
+5. Interesting aur engaging tone rakho
+
+Example of GOOD Hindi:
+"Reliance की unlisted subsidiary का valuation अब ₹50,000 करोड़ पहुंच गया है। Company जल्द ही IPO लाने की तैयारी में है। Experts का कहना है कि ये एक बड़ा मौका हो सकता है investors के लिए।"
+
+Example of BAD Hindi (Don't do this):
+"रिलायंस की असूचीबद्ध सहायक कंपनी का मूल्यांकन अब ₹50,000 करोड़ तक पहुंच गया है।" (Too formal/translated)`
+        },
+        {
+          role: 'user',
+          content: `Title: ${title}\n\nSummary: ${englishSummary}\n\nIs news ko Hindi mein likho. Pehle title ka Hindi version do, phir summary. Format:\nTITLE_HINDI: [hindi title]\nSUMMARY_HINDI: [hindi summary]`
+        }
+      ],
+      max_tokens: 300,
+      temperature: 0.7
+    });
+
+    const output = response.choices[0].message.content;
+    
+    // Parse the response
+    const titleMatch = output.match(/TITLE_HINDI:\s*(.+?)(?:\n|SUMMARY_HINDI)/s);
+    const summaryMatch = output.match(/SUMMARY_HINDI:\s*(.+)/s);
+    
+    return {
+      titleHindi: titleMatch ? titleMatch[1].trim() : '',
+      summaryHindi: summaryMatch ? summaryMatch[1].trim() : ''
+    };
+  } catch (error) {
+    console.log(`  ⚠️ Hindi summary failed: ${error.message}`);
+    return { titleHindi: '', summaryHindi: '' };
+  }
+};
+
+// Generate AI image using DALL-E 3
+const generateAIImage = async (title, category) => {
+  if (!isOpenAIConfigured) return '';
+  
+  try {
+    // Create a prompt based on the news title and category
+    const categoryThemes = {
+      'IPO': 'stock market trading floor, IPO bell ringing, celebration',
+      'Market': 'stock charts, trading graphs, financial data visualization',
+      'Startup': 'modern office, entrepreneurs, innovation, technology',
+      'Unlisted': 'private equity, exclusive investment, premium stocks',
+      'Regulatory': 'government building, official documents, policy',
+      'Company': 'corporate office, business meeting, company growth',
+      'Analysis': 'data analysis, charts, financial research',
+      'General': 'Indian stock market, investment, finance'
+    };
+    
+    const theme = categoryThemes[category] || categoryThemes['General'];
+    
+    const response = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt: `Professional, clean, modern financial news thumbnail image. Theme: ${theme}. Style: Minimal, corporate, blue and green color scheme, no text or words in image. High quality, suitable for news article. Context: ${title.substring(0, 100)}`,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard'
+    });
+
+    return response.data[0].url;
+  } catch (error) {
+    console.log(`  ⚠️ Image generation failed: ${error.message}`);
+    return '';
+  }
+};
+
+// ===============================================
+// ORIGINAL FUNCTIONS
+// ===============================================
 
 // Auto-detect category based on content
 const detectCategory = (title, summary) => {
@@ -296,17 +404,40 @@ const fetchRSSFeed = async (feed) => {
         const category = detectCategory(item.title, summary) || feed.category;
         
         // Extract thumbnail
-        const thumbnail = extractThumbnail(item);
+        let thumbnail = extractThumbnail(item);
+        let isAiGeneratedImage = false;
+        
+        // Generate AI image if no thumbnail (limit to save costs)
+        if (!thumbnail && isOpenAIConfigured) {
+          console.log(`  🎨 Generating AI image for: ${item.title.substring(0, 40)}...`);
+          thumbnail = await generateAIImage(item.title, category);
+          if (thumbnail) {
+            isAiGeneratedImage = true;
+          }
+        }
+        
+        // Generate Hindi summary
+        let titleHindi = '';
+        let summaryHindi = '';
+        if (isOpenAIConfigured) {
+          console.log(`  🇮🇳 Generating Hindi summary...`);
+          const hindiContent = await generateHindiSummary(item.title, summary);
+          titleHindi = hindiContent.titleHindi;
+          summaryHindi = hindiContent.summaryHindi;
+        }
         
         // Extract tags
         const tags = extractTags(item.title, content);
         
         const newsItem = {
           title: item.title,
+          titleHindi,
           summary,
+          summaryHindi,
           content: content.substring(0, 2000), // Limit content
           category,
           thumbnail,
+          isAiGeneratedImage,
           sourceUrl: item.link,
           sourceName: feed.name,
           author: item.creator || item.author || feed.name,
