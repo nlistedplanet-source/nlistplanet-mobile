@@ -307,3 +307,70 @@ export const triggerHaptic = (type = 'light') => {
     haptic[type]();
   }
 };
+
+// Convert number to words (Indian format) with decimal support
+export const numberToWords = (num) => {
+  if (!num || num === 0) return 'Zero Rupees';
+  
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  
+  const convertTwoDigits = (n) => {
+    if (n < 10) return ones[n];
+    if (n >= 10 && n < 20) return teens[n - 10];
+    return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+  };
+  
+  const convertThreeDigits = (n) => {
+    if (n === 0) return '';
+    if (n < 100) return convertTwoDigits(n);
+    return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convertTwoDigits(n % 100) : '');
+  };
+  
+  const rupees = Math.floor(num);
+  const paise = Math.round((num - rupees) * 100);
+  
+  let result = '';
+  let remaining = rupees;
+  
+  if (remaining >= 10000000) {
+    const crores = Math.floor(remaining / 10000000);
+    result += convertThreeDigits(crores) + ' Crore ';
+    remaining %= 10000000;
+  }
+  
+  if (remaining >= 100000) {
+    const lakhs = Math.floor(remaining / 100000);
+    result += convertTwoDigits(lakhs) + ' Lakh ';
+    remaining %= 100000;
+  }
+  
+  if (remaining >= 1000) {
+    const thousands = Math.floor(remaining / 1000);
+    result += convertTwoDigits(thousands) + ' Thousand ';
+    remaining %= 1000;
+  }
+  
+  if (remaining >= 100) {
+    result += ones[Math.floor(remaining / 100)] + ' Hundred ';
+    remaining %= 100;
+  }
+  
+  if (remaining > 0) {
+    result += convertTwoDigits(remaining);
+  }
+  
+  result = result.trim();
+  
+  if (rupees === 0) {
+    result = 'Zero';
+  }
+  result += ' Rupees';
+  
+  if (paise > 0) {
+    result += ' ' + convertTwoDigits(paise) + ' Paise';
+  }
+  
+  return result.replace(/\s+/g, ' ');
+};
