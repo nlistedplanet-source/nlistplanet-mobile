@@ -397,14 +397,25 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
     e.stopPropagation();
     haptic.light();
     setLiked(!liked);
-    toast.success(liked ? 'Removed like' : 'Liked!');
+    if (!liked) {
+      toast.success('👍 Liked this listing!', { icon: '👍' });
+    } else {
+      toast('Removed like', { icon: '👎' });
+    }
   };
 
   const handleFavorite = (e) => {
     e.stopPropagation();
     haptic.light();
     setFavorited(!favorited);
-    toast.success(favorited ? 'Removed from favorites' : 'Added to Favorites!');
+    if (!favorited) {
+      toast.success('⭐ Added to your Watchlist!', { 
+        icon: '⭐',
+        duration: 2000
+      });
+    } else {
+      toast('Removed from Watchlist', { icon: '🗑️' });
+    }
   };
 
   const handleShare = (e) => {

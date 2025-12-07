@@ -1,8 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Check, TrendingUp, TrendingDown, IndianRupee, Package, AlertTriangle, FileText } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, calculateBuyerPays, calculateSellerGets, numberToWords } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+
+// FloatingInput component defined OUTSIDE to prevent re-creation on every render
+const FloatingInput = ({ label, value, onChange, icon: Icon, type = "text", inputRef }) => {
+  const hasValue = value && value.toString().length > 0;
+  const numValue = parseFloat(value) || 0;
+  
+  return (
+    <div className="relative">
+      <div className="relative">
+        {Icon && (
+          <Icon 
+            size={18} 
+            className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10 transition-colors ${
+              hasValue ? 'text-primary-600' : 'text-gray-400'
+            }`}
+          />
+        )}
+        <input
+          ref={inputRef}
+          type={type}
+          inputMode="decimal"
+          value={value}
+          onChange={onChange}
+          placeholder=" "
+          className={`w-full ${Icon ? 'pl-10' : 'pl-4'} pr-4 pt-6 pb-2 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all peer text-base font-medium bg-white`}
+          required
+        />
+        <label 
+          className={`absolute ${Icon ? 'left-10' : 'left-4'} transition-all duration-200 pointer-events-none bg-white px-1 ${
+            hasValue 
+              ? '-top-2.5 text-xs text-primary-600 font-medium' 
+              : 'top-1/2 -translate-y-1/2 text-sm text-gray-500 peer-focus:-top-2.5 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-primary-600 peer-focus:font-medium'
+          }`}
+        >
+          {label} <span className="text-red-500">*</span>
+        </label>
+        
+        {/* Amount in words - shown inside the input box */}
+        {numValue > 0 && (
+          <div className="absolute bottom-1 left-10 right-3 text-[10px] text-primary-600 font-medium truncate">
+            {numberToWords(numValue)}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -79,52 +126,6 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Floating label input component
-  const FloatingInput = ({ label, value, onChange, icon: Icon, type = "text" }) => {
-    const hasValue = value && value.toString().length > 0;
-    const numValue = parseFloat(value) || 0;
-    
-    return (
-      <div className="relative">
-        <div className="relative">
-          {Icon && (
-            <Icon 
-              size={18} 
-              className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none z-10 transition-colors ${
-                hasValue ? 'text-primary-600' : 'text-gray-400'
-              }`}
-            />
-          )}
-          <input
-            type={type}
-            inputMode={type === 'number' ? 'decimal' : 'text'}
-            value={value}
-            onChange={onChange}
-            placeholder=" "
-            className={`w-full ${Icon ? 'pl-10' : 'pl-4'} pr-4 pt-6 pb-2 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all peer text-base font-medium bg-white`}
-            required
-          />
-          <label 
-            className={`absolute ${Icon ? 'left-10' : 'left-4'} transition-all duration-200 pointer-events-none bg-white px-1 ${
-              hasValue 
-                ? '-top-2.5 text-xs text-primary-600 font-medium' 
-                : 'top-1/2 -translate-y-1/2 text-sm text-gray-500 peer-focus:-top-2.5 peer-focus:translate-y-0 peer-focus:text-xs peer-focus:text-primary-600 peer-focus:font-medium'
-            }`}
-          >
-            {label} <span className="text-red-500">*</span>
-          </label>
-          
-          {/* Amount in words - shown inside the input box */}
-          {numValue > 0 && (
-            <div className="absolute bottom-1 left-10 right-3 text-[10px] text-primary-600 font-medium truncate">
-              {numberToWords(numValue)}
-            </div>
-          )}
-        </div>
-      </div>
-    );
   };
 
   return (
