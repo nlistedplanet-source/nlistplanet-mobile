@@ -32,7 +32,7 @@ const LandingBottomNav = ({ onInstallClick }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentLogoIndex((prev) => (prev + 1) % 4); // 0, 1, 2, 3, 0, 1...
-    }, 2000); // Change every 2 seconds
+    }, 3500); // Change every 3.5 seconds
 
     return () => clearInterval(interval);
   }, []);
@@ -85,7 +85,7 @@ const LandingBottomNav = ({ onInstallClick }) => {
               />
             ) : (
               // Show Lottie animation using DotLottieReact
-              <div className="animate-fade-in" style={{ width: 40, height: 40 }}>
+              <div className="animate-fade-in" style={{ width: 52, height: 52 }}>
                 <DotLottieReact
                   src={LOTTIE_ANIMATIONS[currentLogoIndex - 1]}
                   loop
