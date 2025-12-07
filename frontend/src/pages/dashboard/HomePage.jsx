@@ -72,12 +72,17 @@ const HomePage = () => {
       // Format activities for display
       const rawActivities = activitiesRes.data.data || [];
       const formattedActivities = rawActivities.map(activity => ({
-        title: activity.type === 'transaction' 
-          ? `${activity.action === 'buy' ? 'Bought' : 'Sold'} ${activity.quantity} shares of ${activity.companyName}`
+        type: activity.type,
+        action: activity.action,
+        title: activity.type === 'listing'
+          ? (activity.action === 'listed_sell' ? '📦 Listed for Sale' : '🛒 Created Buy Order')
+          : activity.type === 'transaction' 
+          ? `${activity.action === 'buy' ? '✅ Bought' : '✅ Sold'}`
           : activity.type === 'bid'
-          ? `Placed bid on ${activity.companyName}`
-          : `Placed offer on ${activity.companyName}`,
-        amount: activity.price * activity.quantity,
+          ? '💰 Placed Bid'
+          : '🏷️ Placed Offer',
+        subtitle: `${activity.companyName} • ${activity.quantity} shares @ ₹${activity.price?.toLocaleString('en-IN')}`,
+        price: activity.price,
         createdAt: activity.date
       }));
       setActivities(formattedActivities);
@@ -347,18 +352,34 @@ const HomePage = () => {
                 key={index} 
                 className={`flex items-start gap-3 p-4 ${index !== activities.length - 1 ? 'border-b border-gray-50' : ''}`}
               >
-                <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Activity className="w-5 h-5 text-gray-500" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  activity.type === 'listing' 
+                    ? 'bg-purple-100'
+                    : activity.action === 'buy' 
+                    ? 'bg-green-100' 
+                    : activity.action === 'sell'
+                    ? 'bg-red-100'
+                    : activity.type === 'bid'
+                    ? 'bg-blue-100'
+                    : 'bg-orange-100'
+                }`}>
+                  <Activity className={`w-5 h-5 ${
+                    activity.type === 'listing' 
+                      ? 'text-purple-600'
+                      : activity.action === 'buy' 
+                      ? 'text-green-600' 
+                      : activity.action === 'sell'
+                      ? 'text-red-600'
+                      : activity.type === 'bid'
+                      ? 'text-blue-600'
+                      : 'text-orange-600'
+                  }`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm">{activity.title}</p>
+                  <p className="font-semibold text-gray-900 text-sm">{activity.title}</p>
+                  <p className="text-xs text-gray-600 mt-0.5">{activity.subtitle}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{timeAgo(activity.createdAt)}</p>
                 </div>
-                {activity.amount && (
-                  <p className="font-semibold text-gray-900 text-sm flex-shrink-0">
-                    {formatCurrency(activity.amount)}
-                  </p>
-                )}
               </div>
             ))}
           </div>

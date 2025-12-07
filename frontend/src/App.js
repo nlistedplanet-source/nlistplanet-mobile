@@ -37,6 +37,7 @@ const BidsPage = lazy(() => import('./pages/trading/BidsPage'));
 const OffersReceivedPage = lazy(() => import('./pages/trading/OffersReceivedPage'));
 const PortfolioPage = lazy(() => import('./pages/portfolio/PortfolioPage'));
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 // Legal pages
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
@@ -131,8 +132,8 @@ function AppRoutes() {
           <Route path="/cookies" element={<CookiePolicy />} />
           <Route path="/help" element={<HelpSupport />} />
 
-          {/* Catch all - redirect to landing/welcome */}
-          <Route path="*" element={<Navigate to="/welcome" replace />} />
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </ErrorBoundary>

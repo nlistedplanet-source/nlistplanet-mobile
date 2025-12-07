@@ -3,7 +3,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 /**
  * Loading animation - matches bottom nav logo style
- * Shows rotating Logo and Lottie animations
+ * Shows rotating Logo and Lottie animations with slide transition
  * 
  * Usage: 
  * <PBLoader show={isLoading} />
@@ -17,14 +17,29 @@ const LOTTIE_ANIMATIONS = [
 
 const PBLoader = ({ show = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0); // 0 = Logo, 1-3 = Lottie animations
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [direction, setDirection] = useState('enter'); // 'enter' or 'exit'
 
   // Rotate through Logo → Lottie 1 → Lottie 2 → Lottie 3 → Logo...
   useEffect(() => {
     if (!show) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % 4); // 0, 1, 2, 3, 0, 1...
-    }, 1200); // Faster rotation for loader
+      // Start exit animation
+      setDirection('exit');
+      setIsTransitioning(true);
+      
+      // After exit animation, change index and start enter animation
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % 4); // 0, 1, 2, 3, 0, 1...
+        setDirection('enter');
+        
+        // Reset transitioning after enter animation
+        setTimeout(() => {
+          setIsTransitioning(false);
+        }, 400);
+      }, 400);
+    }, 2500); // Slower rotation - 2.5 seconds per icon
 
     return () => clearInterval(interval);
   }, [show]);
@@ -33,10 +48,18 @@ const PBLoader = ({ show = false }) => {
   useEffect(() => {
     if (!show) {
       setCurrentIndex(0);
+      setIsTransitioning(false);
+      setDirection('enter');
     }
   }, [show]);
 
   if (!show) return null;
+
+  const getAnimationClass = () => {
+    if (direction === 'exit') return 'animate-slide-out-left';
+    if (direction === 'enter') return 'animate-slide-in-right';
+    return '';
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -52,41 +75,47 @@ const PBLoader = ({ show = false }) => {
           boxShadow: '0 10px 40px rgba(16, 185, 129, 0.25), 0 4px 20px rgba(0,0,0,0.1)'
         }}
       >
-        {currentIndex === 0 ? (
-          // Show N Logo - same as bottom nav
-          <img 
-            src="/Logo copy.png" 
-            alt="NlistPlanet" 
-            className="w-12 h-12 object-contain animate-scale-in"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.parentElement.innerHTML = '<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center"><span class="text-white text-2xl font-bold">N</span></div>';
-            }}
-          />
-        ) : (
-          // Show Lottie animation using DotLottieReact - same as bottom nav
-          <div className="animate-fade-in" style={{ width: 56, height: 56 }}>
-            <DotLottieReact
-              src={LOTTIE_ANIMATIONS[currentIndex - 1]}
-              loop
-              autoplay
-              style={{ width: '100%', height: '100%' }}
+        <div className={getAnimationClass()}>
+          {currentIndex === 0 ? (
+            // Show N Logo - same as bottom nav
+            <img 
+              src="/Logo copy.png" 
+              alt="NlistPlanet" 
+              className="w-12 h-12 object-contain"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center"><span class="text-white text-2xl font-bold">N</span></div>';
+              }}
             />
-          </div>
-        )}
+          ) : (
+            // Show Lottie animation using DotLottieReact - same as bottom nav
+            <div style={{ width: 56, height: 56 }}>
+              <DotLottieReact
+                src={LOTTIE_ANIMATIONS[currentIndex - 1]}
+                loop
+                autoplay
+                style={{ width: '100%', height: '100%' }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <style>{`
-        @keyframes scale-in {
-          0% { transform: scale(0.7); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
+        @keyframes slide-out-left {
+          0% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(-100%); opacity: 0; }
         }
-        @keyframes fade-in {
-          0% { opacity: 0; transform: scale(0.8); }
-          100% { opacity: 1; transform: scale(1); }
+        @keyframes slide-in-right {
+          0% { transform: translateX(100%); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
         }
-        .animate-scale-in { animation: scale-in 0.3s ease-out forwards; }
-        .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+        .animate-slide-out-left { 
+          animation: slide-out-left 0.4s ease-in-out forwards; 
+        }
+        .animate-slide-in-right { 
+          animation: slide-in-right 0.4s ease-in-out forwards; 
+        }
       `}</style>
     </div>
   );
