@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Search, MessageCircle, HelpCircle } from 'lucide-react';
 import LandingBottomNav from '../components/common/LandingBottomNav';
 
 const FAQPage = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Languages } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Languages, BookOpen } from 'lucide-react';
 import LandingBottomNav from '../components/common/LandingBottomNav';
 
 const BlogPage = () => {
