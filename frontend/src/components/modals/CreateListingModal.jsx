@@ -296,8 +296,8 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-gray-900 truncate">{company.CompanyName || company.name}</h4>
                       <p className="text-sm text-gray-500 flex items-center gap-2 flex-wrap">
-                        {company.ScripName && (
-                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">{company.ScripName}</span>
+                        {(company.scriptName || company.ScripName) && (
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">{company.scriptName || company.ScripName}</span>
                         )}
                         <span className="truncate">{company.Sector || company.sector || 'Unlisted'}</span>
                       </p>

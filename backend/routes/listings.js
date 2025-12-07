@@ -14,6 +14,7 @@ import {
   validateCounterOffer, 
   validateObjectId 
 } from '../middleware/validation.js';
+import { createNewCompanyFromListing, searchCompanyByName } from '../utils/companyLookup.js';
 
 const router = express.Router();
 
@@ -227,6 +228,7 @@ router.post('/', protect, async (req, res, next) => {
 
     let company = null;
     let finalCompanyName = manualCompanyName;
+    let isNewCompany = false;
 
     // If companyId provided, validate company exists
     if (companyId) {
@@ -238,7 +240,38 @@ router.post('/', protect, async (req, res, next) => {
         });
       }
       finalCompanyName = company.CompanyName || company.name;
-    } else if (!manualCompanyName) {
+    } else if (manualCompanyName) {
+      // Company name provided but no ID - search for existing or create new
+      company = await searchCompanyByName(manualCompanyName);
+      
+      if (company) {
+        // Found existing company
+        finalCompanyName = company.CompanyName || company.name;
+      } else {
+        // Company not found - create new company with pending verification
+        const result = await createNewCompanyFromListing(
+          manualCompanyName,
+          req.user._id,
+          {
+            pan: companyPan || null,
+            isin: companyISIN || null,
+            cin: companyCIN || null,
+            sector: companySegmentation || null
+          }
+        );
+
+        if (result.success) {
+          company = result.company;
+          isNewCompany = result.isNew;
+          finalCompanyName = company.name;
+          console.log(`New company "${company.name}" created by user ${req.user.username}, pending admin verification`);
+        } else {
+          console.error('Failed to create new company:', result.error);
+          // Continue without company reference
+          finalCompanyName = manualCompanyName;
+        }
+      }
+    } else {
       // Neither companyId nor companyName provided
       return res.status(400).json({
         success: false,
@@ -265,29 +298,36 @@ router.post('/', protect, async (req, res, next) => {
 
     // Calculate platform fee fields
     if (type === 'sell') {
-      // For SELL: Seller enters desired amount
+      // For SELL: Seller enters desired amount, buyer pays +2%
       listingData.sellerDesiredPrice = price;
-      listingData.displayPrice = price / 0.98; // Add 2% for buyer to pay
-      listingData.platformFee = listingData.displayPrice - price;
+      listingData.displayPrice = price * 1.02; // Buyer pays price + 2%
+      listingData.platformFee = price * 0.02; // 2% fee on base price
     } else {
-      // For BUY: Buyer enters max budget
+      // For BUY: Buyer enters max budget, seller gets -2%
       listingData.buyerMaxPrice = price;
-      listingData.displayPrice = price * 0.98; // Show 2% less to sellers
-      listingData.platformFee = price - listingData.displayPrice;
+      listingData.displayPrice = price * 0.98; // Seller gets price - 2%
+      listingData.platformFee = price * 0.02; // 2% fee on base price
     }
 
     const listing = await Listing.create(listingData);
 
-    // Update company listings count (only if company from database)
-    if (company) {
+    // Update company listings count (only if company from database and not newly created)
+    if (company && !isNewCompany) {
       company.totalListings += 1;
       await company.save();
     }
 
+    // Prepare response message
+    let message = `${type === 'sell' ? 'Sell post' : 'Buy request'} created successfully`;
+    if (isNewCompany) {
+      message += `. Note: "${company.name}" is a new company and pending admin verification.`;
+    }
+
     res.status(201).json({
       success: true,
-      message: `${type === 'sell' ? 'Sell post' : 'Buy request'} created successfully`,
-      data: listing
+      message: message,
+      data: listing,
+      isNewCompany
     });
   } catch (error) {
     next(error);
@@ -822,12 +862,14 @@ router.put('/:id', protect, async (req, res, next) => {
       // Recalculate platform fee fields
       if (listing.type === 'sell') {
         listing.sellerDesiredPrice = price;
-        listing.displayPrice = price / 0.98;
-        listing.platformFee = listing.displayPrice - price;
+        // SELL: Buyer pays price + 2%
+        listing.displayPrice = price * 1.02;
+        listing.platformFee = price * 0.02;
       } else {
         listing.buyerMaxPrice = price;
+        // BUY: Seller gets price - 2%
         listing.displayPrice = price * 0.98;
-        listing.platformFee = price - listing.displayPrice;
+        listing.platformFee = price * 0.02;
       }
     }
     if (quantity !== undefined) listing.quantity = quantity;
