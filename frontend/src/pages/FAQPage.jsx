@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, ChevronUp, Search, Home, BookOpen, Info, Mail, HelpCircle, MessageCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react';
+import LandingBottomNav from '../components/common/LandingBottomNav';
 
 const FAQPage = () => {
   const navigate = useNavigate();
@@ -229,42 +230,7 @@ const FAQPage = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 safe-area-bottom">
-        <div className="flex items-center justify-around py-2 px-2">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl text-gray-400 hover:text-gray-300"
-          >
-            <Home size={20} />
-            <span className="text-[10px] font-medium">Home</span>
-          </button>
-          <button
-            onClick={() => navigate('/blog')}
-            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl text-gray-400 hover:text-gray-300"
-          >
-            <BookOpen size={20} />
-            <span className="text-[10px] font-medium">Blog</span>
-          </button>
-          <button
-            onClick={() => navigate('/about')}
-            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl text-gray-400 hover:text-gray-300"
-          >
-            <Info size={20} />
-            <span className="text-[10px] font-medium">About</span>
-          </button>
-          <button
-            onClick={() => navigate('/contact')}
-            className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl text-gray-400 hover:text-gray-300"
-          >
-            <Mail size={20} />
-            <span className="text-[10px] font-medium">Contact</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 py-2 px-4 rounded-xl bg-emerald-500/20 text-emerald-400">
-            <HelpCircle size={20} />
-            <span className="text-[10px] font-medium">FAQ</span>
-          </button>
-        </div>
-      </nav>
+      <LandingBottomNav activePage="faq" />
     </div>
   );
 };

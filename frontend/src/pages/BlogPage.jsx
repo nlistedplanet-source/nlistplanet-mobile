@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Home, BookOpen, Info, Mail, HelpCircle, Languages } from 'lucide-react';
+import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Languages } from 'lucide-react';
+import LandingBottomNav from '../components/common/LandingBottomNav';
 
 const BlogPage = () => {
   const navigate = useNavigate();
@@ -349,42 +350,7 @@ const BlogPage = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/98 backdrop-blur-lg border-t border-gray-800">
-        <div className="flex items-center justify-around py-1.5 px-1">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center gap-0.5 py-1 px-4 text-gray-400"
-          >
-            <Home size={18} />
-            <span className="text-[9px] font-medium">Home</span>
-          </button>
-          <button className="flex flex-col items-center gap-0.5 py-1 px-4 text-emerald-400">
-            <BookOpen size={18} />
-            <span className="text-[9px] font-medium">News</span>
-          </button>
-          <button
-            onClick={() => navigate('/about')}
-            className="flex flex-col items-center gap-0.5 py-1 px-4 text-gray-400"
-          >
-            <Info size={18} />
-            <span className="text-[9px] font-medium">About</span>
-          </button>
-          <button
-            onClick={() => navigate('/contact')}
-            className="flex flex-col items-center gap-0.5 py-1 px-4 text-gray-400"
-          >
-            <Mail size={18} />
-            <span className="text-[9px] font-medium">Contact</span>
-          </button>
-          <button
-            onClick={() => navigate('/faq')}
-            className="flex flex-col items-center gap-0.5 py-1 px-4 text-gray-400"
-          >
-            <HelpCircle size={18} />
-            <span className="text-[9px] font-medium">FAQ</span>
-          </button>
-        </div>
-      </nav>
+      <LandingBottomNav activePage="blog" />
     </div>
   );
 };

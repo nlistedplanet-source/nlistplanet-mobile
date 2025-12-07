@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle, MoreHorizontal } from 'lucide-react';
+import Lottie from 'lottie-react';
+
+// Lottie animation URLs for center logo
+const LOTTIE_ANIMATIONS = [
+  'https://lottie.host/87d22432-d357-4b4c-8580-791909118556/Tckorlt4wb.lottie',
+  'https://lottie.host/31b9d722-5036-46a3-a059-07fd153ab3fb/xf0tgPD85m.lottie',
+  'https://lottie.host/0571e045-8f3f-4b78-b88c-0d6b5463aa78/gqVauRjqqa.lottie'
+];
+
+// Cache for loaded animation data
+const animationCache = {};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -10,6 +21,10 @@ const LandingPage = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  
+  // Center Logo Lottie States
+  const [currentLogoIndex, setCurrentLogoIndex] = useState(0); // 0 = Logo, 1-3 = Lottie animations
+  const [centerAnimationData, setCenterAnimationData] = useState(null);
   
   // PWA Install States
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -88,6 +103,44 @@ const LandingPage = () => {
     }, 2500);
     return () => clearInterval(interval);
   }, []);
+
+  // Rotate center logo: Logo → Lottie 1 → Lottie 2 → Lottie 3 → Logo...
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentLogoIndex((prev) => (prev + 1) % 4); // 0, 1, 2, 3, 0, 1...
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch Lottie animation data for center logo
+  useEffect(() => {
+    if (currentLogoIndex === 0) {
+      setCenterAnimationData(null);
+      return;
+    }
+
+    const fetchAnimation = async () => {
+      const url = LOTTIE_ANIMATIONS[currentLogoIndex - 1];
+      
+      if (animationCache[url]) {
+        setCenterAnimationData(animationCache[url]);
+        return;
+      }
+
+      try {
+        const jsonUrl = url.replace('.lottie', '.json');
+        const response = await fetch(jsonUrl);
+        const data = await response.json();
+        animationCache[url] = data;
+        setCenterAnimationData(data);
+      } catch (error) {
+        console.error('Failed to load animation:', error);
+        setCenterAnimationData(null);
+      }
+    };
+
+    fetchAnimation();
+  }, [currentLogoIndex]);
 
   const features = [
     {
@@ -245,12 +298,7 @@ const LandingPage = () => {
       <div className="relative z-10 px-6 pt-8 pb-6">
         {/* Hero Text */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5 mb-5">
-            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-            <span className="text-emerald-400 text-xs font-medium">India's #1 Unlisted Share Platform</span>
-          </div>
-          
-          <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
+          <h1 className="text-4xl font-bold text-white mb-3 leading-tight">
             <span 
               className={`inline-block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent transition-all duration-200 ${isAnimating ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}
             >
@@ -260,6 +308,12 @@ const LandingPage = () => {
             <br />
             <span className="text-gray-100">Shares Online</span>
           </h1>
+          
+          {/* India #1 Tag - Below Heading */}
+          <div className="inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-2.5 py-1 mb-4">
+            <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse"></span>
+            <span className="text-emerald-400 text-[10px] font-medium">India's #1 Unlisted Share Platform</span>
+          </div>
           
           <p className="text-gray-400 text-base mb-2 max-w-xs mx-auto">
             Trade at <span className="text-white font-semibold">your price</span> with 
@@ -481,13 +535,37 @@ const LandingPage = () => {
             <span className="text-[10px] font-medium">Blog</span>
           </button>
 
-          {/* Center N Logo */}
+          {/* Center Logo - Rotating between Logo and Lottie animations */}
           <button
             onClick={() => navigate('/register')}
             className="relative -mt-6 flex items-center justify-center"
           >
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 border-4 border-gray-900">
-              <span className="text-2xl font-bold text-white">N</span>
+            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 border-4 border-gray-900 overflow-hidden">
+              {currentLogoIndex === 0 ? (
+                // Show N Logo
+                <img 
+                  src="/Logo copy.png" 
+                  alt="NlistPlanet" 
+                  className="w-10 h-10 object-contain animate-logo-fade"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<span class="text-2xl font-bold text-emerald-600">N</span>';
+                  }}
+                />
+              ) : centerAnimationData ? (
+                // Show Lottie animation
+                <div className="animate-logo-fade">
+                  <Lottie
+                    animationData={centerAnimationData}
+                    loop={true}
+                    autoplay={true}
+                    style={{ width: 40, height: 40 }}
+                  />
+                </div>
+              ) : (
+                // Fallback N logo while loading
+                <span className="text-2xl font-bold text-emerald-600">N</span>
+              )}
             </div>
           </button>
 
@@ -590,6 +668,13 @@ const LandingPage = () => {
         }
         .animate-slide-up {
           animation: slide-up 0.4s ease-out forwards;
+        }
+        @keyframes logo-fade {
+          0% { opacity: 0; transform: scale(0.8); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-logo-fade {
+          animation: logo-fade 0.3s ease-out forwards;
         }
       `}</style>
     </div>

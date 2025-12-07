@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 // ========================================
 // 🔧 DEBUG MODE - Set to true to preview loading screen for longer
 // ========================================
-const DEBUG_LOADING = true;  // 👈 Set to false when done testing
-const DEBUG_DELAY_MS = 15000; // 15 seconds minimum display time
+const DEBUG_LOADING = false;  // 👈 Set to false when done testing
+const DEBUG_DELAY_MS = 0; // No delay in production
 // ========================================
 
 const LoadingScreen = ({ message = '' }) => {
