@@ -23,6 +23,7 @@ import adminRoutes from './routes/admin.js';
 import adminCompaniesRoutes from './routes/adminCompanies.js';
 import adsRoutes from './routes/ads.js';
 import newsRoutes from './routes/news.js';
+import { startNewsScheduler } from './utils/newsScheduler.js';
 
 // Load environment variables
 dotenv.config();
@@ -251,6 +252,9 @@ app.listen(PORT, () => {
   console.log(`📱 Environment: ${process.env.NODE_ENV}`);
   console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
   console.log(`✅ Admin Companies Management: Enabled`);
+  
+  // Start news scheduler (fetches every 30 minutes)
+  startNewsScheduler();
 });
 
 export default app;
