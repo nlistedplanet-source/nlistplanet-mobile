@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle } from 'lucide-react';
+import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle, MoreHorizontal } from 'lucide-react';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ const LandingPage = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   
   // PWA Install States
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -238,47 +239,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
-      {/* Header */}
-      <header className="relative z-20 px-5 py-4 flex items-center justify-between bg-transparent sticky top-0">
-        <div className="flex items-center gap-2">
-          <img 
-            src="/new_logo.png" 
-            alt="NlistPlanet" 
-            className="w-12 h-12 object-contain"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextSibling.style.display = 'flex';
-            }}
-          />
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center" style={{display: 'none'}}>
-            <span className="text-xl font-bold text-white">N</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Install App Button */}
-          {!isInstalled && (deferredPrompt || isIOS) && (
-            <button
-              onClick={handleInstallClick}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
-            >
-              <Download size={14} />
-              App
-            </button>
-          )}
-          <Link
-            to="/login"
-            className="px-4 py-2 text-gray-300 hover:text-white text-sm font-medium transition-colors"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-lg transition-colors"
-          >
-            Sign Up
-          </Link>
-        </div>
-      </header>
+      {/* Header Removed - Using Bottom Navigation Only */}
 
       {/* Hero Section */}
       <div className="relative z-10 px-6 pt-8 pb-6">
@@ -342,15 +303,15 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Benefit Cards Section - NEW */}
+      {/* Benefit Cards Section - Dark Theme */}
       <div className="relative z-10 px-6 pb-6">
-        <div className="bg-white rounded-2xl p-4 shadow-xl">
+        <div className="bg-gray-900/80 backdrop-blur-sm rounded-2xl p-4 border border-gray-800">
           <div className="grid grid-cols-3 gap-3">
             {benefitCards.map((card, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl mb-2">{card.icon}</div>
-                <h4 className="font-bold text-gray-900 text-sm mb-1">{card.title}</h4>
-                <p className="text-gray-500 text-[10px] leading-tight">{card.description}</p>
+                <h4 className="font-bold text-white text-sm mb-1">{card.title}</h4>
+                <p className="text-gray-400 text-[10px] leading-tight">{card.description}</p>
               </div>
             ))}
           </div>
@@ -485,83 +446,120 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Bottom Navigation Bar - Website Style */}
+      {/* Bottom Navigation Bar - New Design */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 safe-area-bottom">
-        <div className="flex items-center justify-around py-2 px-2">
+        <div className="flex items-center justify-around py-2 px-4">
+          {/* Home */}
           <button
             onClick={() => {
               setActiveTab('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
               activeTab === 'home' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
+                ? 'text-emerald-400' 
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            <Home size={20} />
+            <Home size={22} />
             <span className="text-[10px] font-medium">Home</span>
           </button>
 
+          {/* Blog */}
           <button
             onClick={() => {
               setActiveTab('blog');
               navigate('/blog');
             }}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
               activeTab === 'blog' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
+                ? 'text-emerald-400' 
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            <BookOpen size={20} />
+            <BookOpen size={22} />
             <span className="text-[10px] font-medium">Blog</span>
           </button>
 
+          {/* Center N Logo */}
           <button
-            onClick={() => {
-              setActiveTab('about');
-              navigate('/about');
-            }}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
-              activeTab === 'about' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
-                : 'text-gray-400 hover:text-gray-300'
-            }`}
+            onClick={() => navigate('/register')}
+            className="relative -mt-6 flex items-center justify-center"
           >
-            <Info size={20} />
-            <span className="text-[10px] font-medium">About</span>
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 border-4 border-gray-900">
+              <span className="text-2xl font-bold text-white">N</span>
+            </div>
           </button>
 
+          {/* App Download */}
           <button
-            onClick={() => {
-              setActiveTab('contact');
-              navigate('/contact');
-            }}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
-              activeTab === 'contact' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
+            onClick={handleInstallClick}
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
+              activeTab === 'download' 
+                ? 'text-emerald-400' 
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            <Mail size={20} />
-            <span className="text-[10px] font-medium">Contact</span>
+            <Download size={22} />
+            <span className="text-[10px] font-medium">App</span>
           </button>
 
-          <button
-            onClick={() => {
-              setActiveTab('help');
-              navigate('/faq');
-            }}
-            className={`flex flex-col items-center gap-1 py-2 px-4 rounded-xl transition-all ${
-              activeTab === 'help' 
-                ? 'bg-emerald-500/20 text-emerald-400' 
-                : 'text-gray-400 hover:text-gray-300'
-            }`}
-          >
-            <HelpCircle size={20} />
-            <span className="text-[10px] font-medium">FAQ</span>
-          </button>
+          {/* More Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
+                showMoreMenu 
+                  ? 'text-emerald-400' 
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <MoreHorizontal size={22} />
+              <span className="text-[10px] font-medium">More</span>
+            </button>
+
+            {/* More Dropdown */}
+            {showMoreMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMoreMenu(false)}
+                />
+                <div className="absolute bottom-full right-0 mb-2 w-40 bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden z-50">
+                  <button
+                    onClick={() => {
+                      navigate('/about');
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                  >
+                    <Info size={18} />
+                    <span className="text-sm font-medium">About</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/contact');
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors border-t border-gray-700"
+                  >
+                    <Mail size={18} />
+                    <span className="text-sm font-medium">Contact</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/faq');
+                      setShowMoreMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors border-t border-gray-700"
+                  >
+                    <HelpCircle size={18} />
+                    <span className="text-sm font-medium">FAQ</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
