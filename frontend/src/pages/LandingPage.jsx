@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle, MoreHorizontal } from 'lucide-react';
-import Lottie from 'lottie-react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 // Lottie animation URLs for center logo
 const LOTTIE_ANIMATIONS = [
@@ -9,9 +9,6 @@ const LOTTIE_ANIMATIONS = [
   'https://lottie.host/31b9d722-5036-46a3-a059-07fd153ab3fb/xf0tgPD85m.lottie',
   'https://lottie.host/0571e045-8f3f-4b78-b88c-0d6b5463aa78/gqVauRjqqa.lottie'
 ];
-
-// Cache for loaded animation data
-const animationCache = {};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -22,9 +19,8 @@ const LandingPage = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   
-  // Center Logo Lottie States
+  // Center Logo Lottie State
   const [currentLogoIndex, setCurrentLogoIndex] = useState(0); // 0 = Logo, 1-3 = Lottie animations
-  const [centerAnimationData, setCenterAnimationData] = useState(null);
   
   // PWA Install States
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -111,36 +107,6 @@ const LandingPage = () => {
     }, 2000);
     return () => clearInterval(interval);
   }, []);
-
-  // Fetch Lottie animation data for center logo
-  useEffect(() => {
-    if (currentLogoIndex === 0) {
-      setCenterAnimationData(null);
-      return;
-    }
-
-    const fetchAnimation = async () => {
-      const url = LOTTIE_ANIMATIONS[currentLogoIndex - 1];
-      
-      if (animationCache[url]) {
-        setCenterAnimationData(animationCache[url]);
-        return;
-      }
-
-      try {
-        const jsonUrl = url.replace('.lottie', '.json');
-        const response = await fetch(jsonUrl);
-        const data = await response.json();
-        animationCache[url] = data;
-        setCenterAnimationData(data);
-      } catch (error) {
-        console.error('Failed to load animation:', error);
-        setCenterAnimationData(null);
-      }
-    };
-
-    fetchAnimation();
-  }, [currentLogoIndex]);
 
   const features = [
     {
@@ -552,19 +518,16 @@ const LandingPage = () => {
                     e.target.parentElement.innerHTML = '<span class="text-2xl font-bold text-emerald-600">N</span>';
                   }}
                 />
-              ) : centerAnimationData ? (
-                // Show Lottie animation
-                <div className="animate-logo-fade">
-                  <Lottie
-                    animationData={centerAnimationData}
-                    loop={true}
-                    autoplay={true}
-                    style={{ width: 40, height: 40 }}
+              ) : (
+                // Show Lottie animation using DotLottieReact
+                <div className="animate-logo-fade" style={{ width: 40, height: 40 }}>
+                  <DotLottieReact
+                    src={LOTTIE_ANIMATIONS[currentLogoIndex - 1]}
+                    loop
+                    autoplay
+                    style={{ width: '100%', height: '100%' }}
                   />
                 </div>
-              ) : (
-                // Fallback N logo while loading
-                <span className="text-2xl font-bold text-emerald-600">N</span>
               )}
             </div>
           </button>

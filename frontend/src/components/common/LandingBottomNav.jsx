@@ -1,24 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Download, MoreHorizontal, Info, Mail, HelpCircle } from 'lucide-react';
-import Lottie from 'lottie-react';
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
-// Lottie animation URLs
+// Lottie animation URLs - direct .lottie files
 const LOTTIE_ANIMATIONS = [
   'https://lottie.host/87d22432-d357-4b4c-8580-791909118556/Tckorlt4wb.lottie',
   'https://lottie.host/31b9d722-5036-46a3-a059-07fd153ab3fb/xf0tgPD85m.lottie',
   'https://lottie.host/0571e045-8f3f-4b78-b88c-0d6b5463aa78/gqVauRjqqa.lottie'
 ];
 
-// Cache for loaded animation data
-const animationCache = {};
-
 const LandingBottomNav = ({ onInstallClick }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [currentLogoIndex, setCurrentLogoIndex] = useState(0); // 0 = Logo, 1-3 = Lottie animations
-  const [animationData, setAnimationData] = useState(null);
   
   const getActiveTab = () => {
     const path = location.pathname;
@@ -40,36 +36,6 @@ const LandingBottomNav = ({ onInstallClick }) => {
 
     return () => clearInterval(interval);
   }, []);
-
-  // Fetch Lottie animation data when needed
-  useEffect(() => {
-    if (currentLogoIndex === 0) {
-      setAnimationData(null);
-      return;
-    }
-
-    const fetchAnimation = async () => {
-      const url = LOTTIE_ANIMATIONS[currentLogoIndex - 1]; // index 1-3 maps to 0-2
-      
-      if (animationCache[url]) {
-        setAnimationData(animationCache[url]);
-        return;
-      }
-
-      try {
-        const jsonUrl = url.replace('.lottie', '.json');
-        const response = await fetch(jsonUrl);
-        const data = await response.json();
-        animationCache[url] = data;
-        setAnimationData(data);
-      } catch (error) {
-        console.error('Failed to load animation:', error);
-        setAnimationData(null);
-      }
-    };
-
-    fetchAnimation();
-  }, [currentLogoIndex]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 safe-area-bottom">
@@ -117,19 +83,16 @@ const LandingBottomNav = ({ onInstallClick }) => {
                   e.target.parentElement.innerHTML = '<span class="text-2xl font-bold text-emerald-600">N</span>';
                 }}
               />
-            ) : animationData ? (
-              // Show Lottie animation
-              <div className="animate-fade-in">
-                <Lottie
-                  animationData={animationData}
-                  loop={true}
-                  autoplay={true}
-                  style={{ width: 40, height: 40 }}
+            ) : (
+              // Show Lottie animation using DotLottieReact
+              <div className="animate-fade-in" style={{ width: 40, height: 40 }}>
+                <DotLottieReact
+                  src={LOTTIE_ANIMATIONS[currentLogoIndex - 1]}
+                  loop
+                  autoplay
+                  style={{ width: '100%', height: '100%' }}
                 />
               </div>
-            ) : (
-              // Fallback N logo while loading
-              <span className="text-2xl font-bold text-emerald-600">N</span>
             )}
           </div>
         </button>
