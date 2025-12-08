@@ -636,8 +636,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                 <div className="mt-2 space-y-2">
                   {counterOfferBids.map((bid, index) => {
                     const counterInfo = getLatestCounterInfo(bid);
-                    // Show actual bid price (no fee calculation)
-                    const displayBuyerBid = counterInfo.buyerBid;
+                    // Seller sees what they will RECEIVE (buyer's bid × 0.98)
+                    const displayBuyerBid = calculateSellerGets(counterInfo.buyerBid);
                     const isLatestFromBuyer = counterInfo.latestBy === 'buyer';
                     
                     return (
@@ -711,8 +711,9 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {pendingBidsExpanded && (
                 <div className="mt-2 space-y-2">
                   {pendingBids.map((bid, index) => {
-                    // Show actual bid price (no fee calculation)
-                    const displayPrice = bid.originalPrice || bid.price;
+                    // Seller sees what they will RECEIVE (buyer's bid × 0.98)
+                    const buyerBidPrice = bid.originalPrice || bid.price;
+                    const displayPrice = calculateSellerGets(buyerBidPrice);
                     const bidTotal = displayPrice * bid.quantity;
                     
                     return (
@@ -814,8 +815,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {/* Price Summary */}
               {(() => {
                 const counterInfo = getLatestCounterInfo(selectedBid);
-                // Show actual bid price (no fee calculation)
-                const displayBuyerBid = counterInfo.buyerBid;
+                // Seller sees what they will RECEIVE (buyer's bid × 0.98)
+                const displayBuyerBid = calculateSellerGets(counterInfo.buyerBid);
                 const bidTotal = displayBuyerBid * counterInfo.buyerQty;
                 
                 return (
@@ -858,8 +859,10 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2 border border-gray-200 max-h-32 overflow-y-auto">
                     {selectedBid.counterHistory.map((counter, cIdx) => {
-                      // Show actual counter price (no fee calculation)
-                      const counterDisplayPrice = counter.price;
+                      // Seller sees: own counter as-is, buyer's counter ×0.98
+                      const counterDisplayPrice = counter.by === 'seller' 
+                        ? counter.price 
+                        : calculateSellerGets(counter.price);
                       return (
                         <div key={cIdx} className={`py-1.5 px-2 rounded-lg mb-1 ${counter.by === 'seller' ? 'bg-purple-100' : 'bg-blue-100'}`}>
                           <div className="flex items-center justify-between text-[10px]">
@@ -930,9 +933,9 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
             </div>
             <div className="p-4">
               <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-2">Buyer's Bid:</p>
+                <p className="text-xs text-gray-600 mb-2">Buyer's Bid (You'll Receive):</p>
                 <div className="flex justify-between">
-                  <span className="font-bold">{formatCurrency(selectedBid.price)}</span>
+                  <span className="font-bold">{formatCurrency(calculateSellerGets(selectedBid.price))}</span>
                   <span className="font-bold">{formatShortQty(selectedBid.quantity)} shares</span>
                 </div>
               </div>

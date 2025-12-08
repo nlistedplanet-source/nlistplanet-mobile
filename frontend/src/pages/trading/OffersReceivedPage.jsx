@@ -12,7 +12,7 @@ import {
   User
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, calculateBuyerPays } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 
 const OffersReceivedPage = () => {
@@ -216,7 +216,7 @@ const OffersReceivedPage = () => {
               }
             </p>
             
-            {/* Offer Summary - Show what seller receives after 2% fee */}
+            {/* Offer Summary - Buyer sees what they will PAY (×1.02) */}
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-gray-600">Company</span>
@@ -227,12 +227,12 @@ const OffersReceivedPage = () => {
                 <span className="font-semibold text-gray-900">{selectedOffer.quantity} shares</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Price per share</span>
-                <span className="font-semibold text-gray-900">{formatCurrency(selectedOffer.originalPrice || selectedOffer.price)}</span>
+                <span className="text-gray-600">You'll pay per share</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(calculateBuyerPays(selectedOffer.originalPrice || selectedOffer.price))}</span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-                <span className="text-gray-900 font-semibold">Total Amount</span>
-                <span className="font-bold text-primary-600">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * selectedOffer.quantity)}</span>
+                <span className="text-gray-900 font-semibold">Total You'll Pay</span>
+                <span className="font-bold text-primary-600">{formatCurrency(calculateBuyerPays(selectedOffer.originalPrice || selectedOffer.price) * selectedOffer.quantity)}</span>
               </div>
             </div>
 
@@ -268,11 +268,11 @@ const OffersReceivedPage = () => {
 
 // Offer Card Component
 const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
-  // Use originalPrice for buyer's original bid (fallback to price for old bids)
-  const buyerOriginalPrice = offer.originalPrice || offer.price;
-  // Seller receives price after 2% platform fee deduction
-  const sellerReceives = buyerOriginalPrice * 0.98;
-  const totalReceives = sellerReceives * offer.quantity;
+  // Use originalPrice for seller's original offer
+  const sellerOfferPrice = offer.originalPrice || offer.price;
+  // Buyer sees what they will PAY (seller's offer × 1.02)
+  const buyerPays = calculateBuyerPays(sellerOfferPrice);
+  const totalPays = buyerPays * offer.quantity;
   
   const statusConfig = {
     pending: {
@@ -324,19 +324,19 @@ const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
             </span>
           </div>
 
-          {/* Price Info */}
+          {/* Price Info - Buyer sees what they will PAY (×1.02) */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500 mb-0.5">You'll receive</p>
+              <p className="text-xs text-gray-500 mb-0.5">You'll pay</p>
               <p className="text-lg font-bold text-gray-900">
-                {formatCurrency(sellerReceives)}
+                {formatCurrency(buyerPays)}
                 <span className="text-sm text-gray-500 font-normal">/share</span>
               </p>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-500 mb-0.5">For {offer.quantity} shares</p>
               <p className="text-lg font-bold text-primary-600">
-                {formatCurrency(totalReceives)}
+                {formatCurrency(totalPays)}
               </p>
             </div>
           </div>
@@ -346,7 +346,7 @@ const OfferCard = ({ offer, onViewClick, onAcceptClick, onRejectClick }) => {
       {/* Message if present */}
       {offer.message && (
         <div className="mb-3 p-3 bg-gray-50 rounded-xl">
-          <p className="text-xs text-gray-500 mb-1">Message from buyer:</p>
+          <p className="text-xs text-gray-500 mb-1">Message from seller:</p>
           <p className="text-sm text-gray-700">{offer.message}</p>
         </div>
       )}
