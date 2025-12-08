@@ -4,6 +4,12 @@ import User from '../models/User.js';
 import Listing from '../models/Listing.js';
 import Transaction from '../models/Transaction.js';
 import Company from '../models/Company.js';
+import Settings from '../models/Settings.js';
+import Ad from '../models/Ad.js';
+import ReferralTracking from '../models/ReferralTracking.js';
+import UsernameHistory from '../models/UsernameHistory.js';
+import CompletedDeal from '../models/CompletedDeal.js';
+import { protect, authorize } from '../middleware/auth.js';
 
 // Parse DD/MM/YYYY format to Date
 const parseIndianDate = (dateStr) => {
@@ -16,12 +22,6 @@ const parseIndianDate = (dateStr) => {
   // Fallback to default parsing
   return new Date(dateStr);
 };
-import Settings from '../models/Settings.js';
-import Ad from '../models/Ad.js';
-import ReferralTracking from '../models/ReferralTracking.js';
-import UsernameHistory from '../models/UsernameHistory.js';
-import CompletedDeal from '../models/CompletedDeal.js';
-import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -589,6 +589,8 @@ router.get('/companies', async (req, res, next) => {
 router.post('/companies', upload.single('logo'), async (req, res, next) => {
   try {
     const { name, scriptName, sector, isin, cin, pan, registrationDate, description } = req.body;
+    
+    console.log('Creating company with data:', { name, scriptName, sector, isin, cin, pan, registrationDate });
 
     // Check if company already exists
     const existingCompany = await Company.findOne({ name: name.trim() });
@@ -623,6 +625,8 @@ router.post('/companies', upload.single('logo'), async (req, res, next) => {
       data: company
     });
   } catch (error) {
+    console.error('Company create error:', error.message);
+    console.error('Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
@@ -637,7 +641,11 @@ router.post('/companies', upload.single('logo'), async (req, res, next) => {
         message: messages.join(', ')
       });
     }
-    console.error('Company create error:', error);
+    // Return detailed error for debugging
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error'
+    });
     next(error);
   }
 });
