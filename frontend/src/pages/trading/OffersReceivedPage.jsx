@@ -227,12 +227,12 @@ const OffersReceivedPage = () => {
                 <span className="font-semibold text-gray-900">{selectedOffer.quantity} shares</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">You'll receive per share</span>
-                <span className="font-semibold text-gray-900">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * 0.98)}</span>
+                <span className="text-gray-600">Price per share</span>
+                <span className="font-semibold text-gray-900">{formatCurrency(selectedOffer.originalPrice || selectedOffer.price)}</span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t border-gray-200">
-                <span className="text-gray-900 font-semibold">Total You'll Receive</span>
-                <span className="font-bold text-primary-600">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * 0.98 * selectedOffer.quantity)}</span>
+                <span className="text-gray-900 font-semibold">Total Amount</span>
+                <span className="font-bold text-primary-600">{formatCurrency((selectedOffer.originalPrice || selectedOffer.price) * selectedOffer.quantity)}</span>
               </div>
             </div>
 

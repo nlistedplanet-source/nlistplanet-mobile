@@ -636,7 +636,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                 <div className="mt-2 space-y-2">
                   {counterOfferBids.map((bid, index) => {
                     const counterInfo = getLatestCounterInfo(bid);
-                    const displayBuyerBid = calculateSellerGets ? calculateSellerGets(counterInfo.buyerBid) : counterInfo.buyerBid * 0.98;
+                    // Show actual bid price (no fee calculation)
+                    const displayBuyerBid = counterInfo.buyerBid;
                     const isLatestFromBuyer = counterInfo.latestBy === 'buyer';
                     
                     return (
@@ -710,7 +711,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {pendingBidsExpanded && (
                 <div className="mt-2 space-y-2">
                   {pendingBids.map((bid, index) => {
-                    const displayPrice = calculateSellerGets ? calculateSellerGets(bid.originalPrice || bid.price) : (bid.originalPrice || bid.price) * 0.98;
+                    // Show actual bid price (no fee calculation)
+                    const displayPrice = bid.originalPrice || bid.price;
                     const bidTotal = displayPrice * bid.quantity;
                     
                     return (
@@ -812,13 +814,14 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {/* Price Summary */}
               {(() => {
                 const counterInfo = getLatestCounterInfo(selectedBid);
-                const displayBuyerBid = calculateSellerGets ? calculateSellerGets(counterInfo.buyerBid) : counterInfo.buyerBid * 0.98;
+                // Show actual bid price (no fee calculation)
+                const displayBuyerBid = counterInfo.buyerBid;
                 const bidTotal = displayBuyerBid * counterInfo.buyerQty;
                 
                 return (
                   <div className="space-y-3 mb-4">
                     <div className="bg-blue-50 rounded-xl p-3 border border-blue-200">
-                      <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{isSell ? 'Buyer Bid' : 'Seller Offer'} (You receive)</p>
+                      <p className="text-[10px] text-gray-600 uppercase font-semibold mb-1">{isSell ? 'Buyer Bid' : 'Seller Offer'}</p>
                       <div className="flex items-center justify-between">
                         <span className="text-lg font-bold text-gray-900">{formatCurrency(displayBuyerBid)}</span>
                         <span className="text-sm font-semibold text-gray-700">× {formatShortQty(counterInfo.buyerQty)}</span>
@@ -855,9 +858,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                   </div>
                   <div className="bg-gray-50 rounded-xl p-2 border border-gray-200 max-h-32 overflow-y-auto">
                     {selectedBid.counterHistory.map((counter, cIdx) => {
-                      const counterDisplayPrice = counter.by === 'seller' 
-                        ? counter.price 
-                        : (calculateSellerGets ? calculateSellerGets(counter.price) : counter.price * 0.98);
+                      // Show actual counter price (no fee calculation)
+                      const counterDisplayPrice = counter.price;
                       return (
                         <div key={cIdx} className={`py-1.5 px-2 rounded-lg mb-1 ${counter.by === 'seller' ? 'bg-purple-100' : 'bg-blue-100'}`}>
                           <div className="flex items-center justify-between text-[10px]">
@@ -928,9 +930,9 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
             </div>
             <div className="p-4">
               <div className="bg-blue-50 rounded-xl p-3 mb-4 border border-blue-200">
-                <p className="text-xs text-gray-600 mb-2">Buyer's Bid (You'll Receive):</p>
+                <p className="text-xs text-gray-600 mb-2">Buyer's Bid:</p>
                 <div className="flex justify-between">
-                  <span className="font-bold">{formatCurrency(calculateSellerGets(selectedBid.price))}</span>
+                  <span className="font-bold">{formatCurrency(selectedBid.price)}</span>
                   <span className="font-bold">{formatShortQty(selectedBid.quantity)} shares</span>
                 </div>
               </div>
