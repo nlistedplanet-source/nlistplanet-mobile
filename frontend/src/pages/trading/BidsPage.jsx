@@ -228,46 +228,27 @@ const BidsPage = () => {
               </button>
             </div>
 
-            {/* Active/Expired Filter */}
-            <div className="flex gap-2">
+            {/* Active/Expired Toggle - Small Switch */}
+            <div className="flex items-center justify-end gap-2 mt-2">
+              <span className={`text-[10px] font-semibold ${statusFilter === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                Active ({currentCounts.activeCount})
+              </span>
               <button
                 onClick={() => {
                   haptic.light();
-                  setStatusFilter('active');
+                  setStatusFilter(statusFilter === 'active' ? 'expired' : 'active');
                 }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  statusFilter === 'active'
-                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                    : 'bg-white text-gray-500 border border-gray-200'
+                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
+                  statusFilter === 'expired' ? 'bg-gray-400' : 'bg-emerald-500'
                 }`}
               >
-                <Clock size={12} />
-                Active
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  statusFilter === 'active' ? 'bg-emerald-200' : 'bg-gray-200'
-                }`}>
-                  {currentCounts.activeCount}
-                </span>
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${
+                  statusFilter === 'expired' ? 'left-6' : 'left-1'
+                }`} />
               </button>
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setStatusFilter('expired');
-                }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1 ${
-                  statusFilter === 'expired'
-                    ? 'bg-gray-200 text-gray-700 border border-gray-400'
-                    : 'bg-white text-gray-500 border border-gray-200'
-                }`}
-              >
-                <XCircle size={12} />
-                Expired/Done
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  statusFilter === 'expired' ? 'bg-gray-300' : 'bg-gray-200'
-                }`}>
-                  {currentCounts.expiredCount}
-                </span>
-              </button>
+              <span className={`text-[10px] font-semibold ${statusFilter === 'expired' ? 'text-gray-700' : 'text-gray-400'}`}>
+                Expired ({currentCounts.expiredCount})
+              </span>
             </div>
           </div>
         </div>
