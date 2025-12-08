@@ -61,7 +61,7 @@ const FAQPage = () => {
     {
       category: 'payment',
       question: 'Is there any brokerage or fees?',
-      answer: 'NlistPlanet charges a minimal platform fee of 2% on successful transactions. This fee is charged to the buyer. There are no hidden charges, subscription fees, or listing fees.'
+      answer: 'NlistPlanet charges a minimal platform fee on successful transactions. There are no hidden charges, subscription fees, or listing fees.'
     },
     {
       category: 'payment',

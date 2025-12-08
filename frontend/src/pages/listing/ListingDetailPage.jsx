@@ -197,31 +197,6 @@ const ListingDetailPage = () => {
         </div>
       )}
 
-      {/* Platform Fee Info */}
-      <div className="px-6 mt-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-semibold text-blue-900 mb-2">Platform Fee (2%)</p>
-              <p className="text-sm text-blue-700 mb-2">
-                {isSell 
-                  ? `As a seller, you will receive ${formatCurrency(totalAmount - platformFee)} after the 2% platform fee.`
-                  : `As a buyer, you will pay ${formatCurrency(totalAmount + platformFee)} including the 2% platform fee.`
-                }
-              </p>
-              <div className="text-xs text-blue-600 space-y-1">
-                <p>• Base Amount: {formatCurrency(totalAmount)}</p>
-                <p>• Platform Fee: {formatCurrency(platformFee)}</p>
-                <p className="font-semibold">
-                  • {isSell ? 'You receive' : 'Total you pay'}: {formatCurrency(isSell ? totalAmount - platformFee : totalAmount + platformFee)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Action Button */}
       {!isOwnListing && listing.status === 'active' && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-safe shadow-lg">

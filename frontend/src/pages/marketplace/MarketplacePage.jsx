@@ -448,16 +448,29 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
     }
   };
 
-  const handleConfirmPurchase = () => {
+  const handleConfirmPurchase = async () => {
     if (!acceptedTerms) {
       toast.error('Please accept the Terms & Conditions');
       return;
     }
-    haptic.success();
-    toast.success('Order placed successfully!');
-    setShowConfirmation(false);
-    onClose();
-    // TODO: Call API to place order
+    
+    try {
+      // Place bid/offer at listing price (accepting the listing)
+      await listingsAPI.placeBid(listing._id, {
+        price: displayPrice,
+        quantity: qty,
+        message: 'Accepted listing at asking price'
+      });
+      
+      haptic.success();
+      toast.success('Order placed successfully! The seller will be notified.');
+      setShowConfirmation(false);
+      onClose();
+    } catch (error) {
+      console.error('Failed to accept listing:', error);
+      toast.error(error.response?.data?.message || 'Failed to place order. Please try again.');
+      haptic.error();
+    }
   };
 
   // Backdrop click closes modal
@@ -729,18 +742,9 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                   <span className="font-semibold text-gray-900">{formatNumber(qty)} shares</span>
                 </div>
                 <hr className="border-gray-200" />
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 text-sm">Subtotal</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(totalAmount)}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500 text-sm">Platform Fee (2%)</span>
-                  <span className="font-semibold text-gray-900">{formatCurrency(platformFee)}</span>
-                </div>
-                <hr className="border-gray-200" />
                 <div className="flex items-center justify-between text-lg">
                   <span className="font-bold text-gray-900">Total Amount</span>
-                  <span className="font-bold text-primary-600">{formatCurrency(finalAmount)}</span>
+                  <span className="font-bold text-primary-600">{formatCurrency(totalAmount)}</span>
                 </div>
                 <p className="text-[10px] text-gray-400 text-center">
                   ({numberToWords(Math.round(finalAmount))} Rupees Only)

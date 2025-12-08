@@ -12,10 +12,6 @@ const HelpSupport = () => {
       answer: 'Go to the marketplace, tap the + button, select whether you want to Buy or Sell, choose the company, enter price and quantity, and submit.'
     },
     {
-      question: 'What is the platform fee?',
-      answer: 'NlistPlanet charges a 2% platform fee on all transactions. Buyers pay 2% above the listing price, and sellers receive 2% less than the bid amount.'
-    },
-    {
       question: 'How does KYC verification work?',
       answer: 'Upload your Aadhaar and PAN card in the KYC section. Our team verifies your documents within 24-48 hours.'
     },

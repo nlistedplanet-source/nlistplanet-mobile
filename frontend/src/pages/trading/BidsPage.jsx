@@ -276,9 +276,6 @@ const BidsPage = () => {
                     </span>
                   </div>
                 </div>
-                {selectedActivity.status === 'countered' && (
-                  <p className="text-[10px] text-gray-500 mt-2">After 2% platform fee</p>
-                )}
               </div>
               
               <div className="mb-3">
