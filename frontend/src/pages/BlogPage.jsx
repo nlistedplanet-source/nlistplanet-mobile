@@ -85,15 +85,21 @@ const BlogPage = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-IN', { month: 'short' });
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  };
 
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+  // Strip labels like "शीर्षक:", "संक्षेप:" from Hindi text
+  const stripLabels = (text) => {
+    if (!text) return '';
+    return text
+      .replace(/^शीर्षक:\s*/i, '')
+      .replace(/^संक्षेप:\s*/i, '')
+      .replace(/^TITLE_HINDI:\s*/i, '')
+      .replace(/^SUMMARY_HINDI:\s*/i, '')
+      .trim();
   };
 
   const getCategoryColor = (category) => {
@@ -272,13 +278,13 @@ const BlogPage = () => {
             <div className="h-[58%] bg-gray-950 px-5 pt-3 pb-20 flex flex-col">
               {/* Hindi Title as main heading */}
               <h1 className="text-white font-bold text-lg leading-snug mb-3">
-                {currentArticle.hindiTitle || currentArticle.title}
+                {stripLabels(currentArticle.hindiTitle) || currentArticle.title}
               </h1>
 
               {/* Hindi Summary - scrollable */}
               <div className="flex-1 overflow-y-auto pr-1">
                 <p className="text-gray-300 text-[15px] leading-relaxed">
-                  {currentArticle.hindiSummary || currentArticle.summary}
+                  {stripLabels(currentArticle.hindiSummary) || currentArticle.summary}
                 </p>
               </div>
 
