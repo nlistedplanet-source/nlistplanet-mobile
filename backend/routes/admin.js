@@ -4,6 +4,18 @@ import User from '../models/User.js';
 import Listing from '../models/Listing.js';
 import Transaction from '../models/Transaction.js';
 import Company from '../models/Company.js';
+
+// Parse DD/MM/YYYY format to Date
+const parseIndianDate = (dateStr) => {
+  if (!dateStr) return null;
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+    return new Date(year, month - 1, day);
+  }
+  // Fallback to default parsing
+  return new Date(dateStr);
+};
 import Settings from '../models/Settings.js';
 import Ad from '../models/Ad.js';
 import ReferralTracking from '../models/ReferralTracking.js';
@@ -485,6 +497,43 @@ router.put('/users/:id/ban', async (req, res, next) => {
   }
 });
 
+// @route   DELETE /api/admin/users/:id
+// @desc    Delete user permanently
+// @access  Admin
+router.delete('/users/:id', async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Don't allow deleting admin users
+    if (user.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Cannot delete admin users'
+      });
+    }
+
+    // Delete user's listings
+    await Listing.deleteMany({ userId: user._id });
+
+    // Delete user
+    await user.deleteOne();
+
+    res.json({
+      success: true,
+      message: 'User and their listings deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // @route   POST /api/admin/companies
 // @desc    Create new company
 // @access  Admin
@@ -564,7 +613,7 @@ router.post('/companies', upload.single('logo'), async (req, res, next) => {
       isin: (isin && isin.trim()) ? isin.trim() : null,
       cin: (cin && cin.trim()) ? cin.trim() : null,
       pan: (pan && pan.trim()) ? pan.trim() : null,
-      registrationDate: registrationDate ? new Date(registrationDate) : null,
+      registrationDate: parseIndianDate(registrationDate),
       description: (description && description.trim()) ? description.trim() : null
     });
 
@@ -615,7 +664,7 @@ router.put('/companies/:id', upload.single('logo'), async (req, res, next) => {
     company.isin = (isin && isin.trim()) ? isin.trim() : null;
     company.cin = (cin && cin.trim()) ? cin.trim() : null;
     company.pan = (pan && pan.trim()) ? pan.trim() : null;
-    company.registrationDate = registrationDate ? new Date(registrationDate) : null;
+    company.registrationDate = parseIndianDate(registrationDate);
     company.description = (description && description.trim()) ? description.trim() : null;
 
     // Handle logo upload
@@ -1235,59 +1284,81 @@ router.get('/check-username/:username', async (req, res, next) => {
 
 // @route   GET /api/admin/completed-deals
 // @desc    Get all completed deals with verification codes
-// @access  Admin only
+// @access  Admin
 router.get('/completed-deals', async (req, res, next) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, search, status } = req.query;
     
-    const query = {};
-    if (status && status !== 'all') {
+    let query = {};
+    
+    // Filter by status
+    if (status) {
       query.status = status;
     }
     
-    const deals = await CompletedDeal.find(query)
-      .populate('buyerId', 'username fullName email phone')
-      .populate('sellerId', 'username fullName email phone')
-      .populate('companyId', 'CompanyName Logo Sector')
-      .populate('assignedRM', 'username fullName')
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+    // Search by company name or username
+    if (search) {
+      query.$or = [
+        { companyName: { $regex: search, $options: 'i' } },
+        { buyerUsername: { $regex: search, $options: 'i' } },
+        { sellerUsername: { $regex: search, $options: 'i' } }
+      ];
+    }
     
-    const total = await CompletedDeal.countDocuments(query);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    // Get status counts
-    const statusCounts = await CompletedDeal.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
+    const [deals, total] = await Promise.all([
+      CompletedDeal.find(query)
+        .populate('buyerId', 'username email phone fullName')
+        .populate('sellerId', 'username email phone fullName')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      CompletedDeal.countDocuments(query)
+    ]);
+    
+    // Get stats
+    const [pending, rmContacted, completed, totalValueAgg] = await Promise.all([
+      CompletedDeal.countDocuments({ status: 'pending_rm_contact' }),
+      CompletedDeal.countDocuments({ status: 'rm_contacted' }),
+      CompletedDeal.countDocuments({ status: 'completed' }),
+      CompletedDeal.aggregate([
+        { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+      ])
     ]);
     
     res.json({
       success: true,
       data: deals,
+      stats: {
+        total,
+        pending,
+        rmContacted,
+        completed,
+        totalValue: totalValueAgg[0]?.total || 0
+      },
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),
         total,
-        pages: Math.ceil(total / limit)
-      },
-      statusCounts: statusCounts.reduce((acc, curr) => {
-        acc[curr._id] = curr.count;
-        return acc;
-      }, {})
+        pages: Math.ceil(total / parseInt(limit))
+      }
     });
   } catch (error) {
     next(error);
   }
 });
 
-// @route   PUT /api/admin/completed-deals/:id/status
-// @desc    Update completed deal status
-// @access  Admin only
-router.put('/completed-deals/:id/status', async (req, res, next) => {
+// @route   PUT /api/admin/completed-deals/:id/mark-contacted
+// @desc    Mark deal as RM contacted or update status
+// @access  Admin
+router.put('/completed-deals/:id/mark-contacted', async (req, res, next) => {
   try {
-    const { status, adminNotes, rmName } = req.body;
+    const { id } = req.params;
+    const { rmNotes, status } = req.body;
     
-    const deal = await CompletedDeal.findById(req.params.id);
+    const deal = await CompletedDeal.findById(id);
     
     if (!deal) {
       return res.status(404).json({
@@ -1296,24 +1367,28 @@ router.put('/completed-deals/:id/status', async (req, res, next) => {
       });
     }
     
-    deal.status = status;
-    if (adminNotes) deal.adminNotes = adminNotes;
-    if (rmName) deal.rmName = rmName;
-    
-    if (status === 'rm_contacted') {
+    // Update status based on current status
+    if (deal.status === 'pending_rm_contact') {
+      deal.status = 'rm_contacted';
       deal.rmContactedAt = new Date();
-    } else if (status === 'completed') {
-      deal.completedAt = new Date();
-    } else if (status === 'cancelled') {
-      deal.cancelledAt = new Date();
-      if (req.body.cancelReason) deal.cancelReason = req.body.cancelReason;
+    } else if (status) {
+      deal.status = status;
+      if (status === 'completed') {
+        deal.completedAt = new Date();
+      } else if (status === 'cancelled') {
+        deal.cancelledAt = new Date();
+      }
+    }
+    
+    if (rmNotes) {
+      deal.adminNotes = rmNotes;
     }
     
     await deal.save();
     
     res.json({
       success: true,
-      message: 'Deal status updated',
+      message: 'Deal updated successfully',
       data: deal
     });
   } catch (error) {
@@ -1323,42 +1398,33 @@ router.put('/completed-deals/:id/status', async (req, res, next) => {
 
 // @route   GET /api/admin/completed-deals/stats
 // @desc    Get completed deals statistics
-// @access  Admin only
+// @access  Admin
 router.get('/completed-deals/stats', async (req, res, next) => {
   try {
-    const stats = await CompletedDeal.aggregate([
-      {
-        $group: {
-          _id: null,
-          totalDeals: { $sum: 1 },
-          totalValue: { $sum: '$totalAmount' },
-          totalFees: { $sum: '$platformFee' },
-          pendingRMContact: {
-            $sum: { $cond: [{ $eq: ['$status', 'pending_rm_contact'] }, 1, 0] }
-          },
-          rmContacted: {
-            $sum: { $cond: [{ $eq: ['$status', 'rm_contacted'] }, 1, 0] }
-          },
-          completed: {
-            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] }
-          },
-          cancelled: {
-            $sum: { $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0] }
-          }
-        }
-      }
+    const [total, pending, rmContacted, completed, cancelled, totalValueAgg, todayDeals] = await Promise.all([
+      CompletedDeal.countDocuments(),
+      CompletedDeal.countDocuments({ status: 'pending_rm_contact' }),
+      CompletedDeal.countDocuments({ status: 'rm_contacted' }),
+      CompletedDeal.countDocuments({ status: 'completed' }),
+      CompletedDeal.countDocuments({ status: 'cancelled' }),
+      CompletedDeal.aggregate([
+        { $group: { _id: null, total: { $sum: '$totalAmount' } } }
+      ]),
+      CompletedDeal.countDocuments({
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+      })
     ]);
     
     res.json({
       success: true,
-      data: stats[0] || {
-        totalDeals: 0,
-        totalValue: 0,
-        totalFees: 0,
-        pendingRMContact: 0,
-        rmContacted: 0,
-        completed: 0,
-        cancelled: 0
+      data: {
+        total,
+        pending,
+        rmContacted,
+        completed,
+        cancelled,
+        totalValue: totalValueAgg[0]?.total || 0,
+        todayDeals
       }
     });
   } catch (error) {
