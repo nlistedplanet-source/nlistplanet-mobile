@@ -165,55 +165,106 @@ const RELEVANT_KEYWORDS = [
 ];
 
 // ===============================================
-// AI FUNCTIONS - Hindi Summarization & Image Gen
-// ===============================================
+// AI FUNCTIONS - Hindi News Writing (Like a News Anchor)
+// =======================================================
 
-// Generate Hindi summary using GPT-4 (Natural conversational Hindi)
-const generateHindiSummary = async (title, englishSummary) => {
+// Generate Hindi news content - OpenAI reads the news and writes fresh content
+const generateHindiContent = async (title, englishSummary, category) => {
   if (!isOpenAIConfigured) return { titleHindi: '', summaryHindi: '' };
   
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // Cost-effective for summarization
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `Tum ek financial news writer ho jo Hindi mein likhte ho. Tumhara kaam hai news ko aam bolchal wali Hindi mein likhna - jaise koi friend ko bata rahe ho. 
+          content: `तुम एक experienced Hindi news anchor हो जो unlisted shares, IPO और stock market की news cover करते हो।
 
-IMPORTANT RULES:
-1. Natural Hindi use karo - जैसे लोग रोज़मर्रा में बोलते हैं
-2. Google Translate jaisi Hindi NAHI chahiye - wo bahut awkward lagti hai
-3. English words jo commonly use hote hain (like IPO, shares, market, company, funding) waise hi rakho
-4. Short aur crisp rakho - max 60-70 words
-5. Interesting aur engaging tone rakho
+तुम्हारा काम है:
+1. दी गई English news को पढ़ो और समझो
+2. फिर अपने शब्दों में एक FRESH Hindi headline और summary लिखो
+3. ऐसे लिखो जैसे तुम खुद एक news anchor हो और audience को बता रहे हो
 
-Example of GOOD Hindi:
-"Reliance की unlisted subsidiary का valuation अब ₹50,000 करोड़ पहुंच गया है। Company जल्द ही IPO लाने की तैयारी में है। Experts का कहना है कि ये एक बड़ा मौका हो सकता है investors के लिए।"
+STYLE GUIDE:
+- Headline: Catchy, crisp, 8-12 words max
+- Summary: Conversational Hindi जैसे TV news anchor बोलता है
+- English words जो commonly use होते हैं वो English में रखो (IPO, shares, market, company, funding, investors, stock, trading, valuation)
+- Numbers और percentages clearly mention करो
+- Reader को engage करो - ऐसे लिखो जैसे उनसे directly बात कर रहे हो
 
-Example of BAD Hindi (Don't do this):
-"रिलायंस की असूचीबद्ध सहायक कंपनी का मूल्यांकन अब ₹50,000 करोड़ तक पहुंच गया है।" (Too formal/translated)`
+EXAMPLE OUTPUT:
+Headline: Reliance की subsidiary का valuation ₹50,000 करोड़ पहुंचा, जल्द आएगा IPO
+Summary: बड़ी खबर आई है investors के लिए! Reliance की unlisted subsidiary ने अपना valuation ₹50,000 करोड़ तक पहुंचा दिया है। Company अब IPO की तैयारी में है। Market experts का कहना है कि ये retail investors के लिए एक golden opportunity हो सकती है। अगर आप unlisted shares में interested हैं, तो इस पर नज़र रखना जरूरी है।
+
+AVOID:
+- Google Translate जैसी awkward Hindi (e.g., "असूचीबद्ध", "प्रतिभूति")
+- Boring, formal tone
+- Simply translating word-by-word
+- Labels like "शीर्षक:" or "सारांश:" - सीधे content दो`
         },
         {
           role: 'user',
-          content: `Title: ${title}\n\nSummary: ${englishSummary}\n\nIs news ko Hindi mein likho. Pehle title ka Hindi version do, phir summary. Format:\nTITLE_HINDI: [hindi title]\nSUMMARY_HINDI: [hindi summary]`
+          content: `इस ${category} news को पढ़ो और अपने style में Hindi में लिखो:
+
+ENGLISH HEADLINE: ${title}
+
+ENGLISH CONTENT: ${englishSummary}
+
+---
+अब इसे अपने शब्दों में Hindi में लिखो:
+
+HEADLINE:
+[यहाँ catchy Hindi headline लिखो]
+
+SUMMARY:
+[यहाँ engaging Hindi summary लिखो - 60-100 words]`
         }
       ],
-      max_tokens: 300,
-      temperature: 0.7
+      max_tokens: 400,
+      temperature: 0.8 // Slightly more creative
     });
 
     const output = response.choices[0].message.content;
     
-    // Parse the response
-    const titleMatch = output.match(/TITLE_HINDI:\s*(.+?)(?:\n|SUMMARY_HINDI)/s);
-    const summaryMatch = output.match(/SUMMARY_HINDI:\s*(.+)/s);
+    // Parse the response - look for HEADLINE: and SUMMARY: markers
+    let titleHindi = '';
+    let summaryHindi = '';
     
-    return {
-      titleHindi: titleMatch ? titleMatch[1].trim() : '',
-      summaryHindi: summaryMatch ? summaryMatch[1].trim() : ''
-    };
+    // Try to extract headline
+    const headlineMatch = output.match(/HEADLINE:\s*\n?(.+?)(?:\n\n|SUMMARY:)/s);
+    if (headlineMatch) {
+      titleHindi = headlineMatch[1].trim();
+    }
+    
+    // Try to extract summary
+    const summaryMatch = output.match(/SUMMARY:\s*\n?(.+)/s);
+    if (summaryMatch) {
+      summaryHindi = summaryMatch[1].trim();
+    }
+    
+    // Fallback: if markers not found, try to split by double newline
+    if (!titleHindi && !summaryHindi) {
+      const parts = output.split('\n\n').filter(p => p.trim());
+      if (parts.length >= 2) {
+        titleHindi = parts[0].replace(/^(HEADLINE|शीर्षक|Title):\s*/i, '').trim();
+        summaryHindi = parts.slice(1).join('\n\n').replace(/^(SUMMARY|सारांश|Content):\s*/i, '').trim();
+      } else if (parts.length === 1) {
+        // All in one paragraph - use first sentence as title
+        const sentences = parts[0].split(/[।.!]/);
+        titleHindi = sentences[0].trim();
+        summaryHindi = sentences.slice(1).join('। ').trim();
+      }
+    }
+    
+    // Clean up any remaining labels
+    titleHindi = titleHindi.replace(/^(HEADLINE|शीर्षक|Title):\s*/i, '').trim();
+    summaryHindi = summaryHindi.replace(/^(SUMMARY|सारांश|Content):\s*/i, '').trim();
+    
+    console.log(`  ✅ Hindi content generated: "${titleHindi.substring(0, 40)}..."`);
+    
+    return { titleHindi, summaryHindi };
   } catch (error) {
-    console.log(`  ⚠️ Hindi summary failed: ${error.message}`);
+    console.log(`  ⚠️ Hindi content generation failed: ${error.message}`);
     return { titleHindi: '', summaryHindi: '' };
   }
 };
@@ -416,12 +467,12 @@ const fetchRSSFeed = async (feed) => {
           }
         }
         
-        // Generate Hindi summary
+        // Generate Hindi content (OpenAI reads and rewrites like a news anchor)
         let titleHindi = '';
         let summaryHindi = '';
         if (isOpenAIConfigured) {
-          console.log(`  🇮🇳 Generating Hindi summary...`);
-          const hindiContent = await generateHindiSummary(item.title, summary);
+          console.log(`  🇮🇳 Creating Hindi news content...`);
+          const hindiContent = await generateHindiContent(item.title, summary, category);
           titleHindi = hindiContent.titleHindi;
           summaryHindi = hindiContent.summaryHindi;
         }
