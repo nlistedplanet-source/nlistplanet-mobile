@@ -43,6 +43,7 @@
     "openai": "^6.10.0",
     "rss-parser": "^3.13.0",
     "tesseract.js": "^6.0.1",
+    "twilio": "^5.4.0",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
