@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, Share2, ExternalLink, ChevronUp, ChevronDown, Languages, BookOpen } from 'lucide-react';
+import { ArrowLeft, Share2, ExternalLink, ChevronUp, ChevronDown, BookOpen } from 'lucide-react';
 import LandingBottomNav from '../components/common/LandingBottomNav';
 
 const BlogPage = () => {
@@ -10,7 +10,6 @@ const BlogPage = () => {
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
-  const [showHindi, setShowHindi] = useState(true); // Default to Hindi
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -271,63 +270,41 @@ const BlogPage = () => {
 
             {/* Content Section - Bottom Half */}
             <div className="h-[58%] bg-gray-950 px-5 pt-3 pb-20 flex flex-col">
-              {/* Title with Language Toggle */}
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <h1 className="text-white font-bold text-lg leading-snug flex-1">
-                  {currentArticle.title}
-                </h1>
-                {currentArticle.hindiSummary && (
-                  <button
-                    onClick={() => setShowHindi(!showHindi)}
-                    className={`flex-shrink-0 px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all ${
-                      showHindi 
-                        ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' 
-                        : 'bg-gray-800 text-gray-400 border border-gray-700'
-                    }`}
-                  >
-                    <Languages size={12} />
-                    {showHindi ? 'हिंदी' : 'EN'}
-                  </button>
-                )}
-              </div>
+              {/* Hindi Title as main heading */}
+              <h1 className="text-white font-bold text-lg leading-snug mb-3">
+                {currentArticle.hindiTitle || currentArticle.title}
+              </h1>
 
-              {/* Summary - Inshorts style with Hindi support */}
+              {/* Hindi Summary - scrollable */}
               <div className="flex-1 overflow-y-auto pr-1">
                 <p className="text-gray-300 text-[15px] leading-relaxed">
-                  {showHindi && currentArticle.hindiSummary 
-                    ? currentArticle.hindiSummary 
-                    : currentArticle.summary}
+                  {currentArticle.hindiSummary || currentArticle.summary}
                 </p>
               </div>
 
-              {/* Meta & Actions */}
+              {/* Bottom Bar - Date & Source */}
               <div className="mt-3 pt-3 border-t border-gray-800">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 text-gray-500 text-xs">
-                    <span className="flex items-center gap-1">
-                      <Clock size={12} />
-                      {formatDate(currentArticle.publishedAt)}
-                    </span>
-                    <span className="bg-gray-800 px-2 py-0.5 rounded">
-                      {currentArticle.readTime || 1} min
-                    </span>
+                  <div className="flex items-center gap-2 text-gray-500 text-sm">
+                    <span>📅</span>
+                    <span>{formatDate(currentArticle.publishedAt)}</span>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleShare(currentArticle)}
-                      className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
+                      className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
                     >
-                      <Share2 size={18} />
+                      <Share2 size={16} />
                     </button>
                     {currentArticle.sourceUrl && (
                       <a
                         href={currentArticle.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="h-10 px-4 bg-emerald-500 rounded-full flex items-center justify-center gap-1.5 text-white font-medium text-sm active:scale-95 transition-transform"
+                        className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-sm font-medium"
                       >
-                        Read Full
+                        {currentArticle.sourceName || 'Source'}
                         <ExternalLink size={14} />
                       </a>
                     )}
