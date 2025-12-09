@@ -91,36 +91,6 @@ const BlogPage = () => {
     return `${day} ${month} ${year}`;
   };
 
-  // Strip labels like "शीर्षक:", "संक्षेप:" from Hindi text
-  const stripLabels = (text) => {
-    if (!text) return '';
-    return text
-      .replace(/^शीर्षक:\s*/i, '')
-      .replace(/^संक्षेप:\s*/i, '')
-      .replace(/^TITLE_HINDI:\s*/i, '')
-      .replace(/^SUMMARY_HINDI:\s*/i, '')
-      .trim();
-  };
-
-  // Get Hindi title - extract from summary if title is empty
-  const getHindiTitle = (article) => {
-    // If hindiTitle exists, use it
-    if (article.hindiTitle && stripLabels(article.hindiTitle)) {
-      return stripLabels(article.hindiTitle);
-    }
-    // If no hindiTitle but hindiSummary exists, extract first sentence as title
-    if (article.hindiSummary) {
-      const summary = stripLabels(article.hindiSummary);
-      // Get first sentence (up to first । or : or first 80 chars)
-      const match = summary.match(/^(.{20,80}?)(?:[।:.]|$)/);
-      if (match) return match[1].trim();
-      // Fallback: first 60 chars
-      return summary.substring(0, 60).trim() + (summary.length > 60 ? '...' : '');
-    }
-    // Fallback to English title
-    return article.title;
-  };
-
   const getCategoryColor = (category) => {
     const colors = {
       'IPO': 'from-purple-600 to-purple-800',
@@ -295,15 +265,15 @@ const BlogPage = () => {
 
             {/* Content Section - Bottom Half */}
             <div className="h-[58%] bg-gray-950 px-5 pt-3 pb-20 flex flex-col">
-              {/* Hindi Title as main heading */}
+              {/* Title */}
               <h1 className="text-white font-bold text-lg leading-snug mb-3">
-                {getHindiTitle(currentArticle)}
+                {currentArticle.title}
               </h1>
 
-              {/* Hindi Summary - scrollable */}
+              {/* Summary - scrollable */}
               <div className="flex-1 overflow-y-auto pr-1">
                 <p className="text-gray-300 text-[15px] leading-relaxed">
-                  {stripLabels(currentArticle.hindiSummary) || currentArticle.summary}
+                  {currentArticle.summary}
                 </p>
               </div>
 
