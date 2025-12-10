@@ -22,6 +22,7 @@ import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDis
 import { useLoader } from '../../context/LoaderContext';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
+import ShareCardGenerator from '../../components/ShareCardGenerator';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -79,6 +80,8 @@ const MarketplacePage = () => {
   const [selectedListing, setSelectedListing] = useState(null); // For popup modal
   const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
   const [showBidModal, setShowBidModal] = useState(false); // Bid modal
+  const [showShareCard, setShowShareCard] = useState(false); // Share card generator
+  const [shareListingData, setShareListingData] = useState(null); // Listing to share
 
   useEffect(() => {
     fetchListings();
@@ -421,15 +424,9 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleShare = (e) => {
     e.stopPropagation();
     haptic.light();
-    if (navigator.share) {
-      navigator.share({ 
-        title: listing.companyName, 
-        url: window.location.origin + `/listing/${listing._id}`
-      }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(window.location.origin + `/listing/${listing._id}`);
-      toast.success('Link copied!');
-    }
+    // Open ShareCardGenerator modal for advanced image + caption share
+    setShareListingData(listing);
+    setShowShareCard(true);
   };
 
   const handleAcceptClick = (e) => {
@@ -801,6 +798,17 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
               </div>
             </div>
           </div>
+        )}
+
+        {/* Share Card Generator Modal */}
+        {showShareCard && shareListingData && (
+          <ShareCardGenerator
+            listing={shareListingData}
+            onClose={() => {
+              setShowShareCard(false);
+              setShareListingData(null);
+            }}
+          />
         )}
       </div>
     </div>
