@@ -83,9 +83,9 @@ const MarketplacePage = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showBidModal, setShowBidModal] = useState(false);
   
-  // Share functionality state
-  const [showShareCard, setShowShareCard] = useState(false);
-  const [shareListingData, setShareListingData] = useState(null);
+  // Share functionality state - temporarily disabled for build fix
+  // const [showShareCard, setShowShareCard] = useState(false);
+  // const [shareListingData, setShareListingData] = useState(null);
 
   useEffect(() => {
     fetchListings();
@@ -241,8 +241,6 @@ const MarketplacePage = () => {
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
           onBidClick={() => setShowBidModal(true)}
-          setShowShareCard={setShowShareCard}
-          setShareListingData={setShareListingData}
         />
       )}
 
@@ -385,7 +383,7 @@ const CompactCard = ({ listing, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 // POPUP MODAL - Card click opens animated popup with full details
 // ═══════════════════════════════════════════════════════════════
-const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick, setShowShareCard, setShareListingData }) => {
+const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
@@ -430,9 +428,20 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleShare = (e) => {
     e.stopPropagation();
     haptic.light();
-    // Open ShareCardGenerator modal for advanced image + caption share
-    setShareListingData(listing);
-    setShowShareCard(true);
+    // Simple share using Web Share API
+    const shareData = {
+      title: `${listing.company?.name || listing.companyName} - Unlisted Share`,
+      text: `Check out this ${listing.type === 'buy' ? 'buying' : 'selling'} opportunity for ${listing.company?.name || listing.companyName} on Nlist Planet!`,
+      url: `${window.location.origin}/listing/${listing._id}`
+    };
+    
+    if (navigator.share) {
+      navigator.share(shareData).catch(() => {});
+    } else {
+      // Fallback: copy link
+      navigator.clipboard.writeText(shareData.url);
+      toast.success('Link copied to clipboard!');
+    }
   };
 
   const handleAcceptClick = (e) => {
@@ -806,7 +815,8 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
           </div>
         )}
 
-        {/* Share Card Generator Modal */}
+        {/* Share Card Generator Modal - Temporarily Disabled */}
+        {/* 
         {showShareCard === true && shareListingData !== null && (
           <ShareCardGenerator
             listing={shareListingData}
@@ -816,6 +826,7 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
             }}
           />
         )}
+        */}
       </div>
     </div>
   );
