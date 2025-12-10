@@ -371,46 +371,39 @@ const HomePage = () => {
               {actionItems.length} New
             </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {actionItems.map((item, index) => (
-              <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    item.type === 'bid_received' ? 'bg-blue-100 text-blue-600' :
-                    item.type === 'offer_received' ? 'bg-green-100 text-green-600' :
-                    'bg-orange-100 text-orange-600'
+              <div 
+                key={index} 
+                onClick={() => navigate((item.type === 'counter_received') ? '/bids' : '/my-posts')}
+                className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex items-center justify-between active:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    item.type === 'bid_received' ? 'bg-blue-50 text-blue-600' :
+                    item.type === 'offer_received' ? 'bg-green-50 text-green-600' :
+                    'bg-orange-50 text-orange-600'
                   }`}>
-                    {item.type === 'bid_received' ? <TrendingDown size={20} /> :
-                     item.type === 'offer_received' ? <TrendingUp size={20} /> :
-                     <Activity size={20} />}
+                    {item.type === 'bid_received' ? <TrendingDown size={18} /> :
+                     item.type === 'offer_received' ? <TrendingUp size={18} /> :
+                     <Activity size={18} />}
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0">
                     <h4 className="font-semibold text-gray-900 text-sm truncate">
                       {item.type === 'counter_received' ? 'Counter Offer' : 
                        item.type === 'bid_received' ? 'Bid Received' : 'Offer Received'}
                     </h4>
-                    <p className="text-xs text-gray-500">
-                      {timeAgo(item.date)} • From @{item.user}
+                    <p className="text-xs text-gray-500 truncate">
+                      <span className="font-medium text-gray-700">{item.company}</span> • {item.quantity} @ {formatCurrency(item.price)}
                     </p>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 rounded-xl p-3 mb-3">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm">{item.company}</p>
-                      <p className="text-xs text-gray-500">{item.quantity} shares</p>
-                    </div>
-                    <p className="font-bold text-gray-900">{formatCurrency(item.price)}</p>
-                  </div>
+                <div className="flex-shrink-0 ml-2">
+                   <button className="bg-gray-900 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm">
+                     View
+                   </button>
                 </div>
-
-                <button 
-                  onClick={() => navigate(item.type === 'counter_received' ? '/bids' : '/offers')}
-                  className="w-full bg-white border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
-                >
-                  View Details
-                </button>
               </div>
             ))}
           </div>

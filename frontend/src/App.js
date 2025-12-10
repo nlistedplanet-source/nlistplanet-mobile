@@ -34,7 +34,6 @@ const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
 const NotificationsPage = lazy(() => import('./pages/notifications/NotificationsPage'));
 const MyPostsPage = lazy(() => import('./pages/trading/MyPostsPage'));
 const BidsPage = lazy(() => import('./pages/trading/BidsPage'));
-const OffersReceivedPage = lazy(() => import('./pages/trading/OffersReceivedPage'));
 const PortfolioPage = lazy(() => import('./pages/portfolio/PortfolioPage'));
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -122,7 +121,6 @@ function AppRoutes() {
           <Route path="/notifications" element={<ProtectedRoute><AppLayout><NotificationsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/my-posts" element={<ProtectedRoute><AppLayout><MyPostsPage /></AppLayout></ProtectedRoute>} />
           <Route path="/bids" element={<ProtectedRoute><AppLayout><BidsPage /></AppLayout></ProtectedRoute>} />
-          <Route path="/offers" element={<ProtectedRoute><AppLayout><OffersReceivedPage /></AppLayout></ProtectedRoute>} />
           <Route path="/portfolio" element={<ProtectedRoute><AppLayout><PortfolioPage /></AppLayout></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><AppLayout><HistoryPage /></AppLayout></ProtectedRoute>} />
 
