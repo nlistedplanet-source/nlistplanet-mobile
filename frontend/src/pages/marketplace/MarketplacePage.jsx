@@ -71,17 +71,21 @@ const numberToWords = (num) => {
 const MarketplacePage = () => {
   const navigate = useNavigate();
   const { showLoader, hideLoader } = useLoader();
+  
+  // State management
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedListing, setSelectedListing] = useState(null); // For popup modal
-  const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
-  const [showBidModal, setShowBidModal] = useState(false); // Bid modal
-  const [showShareCard, setShowShareCard] = useState(false); // Share card generator
-  const [shareListingData, setShareListingData] = useState(null); // Listing to share
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+  
+  // Share functionality state
+  const [showShareCard, setShowShareCard] = useState(false);
+  const [shareListingData, setShareListingData] = useState(null);
 
   useEffect(() => {
     fetchListings();
