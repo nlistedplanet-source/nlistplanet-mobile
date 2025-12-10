@@ -78,12 +78,24 @@ const ShareCardGenerator = ({ listing, onClose }) => {
 
       // Check if Web Share API is available
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Investment Opportunity',
-          text: data.caption,
-          files: [file]
-        });
-        toast.success('Shared successfully!');
+        try {
+          await navigator.share({
+            title: 'Investment Opportunity',
+            text: data.caption,
+            files: [file]
+          });
+          toast.success('Shared successfully!');
+        } catch (shareError) {
+          console.error('Native share failed, falling back:', shareError);
+          // Fallback if native share fails (e.g. user cancelled or not supported)
+          const link = document.createElement('a');
+          link.href = imageDataUrl;
+          link.download = `nlistplanet-${listing.company?.name || 'share'}.png`;
+          link.click();
+          
+          await navigator.clipboard.writeText(data.caption);
+          toast.success('Card downloaded & caption copied!');
+        }
       } else {
         // Fallback: Download image and copy caption
         const link = document.createElement('a');
@@ -172,15 +184,15 @@ const ShareCardGenerator = ({ listing, onClose }) => {
 
         {/* Share Card Preview - Scaled to fit */}
         <div className={`mb-4 overflow-hidden rounded-xl bg-gradient-to-br ${cardTheme.gradient} relative`} style={{ width: '100%', paddingBottom: '100%' }}>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div style={{ width: '100%', height: '100%', transform: 'scale(1)', transformOrigin: 'center' }}>
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
               <div 
                 ref={cardRef} 
-                className={`w-full h-full bg-gradient-to-br ${cardTheme.gradient} overflow-hidden`}
+                className={`bg-gradient-to-br ${cardTheme.gradient} overflow-hidden`}
                 style={{ 
                   width: '1080px', 
                   height: '1080px',
-                  transform: 'scale(0.36)',
+                  transform: 'scale(0.3)', // Fixed scale for mobile preview
                   transformOrigin: 'top left',
                   position: 'absolute',
                   top: 0,
