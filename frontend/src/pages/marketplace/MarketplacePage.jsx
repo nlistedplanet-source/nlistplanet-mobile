@@ -261,6 +261,17 @@ const MarketplacePage = () => {
           fetchListings(); // Refresh listings
         }}
       />
+
+      {/* Share Card Generator Modal */}
+      {showShareCard && shareListing && (
+        <ShareCardGenerator
+          listing={shareListing}
+          onClose={() => {
+            setShowShareCard(false);
+            setShareListing(null);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -808,16 +819,6 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
           </div>
         )}
 
-        {/* Share Card Generator Modal */}
-        {showShareCard && shareListing && (
-          <ShareCardGenerator
-            listing={shareListing}
-            onClose={() => {
-              setShowShareCard(false);
-              setShareListing(null);
-            }}
-          />
-        )}
       </div>
     </div>
   );
