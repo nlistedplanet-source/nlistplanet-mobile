@@ -807,12 +807,12 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
         )}
 
         {/* Share Card Generator Modal */}
-        {typeof showShareCard !== 'undefined' && typeof shareListingData !== 'undefined' && showShareCard && shareListingData && (
+        {showShareCard === true && shareListingData !== null && (
           <ShareCardGenerator
             listing={shareListingData}
             onClose={() => {
-              setShowShareCard(false);
-              setShareListingData(null);
+              if (setShowShareCard) setShowShareCard(false);
+              if (setShareListingData) setShareListingData(null);
             }}
           />
         )}
