@@ -199,6 +199,10 @@ router.post('/companies', protect, authorize('admin'), upload.single('logo'), as
     let logoUrl = '';
     if (req.file) {
       logoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (req.body.logoUrl) {
+      logoUrl = req.body.logoUrl;
+    } else if (req.body.logo) {
+      logoUrl = req.body.logo;
     }
 
     // Create company
@@ -242,6 +246,8 @@ router.put('/companies/:id', protect, authorize('admin'), upload.single('logo'),
     // Handle logo - either file upload (base64) or URL from body
     if (req.file) {
       company.logo = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if (req.body.logoUrl) {
+      company.logo = req.body.logoUrl;
     } else if (req.body.logo) {
       company.logo = req.body.logo; // For Cloudinary URLs or other links
     }

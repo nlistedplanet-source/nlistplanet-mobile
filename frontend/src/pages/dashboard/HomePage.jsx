@@ -42,6 +42,7 @@ const HomePage = () => {
   });
   const [holdings, setHoldings] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [actionItems, setActionItems] = useState([]);
 
   useEffect(() => {
     fetchData();
@@ -86,6 +87,77 @@ const HomePage = () => {
         createdAt: activity.date
       }));
       setActivities(formattedActivities);
+
+      // Fetch Action Items (Incoming Bids/Offers & Counter Offers)
+      const [sellRes, buyRes, myBidsRes] = await Promise.all([
+        listingsAPI.getMyListings({ type: 'sell' }),
+        listingsAPI.getMyListings({ type: 'buy' }),
+        listingsAPI.getMyPlacedBids()
+      ]);
+
+      const actions = [];
+
+      // 1. Incoming Bids on my Sell Posts
+      sellRes.data.data.forEach(listing => {
+        listing.bids?.forEach(bid => {
+          if (bid.status === 'pending') {
+            actions.push({
+              type: 'bid_received',
+              id: bid._id,
+              listingId: listing._id,
+              company: listing.companyName,
+              logo: listing.companyId?.logo || listing.companyId?.Logo,
+              price: bid.price,
+              quantity: bid.quantity,
+              user: bid.userId?.username,
+              date: bid.createdAt,
+              originalListing: listing
+            });
+          }
+        });
+      });
+
+      // 2. Incoming Offers on my Buy Posts
+      buyRes.data.data.forEach(listing => {
+        listing.offers?.forEach(offer => {
+          if (offer.status === 'pending') {
+            actions.push({
+              type: 'offer_received',
+              id: offer._id,
+              listingId: listing._id,
+              company: listing.companyName,
+              logo: listing.companyId?.logo || listing.companyId?.Logo,
+              price: offer.price,
+              quantity: offer.quantity,
+              user: offer.userId?.username,
+              date: offer.createdAt,
+              originalListing: listing
+            });
+          }
+        });
+      });
+
+      // 3. Counter Offers on my Bids/Offers
+      myBidsRes.data.data.forEach(activity => {
+        if (activity.status === 'countered') {
+          actions.push({
+            type: 'counter_received',
+            id: activity._id,
+            listingId: activity.listing._id,
+            company: activity.listing.companyName,
+            logo: activity.listing.companyId?.logo || activity.listing.companyId?.Logo,
+            price: activity.price, // Counter price
+            quantity: activity.quantity,
+            user: 'Seller', // Usually the owner
+            date: activity.updatedAt,
+            originalListing: activity.listing
+          });
+        }
+      });
+
+      // Sort by date (newest first)
+      setActionItems(actions.sort((a, b) => new Date(b.date) - new Date(a.date)));
+
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
     } finally {
@@ -290,49 +362,60 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Recent Holdings */}
-      {holdings.length > 0 && (
+      {/* Action Center (Replaces Holdings) */}
+      {actionItems.length > 0 ? (
         <div className="px-5 mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-gray-900">Top Holdings</h3>
-            <button 
-              onClick={() => navigate('/portfolio')}
-              className="text-blue-600 text-sm font-semibold flex items-center gap-1"
-            >
-              View All <ChevronRight className="w-4 h-4" />
-            </button>
+            <h3 className="text-base font-bold text-gray-900">Action Center</h3>
+            <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
+              {actionItems.length} New
+            </span>
           </div>
           <div className="space-y-3">
-            {holdings.slice(0, 3).map((holding, index) => (
+            {actionItems.map((item, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
-                      <span className="text-lg font-bold text-slate-700">
-                        {holding.company?.charAt(0) || '?'}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{holding.company}</p>
-                      <p className="text-sm text-gray-400">{holding.quantity} shares</p>
-                    </div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    item.type === 'bid_received' ? 'bg-blue-100 text-blue-600' :
+                    item.type === 'offer_received' ? 'bg-green-100 text-green-600' :
+                    'bg-orange-100 text-orange-600'
+                  }`}>
+                    {item.type === 'bid_received' ? <TrendingDown size={20} /> :
+                     item.type === 'offer_received' ? <TrendingUp size={20} /> :
+                     <Activity size={20} />}
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">
-                      {formatCurrency(holding.totalValue)}
-                    </p>
-                    <p className={`text-sm font-medium ${
-                      holding.gainPercent >= 0 ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
-                      {formatPercentage(holding.gainPercent)}
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 text-sm truncate">
+                      {item.type === 'counter_received' ? 'Counter Offer' : 
+                       item.type === 'bid_received' ? 'Bid Received' : 'Offer Received'}
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      {timeAgo(item.date)} • From @{item.user}
                     </p>
                   </div>
                 </div>
+                
+                <div className="bg-gray-50 rounded-xl p-3 mb-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">{item.company}</p>
+                      <p className="text-xs text-gray-500">{item.quantity} shares</p>
+                    </div>
+                    <p className="font-bold text-gray-900">{formatCurrency(item.price)}</p>
+                  </div>
+                </div>
+
+                <button 
+                  onClick={() => navigate(item.type === 'counter_received' ? '/bids' : '/offers')}
+                  className="w-full bg-white border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                >
+                  View Details
+                </button>
               </div>
             ))}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Recent Activity */}
       {activities.length > 0 && (

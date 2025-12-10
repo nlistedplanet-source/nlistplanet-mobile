@@ -26,6 +26,13 @@ const numberToWords = (num) => {
   return convertLessThanThousand(Math.floor(num / 10000000)) + ' Crore' + (num % 10000000 !== 0 ? ' ' + numberToWords(num % 10000000) : '');
 };
 
+// Helper to get object property case-insensitively
+const getCaseInsensitive = (obj, key) => {
+  if (!obj) return '';
+  const foundKey = Object.keys(obj).find(k => k.toLowerCase() === key.toLowerCase());
+  return foundKey ? obj[foundKey] : '';
+};
+
 const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
   const [step, setStep] = useState(1);
   const [type, setType] = useState('sell');
@@ -106,9 +113,9 @@ const CreateListingModal = ({ isOpen, onClose, onSuccess }) => {
       companyId: company._id,
       companyName: company.CompanyName || company.name,
       companyLogo: company.Logo || company.logo || '',
-      companyPan: company.PAN || '',
-      companyISIN: company.ISIN || '',
-      companyCIN: company.CIN || ''
+      companyPan: getCaseInsensitive(company, 'pan'),
+      companyISIN: getCaseInsensitive(company, 'isin'),
+      companyCIN: getCaseInsensitive(company, 'cin')
     });
     setSearchTerm(company.CompanyName || company.name);
     setShowSuggestions(false);

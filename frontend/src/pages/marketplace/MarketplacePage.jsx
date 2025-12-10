@@ -321,20 +321,15 @@ const CompactCard = ({ listing, onClick }) => {
         <div className="flex items-start gap-2.5 mb-3">
           {/* Logo */}
           <div className="flex-shrink-0">
-            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
-              <img
-                src={listing.companyId.logo || listing.companyId.Logo}
-                alt={listing.companyName}
-                className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
-                onError={(e) => { e.target.style.display = 'none'; }}
-              />
-            ) : (
-              <div className={`w-11 h-11 rounded-xl ${cardStyles.iconBg} flex items-center justify-center border-2 border-white shadow-sm`}>
-                <span className={`${cardStyles.iconColor} font-bold text-lg`}>
-                  {listing.companyName?.[0] || 'C'}
-                </span>
-              </div>
-            )}
+            <img
+              src={listing.companyId?.logo || listing.companyId?.Logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`}
+              alt={listing.companyName}
+              className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
+              onError={(e) => { 
+                e.target.onerror = null; 
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`;
+              }}
+            />
           </div>
           
           {/* Company Name */}
@@ -520,19 +515,15 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
           <div className="flex items-start gap-3 mb-4">
             {/* Logo */}
             <div className="flex-shrink-0">
-              {(company.logo || company.Logo) ? (
-                <img
-                  src={company.logo || company.Logo}
-                  alt={listing.companyName}
-                  className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100"
-                />
-              ) : (
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">
-                    {listing.companyName?.[0] || 'C'}
-                  </span>
-                </div>
-              )}
+              <img
+                src={company.logo || company.Logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`}
+                alt={listing.companyName}
+                className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`;
+                }}
+              />
             </div>
             
             {/* Company Info */}
@@ -592,6 +583,12 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 <p className="text-gray-600">
                   <span className="text-gray-400 w-16 inline-block">CIN:</span> 
                   <span className="font-mono text-gray-800 text-[10px]">{company.cin || company.CIN}</span>
+                </p>
+              )}
+              {(company.registrationDate || company.RegistrationDate) && (
+                <p className="text-gray-600">
+                  <span className="text-gray-400 w-16 inline-block">Reg Date:</span> 
+                  <span className="font-mono text-gray-800">{formatDate(company.registrationDate || company.RegistrationDate)}</span>
                 </p>
               )}
             </div>
