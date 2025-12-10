@@ -79,12 +79,15 @@ const ShareCardGenerator = ({ listing, onClose }) => {
       // Check if Web Share API is available
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         try {
+          // Copy caption to clipboard first (workaround for apps that drop text when sharing files)
+          await navigator.clipboard.writeText(data.caption);
+          toast.success('Caption copied! Select app to share...');
+
           await navigator.share({
             title: 'Investment Opportunity',
             text: data.caption,
             files: [file]
           });
-          toast.success('Shared successfully!');
         } catch (shareError) {
           console.error('Native share failed, falling back:', shareError);
           // Fallback if native share fails (e.g. user cancelled or not supported)
@@ -93,6 +96,7 @@ const ShareCardGenerator = ({ listing, onClose }) => {
           link.download = `nlistplanet-${listing.company?.name || 'share'}.png`;
           link.click();
           
+          // Ensure caption is copied in fallback too
           await navigator.clipboard.writeText(data.caption);
           toast.success('Card downloaded & caption copied!');
         }
