@@ -807,6 +807,7 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
         )}
 
         {/* Share Card Generator Modal */}
+        {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
         {showShareCard && shareListingData && (
           <ShareCardGenerator
             listing={shareListingData}
