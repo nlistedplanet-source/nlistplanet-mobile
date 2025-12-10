@@ -73,18 +73,19 @@ const MarketplacePage = () => {
   const { showLoader, hideLoader } = useLoader();
   
   // State management
-  const [loading, setLoading] = React.useState(true);
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [listings, setListings] = React.useState([]);
-  const [filteredListings, setFilteredListings] = React.useState([]);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [activeFilter, setActiveFilter] = React.useState('all');
-  const [selectedListing, setSelectedListing] = React.useState(null);
-  const [showConfirmation, setShowConfirmation] = React.useState(false);
-  const [showBidModal, setShowBidModal] = React.useState(false);
-  
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [listings, setListings] = useState([]);
+  const [filteredListings, setFilteredListings] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showBidModal, setShowBidModal] = useState(false);
+
   // Share card state
-  const [shareModal, setShareModal] = React.useState({ isOpen: false, listing: null });
+  const [shareListing, setShareListing] = useState(null);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   useEffect(() => {
     fetchListings();
@@ -240,7 +241,10 @@ const MarketplacePage = () => {
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
           onBidClick={() => setShowBidModal(true)}
-          onShareClick={(listing) => setShareModal({ isOpen: true, listing })}
+          onShareClick={(listing) => {
+            setShareListing(listing);
+            setShowShareCard(true);
+          }}
         />
       )}
 
@@ -428,7 +432,6 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleShare = (e) => {
     e.stopPropagation();
     haptic.light();
-    onClose();
     if (onShareClick) {
       onShareClick(listing);
     }
@@ -806,10 +809,13 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
         )}
 
         {/* Share Card Generator Modal */}
-        {shareModal.isOpen && shareModal.listing && (
+        {showShareCard && shareListing && (
           <ShareCardGenerator
-            listing={shareModal.listing}
-            onClose={() => setShareModal({ isOpen: false, listing: null })}
+            listing={shareListing}
+            onClose={() => {
+              setShowShareCard(false);
+              setShareListing(null);
+            }}
           />
         )}
       </div>
