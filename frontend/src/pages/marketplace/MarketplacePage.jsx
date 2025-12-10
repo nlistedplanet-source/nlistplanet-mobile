@@ -237,6 +237,8 @@ const MarketplacePage = () => {
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
           onBidClick={() => setShowBidModal(true)}
+          setShowShareCard={setShowShareCard}
+          setShareListingData={setShareListingData}
         />
       )}
 
@@ -379,7 +381,7 @@ const CompactCard = ({ listing, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 // POPUP MODAL - Card click opens animated popup with full details
 // ═══════════════════════════════════════════════════════════════
-const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick }) => {
+const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick, setShowShareCard, setShareListingData }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
