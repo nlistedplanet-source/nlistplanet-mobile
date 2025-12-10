@@ -118,12 +118,6 @@ ${aiInsight}
     });
   }
 });
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create share link'
-    });
-  }
-});
 
 // @route   POST /api/share/track-click/:shareId
 // @desc    Track a click on share link
