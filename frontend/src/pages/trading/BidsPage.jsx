@@ -456,7 +456,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           </p>
           {!isListingDeleted && (
             <p className="text-[10px] text-gray-500">
-              Listed: {formatCurrency(listingPrice)} × {activity.listing?.quantity || 0} shares
+              Listed: {formatCurrency(listingPrice)} × {activity.listing?.listingQuantity || 0} shares
             </p>
           )}
         </div>
@@ -510,46 +510,81 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           
           {expanded && (
             <div className="mt-2 space-y-2">
-              {counterHistory.map((counter, idx) => {
-                const isSellerCounter = counter.by === 'seller';
-                const isLatest = idx === counterHistory.length - 1;
-                // For buyer's view: seller's counter price should show +2% (what buyer will pay)
-                // buyer's own counter price is shown as-is (what they offered)
-                const displayCounterPrice = isSellerCounter 
-                  ? calculateBuyerPays(counter.price) 
-                  : counter.price;
+              {(() => {
+                // Construct Rounds Data
+                const rounds = [];
+                const maxRound = counterHistory.reduce((max, c) => Math.max(max, c.round || 1), 1);
                 
-                return (
-                  <div 
-                    key={idx} 
-                    className={`p-2 rounded-lg border ${
-                      isSellerCounter 
-                        ? 'bg-orange-50 border-orange-200' 
-                        : 'bg-blue-50 border-blue-200'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-[10px] font-bold ${isSellerCounter ? 'text-orange-700' : 'text-blue-700'}`}>
-                        {counter.round ? `Round ${counter.round}` : `#${idx + 1}`} - {isSellerCounter ? (isBid ? 'Seller' : 'Buyer') : 'You'}
-                      </span>
-                      {isLatest && canTakeAction && (
-                        <span className="text-[9px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded font-bold">
-                          RESPOND
+                // Round 1 (Initial)
+                const r1MyPrice = activity.originalPrice || activity.price;
+                const r1TheirCounter = counterHistory.find(c => c.round === 1 && c.by === (isBid ? 'seller' : 'buyer'));
+                
+                rounds.push({
+                  round: 1,
+                  myPrice: r1MyPrice,
+                  theirPrice: r1TheirCounter ? r1TheirCounter.price : null,
+                  quantity: r1TheirCounter ? r1TheirCounter.quantity : activity.quantity,
+                  isLatest: maxRound === 1
+                });
+
+                // Subsequent Rounds
+                for (let i = 2; i <= maxRound; i++) {
+                  const myCounter = counterHistory.find(c => c.round === i && c.by === (isBid ? 'buyer' : 'seller'));
+                  const theirCounter = counterHistory.find(c => c.round === i && c.by === (isBid ? 'seller' : 'buyer'));
+                  
+                  rounds.push({
+                    round: i,
+                    myPrice: myCounter ? myCounter.price : null,
+                    theirPrice: theirCounter ? theirCounter.price : null,
+                    quantity: (theirCounter || myCounter)?.quantity || 0,
+                    isLatest: i === maxRound
+                  });
+                }
+
+                return rounds.map((round, idx) => {
+                  const displayMyPrice = round.myPrice;
+                  const displayTheirPrice = round.theirPrice 
+                    ? (isBid ? calculateBuyerPays(round.theirPrice) : calculateSellerGets(round.theirPrice))
+                    : null;
+                  
+                  const isLastRow = idx === rounds.length - 1;
+                  const canRespond = isLastRow && round.theirPrice && activity.status === 'countered';
+
+                  return (
+                    <div 
+                      key={round.round} 
+                      className={`p-2 rounded-lg border ${
+                        canRespond ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold text-gray-700">
+                          Round {round.round}
                         </span>
-                      )}
+                        {canRespond && (
+                          <span className="text-[9px] bg-orange-200 text-orange-800 px-1.5 py-0.5 rounded font-bold">
+                            RESPOND
+                          </span>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-white p-1.5 rounded border border-gray-100">
+                          <span className="text-[9px] text-gray-500 block">My Price</span>
+                          <strong className="text-blue-700">{displayMyPrice ? formatCurrency(displayMyPrice) : '-'}</strong>
+                        </div>
+                        <div className="bg-white p-1.5 rounded border border-gray-100">
+                          <span className="text-[9px] text-gray-500 block">Their Price</span>
+                          <strong className="text-orange-700">{displayTheirPrice ? formatCurrency(displayTheirPrice) : '-'}</strong>
+                        </div>
+                        <div className="bg-white p-1.5 rounded border border-gray-100">
+                          <span className="text-[9px] text-gray-500 block">Qty</span>
+                          <strong className="text-gray-900">{round.quantity}</strong>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className="text-gray-700">
-                        <span className="text-gray-500">Price:</span> <strong>{formatCurrency(displayCounterPrice)}</strong>
-                        {isSellerCounter && <span className="text-[9px] text-gray-400 ml-1">(incl. fee)</span>}
-                      </span>
-                      <span className="text-gray-700">
-                        <span className="text-gray-500">Qty:</span> <strong>{counter.quantity}</strong>
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
             </div>
           )}
         </div>
