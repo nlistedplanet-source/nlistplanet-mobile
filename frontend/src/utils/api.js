@@ -4,6 +4,9 @@ import { storage } from './helpers';
 // API Base URL - Update for production
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+console.log('🌐 API Base URL:', API_BASE_URL);
+console.log('🔧 Environment:', process.env.NODE_ENV);
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
