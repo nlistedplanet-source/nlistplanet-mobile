@@ -72,20 +72,30 @@ const HomePage = () => {
       
       // Format activities for display
       const rawActivities = activitiesRes.data.data || [];
-      const formattedActivities = rawActivities.map(activity => ({
-        type: activity.type,
-        action: activity.action,
-        title: activity.type === 'listing'
-          ? (activity.action === 'listed_sell' ? '📦 Listed for Sale' : '🛒 Created Buy Order')
-          : activity.type === 'transaction' 
-          ? `${activity.action === 'buy' ? '✅ Bought' : '✅ Sold'}`
-          : activity.type === 'bid'
-          ? '💰 Placed Bid'
-          : '🏷️ Placed Offer',
-        subtitle: `${activity.companyName} • ${activity.quantity} shares @ ₹${activity.price?.toLocaleString('en-IN')}`,
-        price: activity.price,
-        createdAt: activity.date
-      }));
+      console.log('📊 Raw Activities Response:', activitiesRes.data);
+      console.log('📊 Raw Activities Array:', rawActivities);
+      
+      const formattedActivities = rawActivities.map(activity => {
+        console.log('🔄 Processing activity:', activity);
+        return {
+          type: activity.type,
+          action: activity.action,
+          title: activity.type === 'listing'
+            ? (activity.action === 'listed_sell' ? '📦 Listed for Sale' : '🛒 Created Buy Order')
+            : activity.type === 'transaction' 
+            ? `${activity.action === 'buy' ? '✅ Bought' : '✅ Sold'}`
+            : activity.type === 'bid'
+            ? '💰 Placed Bid'
+            : '🏷️ Placed Offer',
+          subtitle: `${activity.companyName} • ${activity.quantity} shares @ ₹${activity.price?.toLocaleString('en-IN')}`,
+          price: activity.price,
+          createdAt: activity.date,
+          companyName: activity.companyName,
+          quantity: activity.quantity
+        };
+      });
+      
+      console.log('✅ Formatted Activities:', formattedActivities);
       setActivities(formattedActivities);
 
       // Fetch Action Items (Incoming Bids/Offers & Counter Offers)
