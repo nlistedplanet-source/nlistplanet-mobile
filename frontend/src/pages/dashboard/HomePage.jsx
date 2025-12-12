@@ -44,9 +44,10 @@ const HomePage = () => {
   const [activities, setActivities] = useState([]);
   const [actionItems, setActionItems] = useState([]);
 
+  // Fetch data on mount AND when returning to this component
   useEffect(() => {
     fetchData();
-  }, []);
+  }, []); // Empty deps ensures it runs on mount
 
   const fetchData = async () => {
     try {
@@ -70,10 +71,11 @@ const HomePage = () => {
       });
       setHoldings(holdingsRes.data.data || []);
       
-      // Format activities for display
-      const rawActivities = activitiesRes.data.data || [];
+      // Format activities for display - handle both data structures
+      const rawActivities = activitiesRes.data?.data || activitiesRes.data || [];
       console.log('📊 Raw Activities Response:', activitiesRes.data);
       console.log('📊 Raw Activities Array:', rawActivities);
+      console.log('📊 Activities Array Length:', rawActivities.length);
       
       const formattedActivities = rawActivities.map(activity => {
         console.log('🔄 Processing activity:', activity);
@@ -96,6 +98,7 @@ const HomePage = () => {
       });
       
       console.log('✅ Formatted Activities:', formattedActivities);
+      console.log('✅ Setting activities state with length:', formattedActivities.length);
       setActivities(formattedActivities);
 
       // Fetch Action Items (Incoming Bids/Offers & Counter Offers)
@@ -421,17 +424,19 @@ const HomePage = () => {
       ) : null}
 
       {/* Recent Activity */}
-      {activities.length > 0 && (
-        <div className="px-5 mt-6 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-gray-900">Recent Activity</h3>
+      <div className="px-5 mt-6 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-bold text-gray-900">Recent Activity</h3>
+          {activities.length > 0 && (
             <button 
               onClick={() => navigate('/activity')}
               className="text-blue-600 text-sm font-semibold flex items-center gap-1"
             >
               View All <ChevronRight className="w-4 h-4" />
             </button>
-          </div>
+          )}
+        </div>
+        {activities.length > 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             {activities.map((activity, index) => (
               <div 
@@ -469,8 +474,16 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 text-center">
+            <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <Activity className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-1">No Recent Activity</p>
+            <p className="text-xs text-gray-500">Your trading activity will appear here</p>
+          </div>
+        )}
+      </div>
 
       {/* Empty State */}
       {holdings.length === 0 && activities.length === 0 && (

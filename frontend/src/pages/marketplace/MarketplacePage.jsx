@@ -289,9 +289,22 @@ const CompactCard = ({ listing, onClick }) => {
   const fullQty = formatNumber(qty);
   const qtyInWords = numberToWords(qty);
   
+  // Check if listing is boosted
+  const isBoosted = listing.isBoosted || (listing.boostedUntil && new Date(listing.boostedUntil) > new Date());
+  
   // BUY opportunity = green theme (seller is selling, user can buy)
   // SELL opportunity = blue theme (buyer is buying, user can sell to them)
-  const cardStyles = isSell ? {
+  // BOOSTED = premium golden theme
+  const cardStyles = isBoosted ? {
+    border: 'border-2 border-amber-400',
+    gradient: 'from-amber-50 via-yellow-50 to-orange-50',
+    tagBg: 'bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500',
+    tagText: 'text-white',
+    priceColor: 'text-amber-600',
+    iconBg: 'bg-amber-100',
+    iconColor: 'text-amber-600',
+    shadow: 'shadow-lg shadow-amber-200/60'
+  } : isSell ? {
     border: 'border-blue-200',
     gradient: 'from-blue-50 to-white',
     tagBg: 'bg-gradient-to-r from-blue-500 to-blue-600',
@@ -314,7 +327,7 @@ const CompactCard = ({ listing, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border}`}
+      className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border} ${isBoosted && 'ring-2 ring-amber-300/50'}`}
     >
       <div className="p-3">
         {/* Top Row: Logo and Company Info */}
@@ -332,16 +345,21 @@ const CompactCard = ({ listing, onClick }) => {
             />
           </div>
           
-          {/* Company Name */}
-          <div className="flex-1 min-w-0 pt-0.5">
-            <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2">
+          {/* Company Name + Premium Badge */}
+          <div className="flex-1 min-w-0 pt-0.5 flex items-start gap-1.5">
+            <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2 flex-1">
               {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
             </h3>
+            {isBoosted && (
+              <span className="flex-shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full text-[8px] font-bold shadow-sm">
+                ⚡ PREMIUM
+              </span>
+            )}
           </div>
         </div>
 
         {/* Divider */}
-        <div className={`h-px ${isSell ? 'bg-blue-100' : 'bg-green-100'} mb-2.5`}></div>
+        <div className={`h-px ${isBoosted ? 'bg-amber-200' : isSell ? 'bg-blue-100' : 'bg-green-100'} mb-2.5`}></div>
 
         {/* Price & Qty Row */}
         <div className="flex items-center justify-between">
