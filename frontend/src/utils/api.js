@@ -2,7 +2,7 @@ import axios from 'axios';
 import { storage } from './helpers';
 
 // API Base URL - Update for production
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-api.onrender.com/api';
 
 console.log('='.repeat(80));
 console.log('🚀 API MODULE v2.1 - LOADED', new Date().toISOString());
