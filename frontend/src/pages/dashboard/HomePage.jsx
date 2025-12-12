@@ -443,43 +443,102 @@ const HomePage = () => {
       {actionItems.length > 0 ? (
         <div className="px-5 mt-6">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-bold text-gray-900">Action Center</h3>
-            <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full">
-              {actionItems.length} New
-            </span>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-bold text-gray-900">Action Center</h3>
+              <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full">
+                {actionItems.length} New
+              </span>
+            </div>
+            <button 
+              onClick={() => navigate('/my-posts')}
+              className="text-blue-600 text-sm font-semibold flex items-center gap-1"
+            >
+              View All <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
-          <div className="space-y-2">
+          
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
             {actionItems.map((item, index) => (
               <div 
                 key={index} 
                 onClick={() => navigate((item.type === 'counter_received') ? '/bids' : '/my-posts')}
-                className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex items-center justify-between active:bg-gray-50 transition-colors"
+                className={`p-4 ${index !== actionItems.length - 1 ? 'border-b border-gray-100' : ''} active:bg-gray-50 transition-colors`}
               >
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    item.type === 'bid_received' ? 'bg-blue-50 text-blue-600' :
-                    item.type === 'offer_received' ? 'bg-green-50 text-green-600' :
-                    'bg-orange-50 text-orange-600'
+                {/* Type Badge */}
+                <div className="flex items-center justify-between mb-3">
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                    item.type === 'bid_received' ? 'bg-blue-50 text-blue-700' :
+                    item.type === 'offer_received' ? 'bg-green-50 text-green-700' :
+                    'bg-orange-50 text-orange-700'
                   }`}>
-                    {item.type === 'bid_received' ? <TrendingDown size={18} /> :
-                     item.type === 'offer_received' ? <TrendingUp size={18} /> :
-                     <Activity size={18} />}
+                    {item.type === 'bid_received' ? <TrendingDown size={14} /> :
+                     item.type === 'offer_received' ? <TrendingUp size={14} /> :
+                     <Activity size={14} />}
+                    {item.type === 'counter_received' ? 'Counter Offer' : 
+                     item.type === 'bid_received' ? 'Bid Received' : 'Offer Received'}
                   </div>
-                  <div className="min-w-0">
-                    <h4 className="font-semibold text-gray-900 text-sm truncate">
-                      {item.type === 'counter_received' ? 'Counter Offer' : 
-                       item.type === 'bid_received' ? 'Bid Received' : 'Offer Received'}
-                    </h4>
-                    <p className="text-xs text-gray-500 truncate">
-                      <span className="font-medium text-gray-700">{item.company}</span> • {item.quantity} @ {formatCurrency(item.price)}
+                  <span className="text-xs text-gray-400">{timeAgo(item.date)}</span>
+                </div>
+
+                {/* Company Info */}
+                <div className="mb-3">
+                  <h4 className="font-bold text-gray-900 text-sm mb-1">{item.company}</h4>
+                  <p className="text-xs text-gray-500">Quantity: {item.quantity?.toLocaleString('en-IN')} shares</p>
+                </div>
+
+                {/* Price Comparison */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div className="bg-gray-50 rounded-lg p-2.5">
+                    <p className="text-xs text-gray-500 mb-0.5">Your Price</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {formatCurrency(item.originalListing?.price || item.price)}
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-2.5">
+                    <p className="text-xs text-blue-600 mb-0.5">
+                      {item.type === 'bid_received' ? 'Bid' : 'Offer'} Price
+                    </p>
+                    <p className="text-sm font-bold text-blue-700">
+                      {formatCurrency(item.price)}
                     </p>
                   </div>
                 </div>
-                
-                <div className="flex-shrink-0 ml-2">
-                   <button className="bg-gray-900 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow-sm">
-                     View
-                   </button>
+
+                {/* Action Buttons */}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      haptic.medium();
+                      // Handle accept
+                      navigate('/my-posts');
+                    }}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      haptic.light();
+                      // Handle reject
+                      navigate('/my-posts');
+                    }}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      haptic.light();
+                      // Handle counter
+                      navigate('/my-posts');
+                    }}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
+                  >
+                    Counter
+                  </button>
                 </div>
               </div>
             ))}
