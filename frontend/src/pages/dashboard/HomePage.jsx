@@ -70,56 +70,47 @@ const HomePage = () => {
 
   const fetchData = async () => {
     try {
-      // Verify token exists before making API calls
       const token = storage.get('token');
       const rawToken = localStorage.getItem('token');
       
       console.log('🔐 fetchData - Raw token from localStorage:', rawToken);
       console.log('🔐 fetchData - Parsed token:', token);
-      console.log('🔐 fetchData - Token type:', typeof token);
       
       if (!token) {
-        console.error('❌ No token found, skipping data fetch');
-        toast.error('Please login again');
-        navigate('/login');
+        console.error('❌ No token found');
+        setLoading(false);
+        hideLoader();
         return;
       }
 
       setLoading(true);
-      showLoader(); // PBPartners style loader
+      showLoader();
       
-      console.log('📡 Starting API calls with token:', token.substring(0, 20) + '...');
+      console.log('📡 Fetching dashboard data...');
       
-      // Fetch basic stats and holdings first
-      const [statsRes, holdingsRes, activitiesRes, myListingsRes] = await Promise.all([
+      // Step 1: Fetch basic stats and portfolio data
+      const [statsRes, holdingsRes] = await Promise.all([
         portfolioAPI.getStats(),
         portfolioAPI.getHoldings(),
-        portfolioAPI.getActivities({ limit: 5 }),
-        listingsAPI.getMyListings({ status: 'active' }),
       ]);
 
-      console.log('✅ API responses received');
-
-      // Get active listings count from my listings
-      const myActiveListings = myListingsRes.data.data || [];
-      const activeListingsCount = myActiveListings.filter(l => l.status === 'active').length;
-
+      const myActiveListings = holdingsRes.data.data || [];
+      
       setStats({
         ...(statsRes.data.data || {}),
-        activeListings: activeListingsCount,
+        activeListings: myActiveListings.length,
         completedTrades: statsRes.data.data?.totalTransactions || 0
       });
-      setHoldings(holdingsRes.data.data || []);
+      setHoldings(myActiveListings);
       
-      // Format activities for display - handle both data structures
-      const rawActivities = activitiesRes.data?.data || activitiesRes.data || [];
-      console.log('📊 Raw Activities Response:', activitiesRes.data);
-      console.log('📊 Raw Activities Array:', rawActivities);
-      console.log('📊 Activities Array Length:', rawActivities.length);
-      
-      const formattedActivities = Array.isArray(rawActivities) ? rawActivities.map(activity => {
-        console.log('🔄 Processing activity:', activity);
-        return {
+      console.log('✅ Stats and holdings loaded');
+
+      // Step 2: Fetch Recent Activities
+      try {
+        const activitiesRes = await portfolioAPI.getActivities({ limit: 5 });
+        const rawActivities = activitiesRes.data?.data || [];
+        
+        const formattedActivities = rawActivities.map(activity => ({
           type: activity.type,
           action: activity.action,
           title: activity.type === 'listing'
@@ -134,14 +125,16 @@ const HomePage = () => {
           createdAt: activity.date,
           companyName: activity.companyName,
           quantity: activity.quantity
-        };
-      }) : [];
-      
-      console.log('✅ Formatted Activities:', formattedActivities);
-      console.log('✅ Setting activities state with length:', formattedActivities.length);
-      setActivities(formattedActivities);
+        }));
+        
+        setActivities(formattedActivities);
+        console.log('✅ Activities loaded:', formattedActivities.length);
+      } catch (err) {
+        console.error('Failed to load activities:', err);
+        setActivities([]);
+      }
 
-      // Fetch Action Items (Incoming Bids/Offers & Counter Offers) separately
+      // Step 3: Fetch Action Items
       try {
         const [sellRes, buyRes, myBidsRes] = await Promise.all([
           listingsAPI.getMyListings({ type: 'sell' }),
@@ -149,15 +142,11 @@ const HomePage = () => {
           listingsAPI.getMyPlacedBids()
         ]);
 
-        console.log('📥 Action Items API responses received');
-
         const actions = [];
 
-        // 1. Incoming Bids on my Sell Posts
-        const sellListings = sellRes.data.data || [];
-        sellListings.forEach(listing => {
-          const bids = listing.bids || [];
-          bids.forEach(bid => {
+        // Incoming Bids on my Sell Posts
+        (sellRes.data.data || []).forEach(listing => {
+          (listing.bids || []).forEach(bid => {
             if (bid.status === 'pending') {
               actions.push({
                 type: 'bid_received',
@@ -165,21 +154,19 @@ const HomePage = () => {
                 listingId: listing._id,
                 company: listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
-                price: bid.price,
+                yourPrice: listing.price,
+                counterPrice: bid.price,
                 quantity: bid.quantity,
                 user: bid.userId?.username,
-                date: bid.createdAt,
-                originalListing: listing
+                date: bid.createdAt
               });
             }
           });
         });
 
-        // 2. Incoming Offers on my Buy Posts
-        const buyListings = buyRes.data.data || [];
-        buyListings.forEach(listing => {
-          const offers = listing.offers || [];
-          offers.forEach(offer => {
+        // Incoming Offers on my Buy Posts
+        (buyRes.data.data || []).forEach(listing => {
+          (listing.offers || []).forEach(offer => {
             if (offer.status === 'pending') {
               actions.push({
                 type: 'offer_received',
@@ -187,56 +174,48 @@ const HomePage = () => {
                 listingId: listing._id,
                 company: listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
-                price: offer.price,
+                yourPrice: listing.price,
+                counterPrice: offer.price,
                 quantity: offer.quantity,
                 user: offer.userId?.username,
-                date: offer.createdAt,
-                originalListing: listing
+                date: offer.createdAt
               });
             }
           });
         });
 
-        // 3. Counter Offers on my Bids/Offers
-        const myBids = myBidsRes.data.data || [];
-        myBids.forEach(activity => {
-          if (activity.status === 'countered' && activity.listing) {
+        // Counter Offers on my Bids
+        (myBidsRes.data.data || []).forEach(bid => {
+          if (bid.status === 'countered' && bid.listing) {
             actions.push({
               type: 'counter_received',
-              id: activity._id,
-              listingId: activity.listing._id,
-              company: activity.listing.companyName,
-              logo: activity.listing.companyId?.logo || activity.listing.companyId?.Logo,
-              price: activity.price, // Counter price
-              quantity: activity.quantity,
-              user: 'Seller', // Usually the owner
-              date: activity.updatedAt,
-              originalListing: activity.listing
+              id: bid._id,
+              listingId: bid.listing._id,
+              company: bid.listing.companyName,
+              logo: bid.listing.companyId?.logo || bid.listing.companyId?.Logo,
+              yourPrice: bid.price,
+              counterPrice: bid.counterPrice || bid.listing.price,
+              quantity: bid.quantity,
+              user: 'Seller',
+              date: bid.updatedAt
             });
           }
         });
 
-        // Sort by date (newest first) and set action items
-        console.log('🎯 Action Items Count:', actions.length);
         setActionItems(actions.sort((a, b) => new Date(b.date) - new Date(a.date)));
-      } catch (actionError) {
-        console.error('Failed to fetch action items:', actionError);
-        // Don't fail the entire fetch if action items fail
+        console.log('✅ Action items loaded:', actions.length);
+      } catch (err) {
+        console.error('Failed to load action items:', err);
         setActionItems([]);
       }
 
     } catch (error) {
-      console.error('❌ Failed to fetch dashboard data:', error);
-      console.error('Error details:', error.response?.data || error.message);
-      
-      // If it's a 401, token might be invalid
+      console.error('❌ Dashboard data fetch error:', error);
       if (error.response?.status === 401) {
         toast.error('Session expired. Please login again');
         storage.remove('token');
         storage.remove('user');
         navigate('/login');
-      } else {
-        toast.error('Failed to load dashboard data');
       }
     } finally {
       setLoading(false);
@@ -440,47 +419,48 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Action Center (Replaces Holdings) */}
+      {/* Action Center */}
       <div className="px-5 mt-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-gray-900">Action Center</h3>
             {actionItems.length > 0 && (
               <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full">
-                {actionItems.length} New
+                {actionItems.length}
               </span>
             )}
           </div>
-          <button 
-            onClick={() => navigate('/my-posts')}
-            className="text-blue-600 text-sm font-semibold flex items-center gap-1"
-          >
-            View All <ChevronRight className="w-4 h-4" />
-          </button>
+          {actionItems.length > 0 && (
+            <button 
+              onClick={() => navigate('/my-posts')}
+              className="text-blue-600 text-sm font-semibold"
+            >
+              View All
+            </button>
+          )}
         </div>
         
-        {/* Individual Cards for each action item */}
         {actionItems.length > 0 ? (
           <div className="space-y-3">
-            {actionItems.map((item, index) => (
+            {actionItems.map((item) => (
               <div 
-                key={index}
-                className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
+                key={item.id}
+                className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
               >
-                {/* Table Header */}
-                <div className="grid grid-cols-5 gap-2 bg-slate-50 px-3 py-2 border-b border-slate-200">
+                {/* Header */}
+                <div className="grid grid-cols-5 gap-2 bg-slate-50 px-3 py-2 border-b">
                   <div className="text-[10px] font-bold text-gray-600 uppercase">Type</div>
                   <div className="text-[10px] font-bold text-gray-600 uppercase">Company</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Your Price</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Offer Price</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Actions</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase">Your Price</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase">Offer</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase">Actions</div>
                 </div>
                 
-                {/* Table Data Row */}
+                {/* Data */}
                 <div className="grid grid-cols-5 gap-2 px-3 py-3 items-center">
-                  {/* Type Column */}
-                  <div className="flex flex-col">
-                    <div className={`inline-flex items-center justify-center gap-1 p-1.5 rounded-lg text-[10px] font-semibold mb-1 ${
+                  {/* Type */}
+                  <div>
+                    <div className={`inline-flex items-center gap-1 p-1.5 rounded text-[10px] font-bold ${
                       item.type === 'bid_received' ? 'bg-blue-50 text-blue-700' :
                       item.type === 'offer_received' ? 'bg-green-50 text-green-700' :
                       'bg-orange-50 text-orange-700'
@@ -488,80 +468,48 @@ const HomePage = () => {
                       {item.type === 'bid_received' ? <TrendingDown size={12} /> :
                        item.type === 'offer_received' ? <TrendingUp size={12} /> :
                        <Activity size={12} />}
-                      <span className="hidden sm:inline">
-                        {item.type === 'counter_received' ? 'Counter' : 
-                         item.type === 'bid_received' ? 'Bid In' : 'Offer In'}
-                      </span>
                     </div>
-                    <span className="text-[9px] text-gray-400">{timeAgo(item.date)}</span>
+                    <p className="text-[9px] text-gray-400 mt-1">{timeAgo(item.date)}</p>
                   </div>
                   
-                  {/* Company Column */}
-                  <div className="flex flex-col min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      {item.logo && (
-                        <img src={item.logo} alt="" className="w-5 h-5 rounded object-cover" />
-                      )}
-                      <span className="text-xs font-bold text-gray-900 truncate">{item.company}</span>
-                    </div>
-                    <span className="text-[9px] text-gray-500">Qty: {item.quantity?.toLocaleString('en-IN')}</span>
+                  {/* Company */}
+                  <div className="min-w-0">
+                    {item.logo && (
+                      <img src={item.logo} alt="" className="w-5 h-5 rounded mb-1" />
+                    )}
+                    <p className="text-xs font-bold text-gray-900 truncate">{item.company}</p>
+                    <p className="text-[9px] text-gray-500">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
                   </div>
                   
-                  {/* Your Price Column */}
-                  <div className="text-center">
-                    <div className="text-[10px] text-gray-500 mb-0.5">Your Price</div>
-                    <div className="text-xs font-bold text-purple-600">{formatCurrency(item.originalListing?.price || item.price)}</div>
+                  {/* Your Price */}
+                  <div>
+                    <p className="text-xs font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
                   </div>
                   
-                  {/* Offer Price Column */}
-                  <div className="text-center">
-                    <div className="text-[10px] text-gray-500 mb-0.5">
-                      {item.type === 'bid_received' ? 'Bid @' : 'Offer @'}
-                    </div>
-                    <div className="text-xs font-bold text-blue-600">{formatCurrency(item.price)}</div>
+                  {/* Offer Price */}
+                  <div>
+                    <p className="text-xs font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
                   </div>
                   
-                  {/* Actions Column */}
+                  {/* Actions */}
                   <div className="flex flex-col gap-1">
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        haptic.medium();
-                        navigate('/my-posts');
-                      }}
-                      className="bg-green-600 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                      onClick={() => navigate('/my-posts')}
+                      className="bg-green-600 text-white text-[9px] font-bold px-2 py-1 rounded"
                     >
                       Accept
                     </button>
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        haptic.light();
-                        navigate('/my-posts');
-                      }}
-                      className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                      onClick={() => navigate('/my-posts')}
+                      className="bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded"
                     >
                       Reject
                     </button>
                     <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        haptic.light();
-                        navigate('/my-posts');
-                      }}
-                      className="bg-orange-500 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                      onClick={() => navigate('/my-posts')}
+                      className="bg-orange-600 text-white text-[9px] font-bold px-2 py-1 rounded"
                     >
                       Counter
-                    </button>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        haptic.light();
-                        navigate('/my-posts');
-                      }}
-                      className="bg-gray-900 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
-                    >
-                      View
                     </button>
                   </div>
                 </div>
@@ -569,12 +517,10 @@ const HomePage = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-6 h-6 text-green-600" />
-            </div>
-            <p className="text-sm font-medium text-gray-900 mb-1">All Caught Up!</p>
-            <p className="text-xs text-gray-500">No pending actions at the moment</p>
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 text-center">
+            <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-gray-900">All Caught Up!</p>
+            <p className="text-xs text-gray-500 mt-1">No pending actions</p>
           </div>
         )}
       </div>
@@ -586,14 +532,15 @@ const HomePage = () => {
           {activities.length > 0 && (
             <button 
               onClick={() => navigate('/activity')}
-              className="text-blue-600 text-sm font-semibold flex items-center gap-1"
+              className="text-blue-600 text-sm font-semibold"
             >
-              View All <ChevronRight className="w-4 h-4" />
+              View All
             </button>
           )}
         </div>
+        
         {activities.length > 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
             {activities.map((activity, index) => (
               <div 
                 key={index} 
