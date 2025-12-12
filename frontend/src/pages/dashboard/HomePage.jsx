@@ -16,7 +16,8 @@ import {
   Sparkles,
   Target,
   PieChart,
-  ArrowRight
+  ArrowRight,
+  CheckCircle
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic, storage } from '../../utils/helpers';
@@ -440,24 +441,26 @@ const HomePage = () => {
       </div>
 
       {/* Action Center (Replaces Holdings) */}
-      {actionItems.length > 0 ? (
-        <div className="px-5 mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-gray-900">Action Center</h3>
+      <div className="px-5 mt-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-gray-900">Action Center</h3>
+            {actionItems.length > 0 && (
               <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full">
                 {actionItems.length} New
               </span>
-            </div>
-            <button 
-              onClick={() => navigate('/my-posts')}
-              className="text-blue-600 text-sm font-semibold flex items-center gap-1"
-            >
-              View All <ChevronRight className="w-4 h-4" />
-            </button>
+            )}
           </div>
-          
-          {/* Individual Cards for each action item */}
+          <button 
+            onClick={() => navigate('/my-posts')}
+            className="text-blue-600 text-sm font-semibold flex items-center gap-1"
+          >
+            View All <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+        
+        {/* Individual Cards for each action item */}
+        {actionItems.length > 0 ? (
           <div className="space-y-3">
             {actionItems.map((item, index) => (
               <div 
@@ -565,8 +568,16 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-        </div>
-      ) : null}
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 text-center">
+            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <p className="text-sm font-medium text-gray-900 mb-1">All Caught Up!</p>
+            <p className="text-xs text-gray-500">No pending actions at the moment</p>
+          </div>
+        )}
+      </div>
 
       {/* Recent Activity */}
       <div className="px-5 mt-6 mb-6">
