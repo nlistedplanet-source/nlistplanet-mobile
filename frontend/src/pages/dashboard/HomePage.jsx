@@ -397,7 +397,7 @@ const HomePage = () => {
             className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center"
           >
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Package className="w-5 h-5 text-blue-600" />
+              <img src="/Post_icon.png" alt="My Posts" className="w-6 h-6 object-contain" />
             </div>
             <p className="text-xs font-semibold text-gray-900">My Posts</p>
           </button>
@@ -407,7 +407,7 @@ const HomePage = () => {
             className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center"
           >
             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-5 h-5 text-purple-600" />
+              <img src="/Bids.png" alt="My Bids" className="w-6 h-6 object-contain" />
             </div>
             <p className="text-xs font-semibold text-gray-900">My Bids</p>
           </button>
