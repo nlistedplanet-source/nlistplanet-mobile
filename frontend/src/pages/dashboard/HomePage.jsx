@@ -19,7 +19,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
-import { formatCurrency, formatPercentage, timeAgo, haptic } from '../../utils/helpers';
+import { formatCurrency, formatPercentage, timeAgo, haptic, storage } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
@@ -46,15 +46,32 @@ const HomePage = () => {
 
   // Fetch data when auth is ready and user is authenticated
   useEffect(() => {
-    if (!authLoading && user) {
+    const token = storage.get('token');
+    
+    // Only fetch if we have both user context AND token in storage
+    if (!authLoading && user && token) {
+      console.log('🚀 Fetching dashboard data - Auth ready, User:', user.username, 'Token exists:', !!token);
       fetchData();
+    } else {
+      console.log('⏳ Waiting for auth - AuthLoading:', authLoading, 'User:', !!user, 'Token:', !!token);
     }
   }, [authLoading, user]); // Wait for auth to initialize, then fetch when user is available
 
   const fetchData = async () => {
     try {
+      // Verify token exists before making API calls
+      const token = storage.get('token');
+      if (!token) {
+        console.error('❌ No token found, skipping data fetch');
+        toast.error('Please login again');
+        navigate('/login');
+        return;
+      }
+
       setLoading(true);
       showLoader(); // PBPartners style loader
+      
+      console.log('📡 Starting API calls with token:', token.substring(0, 20) + '...');
       
       // Fetch basic stats and holdings first
       const [statsRes, holdingsRes, activitiesRes, myListingsRes] = await Promise.all([
@@ -63,6 +80,8 @@ const HomePage = () => {
         portfolioAPI.getActivities({ limit: 5 }),
         listingsAPI.getMyListings({ status: 'active' }),
       ]);
+
+      console.log('✅ API responses received');
 
       // Get active listings count from my listings
       const myActiveListings = myListingsRes.data.data || [];
@@ -112,6 +131,8 @@ const HomePage = () => {
           listingsAPI.getMyListings({ type: 'buy' }),
           listingsAPI.getMyPlacedBids()
         ]);
+
+        console.log('📥 Action Items API responses received');
 
         const actions = [];
 
@@ -188,8 +209,18 @@ const HomePage = () => {
       }
 
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      console.error('❌ Failed to fetch dashboard data:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      
+      // If it's a 401, token might be invalid
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again');
+        storage.remove('token');
+        storage.remove('user');
+        navigate('/login');
+      } else {
+        toast.error('Failed to load dashboard data');
+      }
     } finally {
       setLoading(false);
       hideLoader();
