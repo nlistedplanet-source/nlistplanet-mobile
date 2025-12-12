@@ -520,25 +520,6 @@ const HomePage = () => {
             ))}
           </div>
         ) : (
-                    </button>
-                    <button 
-                      onClick={() => navigate('/my-posts')}
-                      className="bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded"
-                    >
-                      Reject
-                    </button>
-                    <button 
-                      onClick={() => navigate('/my-posts')}
-                      className="bg-orange-600 text-white text-[9px] font-bold px-2 py-1 rounded"
-                    >
-                      Counter
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
           <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 text-center">
             <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-2" />
             <p className="text-sm font-semibold text-gray-900">All Caught Up!</p>
