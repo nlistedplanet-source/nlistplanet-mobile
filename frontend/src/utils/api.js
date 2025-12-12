@@ -4,8 +4,26 @@ import { storage } from './helpers';
 // API Base URL - Update for production
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+console.log('='.repeat(80));
+console.log('🚀 API MODULE v2.1 - LOADED', new Date().toISOString());
+console.log('='.repeat(80));
 console.log('🌐 API Base URL:', API_BASE_URL);
 console.log('🔧 Environment:', process.env.NODE_ENV);
+
+// Debug: Check token in localStorage on module load
+const checkToken = () => {
+  const rawToken = localStorage.getItem('token');
+  const parsedToken = storage.get('token');
+  console.log('🔍 Token Check - Raw from localStorage:', rawToken);
+  console.log('🔍 Token Check - Parsed by storage.get:', parsedToken);
+  console.log('🔍 Token Check - Type:', typeof parsedToken);
+  return parsedToken;
+};
+
+// Check token immediately when module loads
+console.log('📦 API Module Loading...');
+checkToken();
+console.log('='.repeat(80));
 
 // Create axios instance
 const api = axios.create({

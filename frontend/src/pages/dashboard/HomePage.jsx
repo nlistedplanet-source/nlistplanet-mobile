@@ -71,6 +71,12 @@ const HomePage = () => {
     try {
       // Verify token exists before making API calls
       const token = storage.get('token');
+      const rawToken = localStorage.getItem('token');
+      
+      console.log('🔐 fetchData - Raw token from localStorage:', rawToken);
+      console.log('🔐 fetchData - Parsed token:', token);
+      console.log('🔐 fetchData - Token type:', typeof token);
+      
       if (!token) {
         console.error('❌ No token found, skipping data fetch');
         toast.error('Please login again');
