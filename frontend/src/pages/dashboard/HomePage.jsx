@@ -46,8 +46,10 @@ const HomePage = () => {
 
   // Fetch data on mount AND when returning to this component
   useEffect(() => {
-    fetchData();
-  }, []); // Empty deps ensures it runs on mount
+    if (user) {
+      fetchData();
+    }
+  }, [user]); // Only fetch when user is authenticated
 
   const fetchData = async () => {
     try {
