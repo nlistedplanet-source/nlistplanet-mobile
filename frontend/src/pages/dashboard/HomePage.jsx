@@ -153,6 +153,7 @@ const HomePage = () => {
                 id: bid._id,
                 listingId: listing._id,
                 company: listing.companyName,
+                companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
                 counterPrice: bid.price,
@@ -173,6 +174,7 @@ const HomePage = () => {
                 id: offer._id,
                 listingId: listing._id,
                 company: listing.companyName,
+                companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
                 counterPrice: offer.price,
@@ -192,6 +194,7 @@ const HomePage = () => {
               id: bid._id,
               listingId: bid.listing._id,
               company: bid.listing.companyName,
+              companySymbol: bid.listing.companyId?.scriptName || bid.listing.companyId?.ScripName || bid.listing.companyId?.symbol || bid.listing.companyName,
               logo: bid.listing.companyId?.logo || bid.listing.companyId?.Logo,
               yourPrice: bid.price,
               counterPrice: bid.counterPrice || bid.listing.price,
@@ -448,56 +451,75 @@ const HomePage = () => {
                 className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
               >
                 {/* Header */}
-                <div className="grid grid-cols-5 gap-2 bg-slate-50 px-3 py-2 border-b">
-                  <div className="text-[10px] font-bold text-gray-600 uppercase">Type</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase">Company</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase">Your Price</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase">Offer</div>
-                  <div className="text-[10px] font-bold text-gray-600 uppercase">Actions</div>
+                <div className="grid grid-cols-5 bg-slate-50 border-b border-slate-200">
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Type</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Script</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Your Price</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Offer</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center">Actions</div>
                 </div>
                 
                 {/* Data */}
-                <div className="grid grid-cols-5 gap-2 px-3 py-3 items-center">
+                <div className="grid grid-cols-5 items-stretch">
                   {/* Type */}
-                  <div>
-                    <div className={`inline-flex items-center gap-1 p-1.5 rounded text-[10px] font-bold ${
-                      item.type === 'bid_received' ? 'bg-blue-50 text-blue-700' :
-                      item.type === 'offer_received' ? 'bg-green-50 text-green-700' :
-                      'bg-orange-50 text-orange-700'
-                    }`}>
-                      {item.type === 'bid_received' ? <TrendingDown size={12} /> :
-                       item.type === 'offer_received' ? <TrendingUp size={12} /> :
-                       <Activity size={12} />}
-                    </div>
-                    <p className="text-[9px] text-gray-400 mt-1">{timeAgo(item.date)}</p>
+                  <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center">
+                    <p className="text-[10px] font-bold text-gray-900">
+                      {item.type === 'counter_received' ? 'Counter' : 
+                       item.type === 'bid_received' ? 'Bid In' : 'Offer In'}
+                    </p>
+                    <p className="text-[8px] text-gray-400 mt-0.5">{timeAgo(item.date)}</p>
                   </div>
                   
-                  {/* Company */}
-                  <div className="min-w-0">
-                    {item.logo && (
-                      <img src={item.logo} alt="" className="w-5 h-5 rounded mb-1" />
-                    )}
-                    <p className="text-xs font-bold text-gray-900 truncate">{item.company}</p>
-                    <p className="text-[9px] text-gray-500">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
+                  {/* Script (No Logo) */}
+                  <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center min-w-0">
+                    <p className="text-[10px] font-bold text-gray-900 truncate w-full">{item.companySymbol}</p>
+                    <p className="text-[8px] text-gray-500 mt-0.5">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
                   </div>
                   
                   {/* Your Price */}
-                  <div>
-                    <p className="text-xs font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
+                  <div className="p-2 border-r border-slate-200 flex items-center justify-center">
+                    <p className="text-[10px] font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
                   </div>
                   
                   {/* Offer Price */}
-                  <div>
-                    <p className="text-xs font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
+                  <div className="p-2 border-r border-slate-200 flex items-center justify-center">
+                    <p className="text-[10px] font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
                   </div>
                   
-                  {/* Actions */}
-                  <div className="flex flex-col gap-1">
-                    <button 
-                      onClick={() => navigate('/my-posts')}
-                      className="bg-green-600 text-white text-[9px] font-bold px-2 py-1 rounded"
-                    >
-                      Accept
+                  {/* Actions (2x2 Grid) */}
+                  <div className="p-1.5 flex items-center justify-center">
+                    <div className="grid grid-cols-2 gap-1 w-full">
+                      <button 
+                        onClick={() => navigate('/my-posts')}
+                        className="bg-green-100 text-green-700 p-1 rounded flex items-center justify-center"
+                      >
+                        <CheckCircle size={12} strokeWidth={2.5} />
+                      </button>
+                      <button 
+                        onClick={() => navigate('/my-posts')}
+                        className="bg-red-100 text-red-700 p-1 rounded flex items-center justify-center"
+                      >
+                        <XCircle size={12} strokeWidth={2.5} />
+                      </button>
+                      <button 
+                        onClick={() => navigate('/my-posts')}
+                        className="bg-orange-100 text-orange-700 p-1 rounded flex items-center justify-center"
+                      >
+                        <RotateCcw size={12} strokeWidth={2.5} />
+                      </button>
+                      <button 
+                        onClick={() => navigate(item.type === 'counter_received' ? '/bids' : '/my-posts')}
+                        className="bg-gray-100 text-gray-700 p-1 rounded flex items-center justify-center"
+                      >
+                        <Eye size={12} strokeWidth={2.5} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
                     </button>
                     <button 
                       onClick={() => navigate('/my-posts')}
