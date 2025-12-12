@@ -17,7 +17,9 @@ import {
   Target,
   PieChart,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  XCircle,
+  RotateCcw
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic, storage } from '../../utils/helpers';
