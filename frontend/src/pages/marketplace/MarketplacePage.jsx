@@ -290,7 +290,7 @@ const CompactCard = ({ listing, onClick }) => {
   const qtyInWords = numberToWords(qty);
   
   // Check if listing is boosted
-  const isBoosted = listing.isBoosted || (listing.boostedUntil && new Date(listing.boostedUntil) > new Date());
+  const isBoosted = listing.isBoosted || (listing.boostExpiresAt && new Date(listing.boostExpiresAt) > new Date());
   
   // BUY opportunity = green theme (seller is selling, user can buy)
   // SELL opportunity = blue theme (buyer is buying, user can sell to them)
