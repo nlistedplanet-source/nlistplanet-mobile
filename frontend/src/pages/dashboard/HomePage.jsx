@@ -27,7 +27,7 @@ import toast from 'react-hot-toast';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,17 +44,19 @@ const HomePage = () => {
   const [activities, setActivities] = useState([]);
   const [actionItems, setActionItems] = useState([]);
 
-  // Fetch data on mount AND when returning to this component
+  // Fetch data when auth is ready and user is authenticated
   useEffect(() => {
-    if (user) {
+    if (!authLoading && user) {
       fetchData();
     }
-  }, [user]); // Only fetch when user is authenticated
+  }, [authLoading, user]); // Wait for auth to initialize, then fetch when user is available
 
   const fetchData = async () => {
     try {
       setLoading(true);
       showLoader(); // PBPartners style loader
+      
+      // Fetch basic stats and holdings first
       const [statsRes, holdingsRes, activitiesRes, myListingsRes] = await Promise.all([
         portfolioAPI.getStats(),
         portfolioAPI.getHoldings(),
@@ -79,7 +81,7 @@ const HomePage = () => {
       console.log('📊 Raw Activities Array:', rawActivities);
       console.log('📊 Activities Array Length:', rawActivities.length);
       
-      const formattedActivities = rawActivities.map(activity => {
+      const formattedActivities = Array.isArray(rawActivities) ? rawActivities.map(activity => {
         console.log('🔄 Processing activity:', activity);
         return {
           type: activity.type,
@@ -97,84 +99,97 @@ const HomePage = () => {
           companyName: activity.companyName,
           quantity: activity.quantity
         };
-      });
+      }) : [];
       
       console.log('✅ Formatted Activities:', formattedActivities);
       console.log('✅ Setting activities state with length:', formattedActivities.length);
       setActivities(formattedActivities);
 
-      // Fetch Action Items (Incoming Bids/Offers & Counter Offers)
-      const [sellRes, buyRes, myBidsRes] = await Promise.all([
-        listingsAPI.getMyListings({ type: 'sell' }),
-        listingsAPI.getMyListings({ type: 'buy' }),
-        listingsAPI.getMyPlacedBids()
-      ]);
+      // Fetch Action Items (Incoming Bids/Offers & Counter Offers) separately
+      try {
+        const [sellRes, buyRes, myBidsRes] = await Promise.all([
+          listingsAPI.getMyListings({ type: 'sell' }),
+          listingsAPI.getMyListings({ type: 'buy' }),
+          listingsAPI.getMyPlacedBids()
+        ]);
 
-      const actions = [];
+        const actions = [];
 
-      // 1. Incoming Bids on my Sell Posts
-      sellRes.data.data.forEach(listing => {
-        listing.bids?.forEach(bid => {
-          if (bid.status === 'pending') {
-            actions.push({
-              type: 'bid_received',
-              id: bid._id,
-              listingId: listing._id,
-              company: listing.companyName,
-              logo: listing.companyId?.logo || listing.companyId?.Logo,
-              price: bid.price,
-              quantity: bid.quantity,
-              user: bid.userId?.username,
-              date: bid.createdAt,
-              originalListing: listing
-            });
-          }
-        });
-      });
-
-      // 2. Incoming Offers on my Buy Posts
-      buyRes.data.data.forEach(listing => {
-        listing.offers?.forEach(offer => {
-          if (offer.status === 'pending') {
-            actions.push({
-              type: 'offer_received',
-              id: offer._id,
-              listingId: listing._id,
-              company: listing.companyName,
-              logo: listing.companyId?.logo || listing.companyId?.Logo,
-              price: offer.price,
-              quantity: offer.quantity,
-              user: offer.userId?.username,
-              date: offer.createdAt,
-              originalListing: listing
-            });
-          }
-        });
-      });
-
-      // 3. Counter Offers on my Bids/Offers
-      myBidsRes.data.data.forEach(activity => {
-        if (activity.status === 'countered') {
-          actions.push({
-            type: 'counter_received',
-            id: activity._id,
-            listingId: activity.listing._id,
-            company: activity.listing.companyName,
-            logo: activity.listing.companyId?.logo || activity.listing.companyId?.Logo,
-            price: activity.price, // Counter price
-            quantity: activity.quantity,
-            user: 'Seller', // Usually the owner
-            date: activity.updatedAt,
-            originalListing: activity.listing
+        // 1. Incoming Bids on my Sell Posts
+        const sellListings = sellRes.data.data || [];
+        sellListings.forEach(listing => {
+          const bids = listing.bids || [];
+          bids.forEach(bid => {
+            if (bid.status === 'pending') {
+              actions.push({
+                type: 'bid_received',
+                id: bid._id,
+                listingId: listing._id,
+                company: listing.companyName,
+                logo: listing.companyId?.logo || listing.companyId?.Logo,
+                price: bid.price,
+                quantity: bid.quantity,
+                user: bid.userId?.username,
+                date: bid.createdAt,
+                originalListing: listing
+              });
+            }
           });
-        }
-      });
+        });
 
-      // Sort by date (newest first)
-      setActionItems(actions.sort((a, b) => new Date(b.date) - new Date(a.date)));
+        // 2. Incoming Offers on my Buy Posts
+        const buyListings = buyRes.data.data || [];
+        buyListings.forEach(listing => {
+          const offers = listing.offers || [];
+          offers.forEach(offer => {
+            if (offer.status === 'pending') {
+              actions.push({
+                type: 'offer_received',
+                id: offer._id,
+                listingId: listing._id,
+                company: listing.companyName,
+                logo: listing.companyId?.logo || listing.companyId?.Logo,
+                price: offer.price,
+                quantity: offer.quantity,
+                user: offer.userId?.username,
+                date: offer.createdAt,
+                originalListing: listing
+              });
+            }
+          });
+        });
+
+        // 3. Counter Offers on my Bids/Offers
+        const myBids = myBidsRes.data.data || [];
+        myBids.forEach(activity => {
+          if (activity.status === 'countered' && activity.listing) {
+            actions.push({
+              type: 'counter_received',
+              id: activity._id,
+              listingId: activity.listing._id,
+              company: activity.listing.companyName,
+              logo: activity.listing.companyId?.logo || activity.listing.companyId?.Logo,
+              price: activity.price, // Counter price
+              quantity: activity.quantity,
+              user: 'Seller', // Usually the owner
+              date: activity.updatedAt,
+              originalListing: activity.listing
+            });
+          }
+        });
+
+        // Sort by date (newest first) and set action items
+        console.log('🎯 Action Items Count:', actions.length);
+        setActionItems(actions.sort((a, b) => new Date(b.date) - new Date(a.date)));
+      } catch (actionError) {
+        console.error('Failed to fetch action items:', actionError);
+        // Don't fail the entire fetch if action items fail
+        setActionItems([]);
+      }
 
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
       hideLoader();
