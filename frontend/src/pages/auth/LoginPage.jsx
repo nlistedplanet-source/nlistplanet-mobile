@@ -123,7 +123,10 @@ const LoginPage = () => {
 
       if (result.success) {
         haptic.success();
-        navigate('/');
+        // Small delay to ensure token is fully set in localStorage before navigation
+        setTimeout(() => {
+          navigate('/');
+        }, 100);
       } else {
         haptic.error();
         // Check if error is about email verification

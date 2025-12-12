@@ -46,15 +46,25 @@ const HomePage = () => {
 
   // Fetch data when auth is ready and user is authenticated
   useEffect(() => {
-    const token = storage.get('token');
+    const fetchDataIfReady = () => {
+      const token = storage.get('token');
+      
+      // Only fetch if we have both user context AND token in storage
+      if (!authLoading && user && token) {
+        console.log('🚀 Fetching dashboard data - Auth ready, User:', user.username, 'Token exists:', !!token);
+        fetchData();
+      } else {
+        console.log('⏳ Waiting for auth - AuthLoading:', authLoading, 'User:', !!user, 'Token:', !!token);
+        
+        // If auth is ready but no token, retry after a short delay
+        if (!authLoading && user && !token) {
+          console.log('🔄 Retrying token check in 200ms...');
+          setTimeout(fetchDataIfReady, 200);
+        }
+      }
+    };
     
-    // Only fetch if we have both user context AND token in storage
-    if (!authLoading && user && token) {
-      console.log('🚀 Fetching dashboard data - Auth ready, User:', user.username, 'Token exists:', !!token);
-      fetchData();
-    } else {
-      console.log('⏳ Waiting for auth - AuthLoading:', authLoading, 'User:', !!user, 'Token:', !!token);
-    }
+    fetchDataIfReady();
   }, [authLoading, user]); // Wait for auth to initialize, then fetch when user is available
 
   const fetchData = async () => {

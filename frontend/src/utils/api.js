@@ -20,22 +20,34 @@ api.interceptors.request.use(
   (config) => {
     // Use storage.get to properly parse the JSON-stringified token
     const token = storage.get('token');
+    console.log('🔑 API Request Interceptor - Token exists:', !!token, 'URL:', config.url);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Token added to request:', token.substring(0, 20) + '...');
+    } else {
+      console.warn('⚠️ No token found in localStorage for request to:', config.url);
     }
     return config;
   },
   (error) => {
+    console.error('❌ Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
 
 // Response interceptor - Handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ API Response:', response.config.url, 'Status:', response.status);
+    return response;
+  },
   (error) => {
+    console.error('❌ API Error:', error.config?.url, 'Status:', error.response?.status);
+    console.error('Error details:', error.response?.data);
+    
     // Handle 401 - Token expired or invalid
     if (error.response?.status === 401) {
+      console.warn('🚫 401 Unauthorized - Clearing auth data');
       // Clear invalid token using storage helper
       storage.remove('token');
       storage.remove('user');
@@ -44,6 +56,7 @@ api.interceptors.response.use(
       const currentPath = window.location.pathname;
       const authPaths = ['/login', '/register', '/forgot-password', '/welcome', '/verify-email', '/verify-otp', '/check-email'];
       if (!authPaths.some(path => currentPath.startsWith(path))) {
+        console.log('🔄 Redirecting to login...');
         window.location.href = '/login';
       }
     }
