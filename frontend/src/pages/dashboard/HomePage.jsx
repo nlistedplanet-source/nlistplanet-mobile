@@ -457,88 +457,110 @@ const HomePage = () => {
             </button>
           </div>
           
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          {/* Individual Cards for each action item */}
+          <div className="space-y-3">
             {actionItems.map((item, index) => (
               <div 
-                key={index} 
-                onClick={() => navigate((item.type === 'counter_received') ? '/bids' : '/my-posts')}
-                className={`p-4 ${index !== actionItems.length - 1 ? 'border-b border-gray-100' : ''} active:bg-gray-50 transition-colors`}
+                key={index}
+                className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
               >
-                {/* Type Badge */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                    item.type === 'bid_received' ? 'bg-blue-50 text-blue-700' :
-                    item.type === 'offer_received' ? 'bg-green-50 text-green-700' :
-                    'bg-orange-50 text-orange-700'
-                  }`}>
-                    {item.type === 'bid_received' ? <TrendingDown size={14} /> :
-                     item.type === 'offer_received' ? <TrendingUp size={14} /> :
-                     <Activity size={14} />}
-                    {item.type === 'counter_received' ? 'Counter Offer' : 
-                     item.type === 'bid_received' ? 'Bid Received' : 'Offer Received'}
-                  </div>
-                  <span className="text-xs text-gray-400">{timeAgo(item.date)}</span>
+                {/* Table Header */}
+                <div className="grid grid-cols-5 gap-2 bg-slate-50 px-3 py-2 border-b border-slate-200">
+                  <div className="text-[10px] font-bold text-gray-600 uppercase">Type</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase">Company</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Your Price</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Offer Price</div>
+                  <div className="text-[10px] font-bold text-gray-600 uppercase text-center">Actions</div>
                 </div>
-
-                {/* Company Info */}
-                <div className="mb-3">
-                  <h4 className="font-bold text-gray-900 text-sm mb-1">{item.company}</h4>
-                  <p className="text-xs text-gray-500">Quantity: {item.quantity?.toLocaleString('en-IN')} shares</p>
-                </div>
-
-                {/* Price Comparison */}
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div className="bg-gray-50 rounded-lg p-2.5">
-                    <p className="text-xs text-gray-500 mb-0.5">Your Price</p>
-                    <p className="text-sm font-bold text-gray-900">
-                      {formatCurrency(item.originalListing?.price || item.price)}
-                    </p>
+                
+                {/* Table Data Row */}
+                <div className="grid grid-cols-5 gap-2 px-3 py-3 items-center">
+                  {/* Type Column */}
+                  <div className="flex flex-col">
+                    <div className={`inline-flex items-center justify-center gap-1 p-1.5 rounded-lg text-[10px] font-semibold mb-1 ${
+                      item.type === 'bid_received' ? 'bg-blue-50 text-blue-700' :
+                      item.type === 'offer_received' ? 'bg-green-50 text-green-700' :
+                      'bg-orange-50 text-orange-700'
+                    }`}>
+                      {item.type === 'bid_received' ? <TrendingDown size={12} /> :
+                       item.type === 'offer_received' ? <TrendingUp size={12} /> :
+                       <Activity size={12} />}
+                      <span className="hidden sm:inline">
+                        {item.type === 'counter_received' ? 'Counter' : 
+                         item.type === 'bid_received' ? 'Bid In' : 'Offer In'}
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-gray-400">{timeAgo(item.date)}</span>
                   </div>
-                  <div className="bg-blue-50 rounded-lg p-2.5">
-                    <p className="text-xs text-blue-600 mb-0.5">
-                      {item.type === 'bid_received' ? 'Bid' : 'Offer'} Price
-                    </p>
-                    <p className="text-sm font-bold text-blue-700">
-                      {formatCurrency(item.price)}
-                    </p>
+                  
+                  {/* Company Column */}
+                  <div className="flex flex-col min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      {item.logo && (
+                        <img src={item.logo} alt="" className="w-5 h-5 rounded object-cover" />
+                      )}
+                      <span className="text-xs font-bold text-gray-900 truncate">{item.company}</span>
+                    </div>
+                    <span className="text-[9px] text-gray-500">Qty: {item.quantity?.toLocaleString('en-IN')}</span>
                   </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      haptic.medium();
-                      // Handle accept
-                      navigate('/my-posts');
-                    }}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
-                  >
-                    Accept
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      haptic.light();
-                      // Handle reject
-                      navigate('/my-posts');
-                    }}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
-                  >
-                    Reject
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      haptic.light();
-                      // Handle counter
-                      navigate('/my-posts');
-                    }}
-                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2.5 rounded-lg active:scale-95 transition-transform"
-                  >
-                    Counter
-                  </button>
+                  
+                  {/* Your Price Column */}
+                  <div className="text-center">
+                    <div className="text-[10px] text-gray-500 mb-0.5">Your Price</div>
+                    <div className="text-xs font-bold text-purple-600">{formatCurrency(item.originalListing?.price || item.price)}</div>
+                  </div>
+                  
+                  {/* Offer Price Column */}
+                  <div className="text-center">
+                    <div className="text-[10px] text-gray-500 mb-0.5">
+                      {item.type === 'bid_received' ? 'Bid @' : 'Offer @'}
+                    </div>
+                    <div className="text-xs font-bold text-blue-600">{formatCurrency(item.price)}</div>
+                  </div>
+                  
+                  {/* Actions Column */}
+                  <div className="flex flex-col gap-1">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        haptic.medium();
+                        navigate('/my-posts');
+                      }}
+                      className="bg-green-600 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        haptic.light();
+                        navigate('/my-posts');
+                      }}
+                      className="bg-red-600 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                    >
+                      Reject
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        haptic.light();
+                        navigate('/my-posts');
+                      }}
+                      className="bg-orange-500 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                    >
+                      Counter
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        haptic.light();
+                        navigate('/my-posts');
+                      }}
+                      className="bg-gray-900 text-white text-[10px] font-semibold px-2 py-1.5 rounded active:scale-95 transition-transform"
+                    >
+                      View
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
