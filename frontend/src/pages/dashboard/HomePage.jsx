@@ -26,6 +26,7 @@ import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBu
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
+import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
@@ -35,6 +36,8 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationDeal, setVerificationDeal] = useState(null);
   const [stats, setStats] = useState({
     totalValue: 0,
     totalInvested: 0,
@@ -257,11 +260,18 @@ const HomePage = () => {
   // Action Center handlers
   const handleAcceptAction = async (item) => {
     try {
-      await listingsAPI.acceptBid(item.listingId, item.id);
+      const response = await listingsAPI.acceptBid(item.listingId, item.id);
       toast.success('Bid/Offer accepted successfully! 🎉');
       haptic.success();
-      // Refresh data
-      await fetchData();
+      
+      // Check if deal is confirmed and has codes (Seller accepted)
+      if (response.data.deal && response.data.deal.status === 'confirmed') {
+        setVerificationDeal(response.data.deal);
+        setShowVerificationModal(true);
+      } else {
+        // Refresh data
+        await fetchData();
+      }
     } catch (error) {
       console.error('Failed to accept:', error);
       toast.error(error.response?.data?.message || 'Failed to accept. Please try again.');
@@ -727,6 +737,17 @@ const HomePage = () => {
         onSuccess={() => {
           setShowCreateModal(false);
           navigate('/marketplace');
+        }}
+      />
+
+      {/* Verification Codes Modal */}
+      <VerificationCodesModal 
+        isOpen={showVerificationModal}
+        deal={verificationDeal}
+        onClose={() => {
+          setShowVerificationModal(false);
+          setVerificationDeal(null);
+          fetchData(); // Refresh data to remove item from action center
         }}
       />
     </div>
