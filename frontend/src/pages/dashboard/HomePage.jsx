@@ -522,8 +522,8 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* Action Center - DISABLED TEMPORARILY */}
-      {false && <div className="px-5 mt-6">
+      {/* Action Center */}
+      <div className="px-5 mt-6">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-gray-900">Action Center</h3>
@@ -633,10 +633,10 @@ const HomePage = () => {
             <p className="text-xs text-gray-500 mt-1">No pending actions</p>
           </div>
         )}
-      </div>}
+      </div>
 
-      {/* Recent Activity - DISABLED TEMPORARILY */}
-      {false && <div className="px-5 mt-6 mb-6">
+      {/* Recent Activity */}
+      <div className="px-5 mt-6 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold text-gray-900">Recent Activity</h3>
           {activities.length > 0 && (
@@ -696,7 +696,7 @@ const HomePage = () => {
             <p className="text-xs text-gray-500">Your trading activity will appear here</p>
           </div>
         )}
-      </div>}
+      </div>
 
       {/* Empty State */}
       {holdings.length === 0 && (
