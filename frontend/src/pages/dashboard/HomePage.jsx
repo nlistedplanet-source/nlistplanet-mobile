@@ -35,7 +35,6 @@ const HomePage = () => {
   const { user, loading: authLoading } = useAuth();
   useDashboardTour();
   const { showLoader, hideLoader } = useLoader();
-  const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
