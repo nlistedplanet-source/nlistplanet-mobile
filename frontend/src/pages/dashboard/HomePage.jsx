@@ -481,6 +481,47 @@ const HomePage = () => {
         </div>
       </div>
 
+      {/* Pending Actions Notification */}
+      {actionItems.length > 0 && (
+        <div className="px-5 mt-6">
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 rounded-2xl p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Bell className="text-white" size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-gray-900 mb-1">
+                  {actionItems.length} Pending Action{actionItems.length > 1 ? 's' : ''}
+                </h3>
+                <p className="text-xs text-gray-600 mb-3">
+                  You have {actionItems.length} bid{actionItems.length > 1 ? 's' : ''}/offer{actionItems.length > 1 ? 's' : ''} waiting for your response.
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      haptic.light();
+                      navigate('/my-posts');
+                    }}
+                    className="bg-orange-500 text-white px-3 py-2 rounded-lg font-semibold text-xs flex-1"
+                  >
+                    View Posts
+                  </button>
+                  <button
+                    onClick={() => {
+                      haptic.light();
+                      navigate('/bids');
+                    }}
+                    className="bg-white text-orange-600 px-3 py-2 rounded-lg font-semibold text-xs flex-1 border border-orange-300"
+                  >
+                    View Bids
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Center - DISABLED TEMPORARILY */}
       {false && <div className="px-5 mt-6">
         <div className="flex items-center justify-between mb-3">
