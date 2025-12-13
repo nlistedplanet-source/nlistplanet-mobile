@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { TrendingUp, Shield, Zap, Users, ArrowRight, CheckCircle, Sparkles, Star, Building2, ChevronRight, Wallet, BarChart3, Globe, DollarSign, Clock, Lock, Menu, Download, Smartphone, X, Home, BookOpen, Info, Mail, Phone, HelpCircle, MoreHorizontal } from 'lucide-react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { companiesAPI } from '../utils/api';
 
 // Lottie animation URLs for center logo
 const LOTTIE_ANIMATIONS = [
@@ -144,14 +145,32 @@ const LandingPage = () => {
     }
   ];
 
-  const companies = [
-    { name: 'Razorpay', logo: 'https://logo.clearbit.com/razorpay.com' },
-    { name: 'Swiggy', logo: 'https://logo.clearbit.com/swiggy.com' },
-    { name: 'Zomato', logo: 'https://logo.clearbit.com/zomato.com' },
-    { name: 'PhonePe', logo: 'https://logo.clearbit.com/phonepe.com' },
-    { name: 'Zerodha', logo: 'https://logo.clearbit.com/zerodha.com' },
-    { name: 'BYJU\'S', logo: 'https://logo.clearbit.com/byjus.com' }
+  const defaultCompanies = [
+    { _id: 'def1', name: 'Razorpay', logo: 'https://logo.clearbit.com/razorpay.com' },
+    { _id: 'def2', name: 'Swiggy', logo: 'https://logo.clearbit.com/swiggy.com' },
+    { _id: 'def3', name: 'Zomato', logo: 'https://logo.clearbit.com/zomato.com' },
+    { _id: 'def4', name: 'PhonePe', logo: 'https://logo.clearbit.com/phonepe.com' },
+    { _id: 'def5', name: 'Zerodha', logo: 'https://logo.clearbit.com/zerodha.com' },
+    { _id: 'def6', name: 'BYJU\'S', logo: 'https://logo.clearbit.com/byjus.com' }
   ];
+
+  const [companies, setCompanies] = useState(defaultCompanies);
+
+  // Fetch companies from database
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        console.log('🔄 [LandingPage] Fetching companies...');
+        const response = await companiesAPI.getAll({ limit: 20 });
+        if (response.data.data && response.data.data.length > 0) {
+          setCompanies(response.data.data);
+        }
+      } catch (error) {
+        console.error('❌ [LandingPage] Failed to fetch companies:', error);
+      }
+    };
+    fetchCompanies();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-950 relative overflow-hidden">
@@ -345,21 +364,30 @@ const LandingPage = () => {
             Trade Shares of Top Companies
           </h3>
         </div>
-        <div className="overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-4">
-          <div className="flex gap-4 animate-scroll-mobile">
+        <div className="overflow-hidden rounded-2xl bg-gray-900/50 backdrop-blur-sm border border-gray-800 p-4 marquee-container">
+          <div className="flex gap-4 marquee-track">
             {[...companies, ...companies].map((company, index) => (
               <div
-                key={index}
+                key={`${company._id || index}-${index}`}
                 className="bg-gray-800/50 px-4 py-3 rounded-xl border border-gray-700/50 flex items-center gap-3 min-w-fit hover:bg-gray-800 hover:border-gray-600 transition-all"
               >
-                <img
-                  src={company.logo}
-                  alt={company.name}
-                  className="h-8 w-8 object-contain rounded-lg bg-white p-1"
-                  onError={(e) => {
-                    e.target.src = `https://ui-avatars.com/api/?name=${company.name}&background=random&size=32`;
-                  }}
-                />
+                {company.logo ? (
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-8 w-8 object-contain rounded-lg bg-white p-1"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="h-8 w-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                  style={{ display: company.logo ? 'none' : 'flex' }}
+                >
+                  {company.name?.substring(0, 2).toUpperCase()}
+                </div>
                 <span className="text-sm font-semibold text-gray-300 whitespace-nowrap">
                   {company.name}
                 </span>
@@ -367,6 +395,26 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
+        <style>{`
+          .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+          }
+          .marquee-track {
+            display: flex;
+            width: max-content;
+            animation: scroll 40s linear infinite;
+          }
+          .marquee-track:hover {
+            animation-play-state: paused;
+          }
+          @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
       </div>
 
       {/* Features Section */}
