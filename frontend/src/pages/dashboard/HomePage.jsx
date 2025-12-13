@@ -22,7 +22,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
-import { formatCurrency, formatPercentage, timeAgo, haptic, storage } from '../../utils/helpers';
+import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
@@ -189,20 +189,37 @@ const HomePage = () => {
         });
 
         // Counter Offers on my Bids
-        (myBidsRes.data.data || []).forEach(bid => {
-          if (bid.status === 'countered' && bid.listing) {
+        (myBidsRes.data.data || []).forEach(activity => {
+          if (activity.status === 'countered') {
+            const counterHistory = activity.counterHistory || [];
+            const latestCounter = counterHistory[counterHistory.length - 1];
+            const isBuyer = activity.type === 'bid';
+            
+            const rawListingPrice = activity.listing.listingPrice || activity.listing.price;
+            const listPrice = isBuyer 
+              ? calculateBuyerPays(rawListingPrice)
+              : calculateSellerGets(rawListingPrice);
+
+            let otherPrice = activity.price;
+            if (latestCounter) {
+              otherPrice = isBuyer 
+                ? calculateBuyerPays(latestCounter.price)
+                : calculateSellerGets(latestCounter.price);
+            }
+
             actions.push({
               type: 'counter_received',
-              id: bid._id,
-              listingId: bid.listing._id,
-              company: bid.listing.companyName,
-              companySymbol: bid.listing.companyId?.scriptName || bid.listing.companyId?.ScripName || bid.listing.companyId?.symbol || bid.listing.companyName,
-              logo: bid.listing.companyId?.logo || bid.listing.companyId?.Logo,
-              yourPrice: bid.price,
-              counterPrice: bid.counterPrice || bid.listing.price,
-              quantity: bid.quantity,
-              user: 'Seller',
-              date: bid.updatedAt
+              id: activity._id,
+              listingId: activity.listing._id,
+              company: activity.listing.companyName,
+              companySymbol: activity.listing.companyId?.scriptName || activity.listing.companyId?.ScripName || activity.listing.companyId?.symbol || activity.listing.companyName,
+              logo: activity.listing.companyId?.logo || activity.listing.companyId?.Logo,
+              yourPrice: activity.originalPrice || activity.price,
+              counterPrice: otherPrice,
+              quantity: activity.quantity,
+              user: activity.listing.userId?.username || 'Seller',
+              date: activity.createdAt,
+              isBuyer: isBuyer
             });
           }
         });
@@ -455,9 +472,13 @@ const HomePage = () => {
                 {/* Header */}
                 <div className="grid grid-cols-5 bg-slate-50 border-b border-slate-200">
                   <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Type</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Script</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Your Price</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Offer</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Company</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Your Bid</div>
+                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">
+                    {item.type === 'counter_received' 
+                      ? (item.isBuyer ? 'Seller' : 'Buyer')
+                      : (item.type === 'bid_received' ? 'Buyer' : 'Seller')}
+                  </div>
                   <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center">Actions</div>
                 </div>
                 
@@ -472,18 +493,18 @@ const HomePage = () => {
                     <p className="text-[8px] text-gray-400 mt-0.5">{timeAgo(item.date)}</p>
                   </div>
                   
-                  {/* Script (No Logo) */}
+                  {/* Company (No Logo) */}
                   <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center min-w-0">
                     <p className="text-[10px] font-bold text-gray-900 truncate w-full">{item.companySymbol}</p>
                     <p className="text-[8px] text-gray-500 mt-0.5">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
                   </div>
                   
-                  {/* Your Price */}
+                  {/* Your Bid */}
                   <div className="p-2 border-r border-slate-200 flex items-center justify-center">
                     <p className="text-[10px] font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
                   </div>
                   
-                  {/* Offer Price */}
+                  {/* Seller/Buyer Price */}
                   <div className="p-2 border-r border-slate-200 flex items-center justify-center">
                     <p className="text-[10px] font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
                   </div>
