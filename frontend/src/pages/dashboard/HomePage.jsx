@@ -254,6 +254,46 @@ const HomePage = () => {
     haptic.success();
   };
 
+  // Action Center handlers
+  const handleAcceptAction = async (item) => {
+    try {
+      await listingsAPI.acceptBid(item.listingId, item.id);
+      toast.success('Bid/Offer accepted successfully! 🎉');
+      haptic.success();
+      // Refresh data
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to accept:', error);
+      toast.error(error.response?.data?.message || 'Failed to accept. Please try again.');
+      haptic.error();
+    }
+  };
+
+  const handleRejectAction = async (item) => {
+    try {
+      await listingsAPI.rejectBid(item.listingId, item.id);
+      toast.success('Bid/Offer rejected');
+      haptic.success();
+      // Refresh data
+      await fetchData();
+    } catch (error) {
+      console.error('Failed to reject:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject. Please try again.');
+      haptic.error();
+    }
+  };
+
+  const handleCounterAction = (item) => {
+    // Navigate to the appropriate page where user can counter
+    haptic.light();
+    if (item.type === 'counter_received') {
+      navigate('/bids');
+    } else {
+      navigate('/my-posts');
+    }
+    toast.info('Please counter the offer in the detailed view');
+  };
+
   // Get initials for avatar
   const getInitials = (name) => {
     if (!name) return 'U';
@@ -513,25 +553,28 @@ const HomePage = () => {
                   <div className="p-1.5 flex items-center justify-center">
                     <div className="grid grid-cols-2 gap-1 w-full">
                       <button 
-                        onClick={() => navigate('/my-posts')}
+                        onClick={() => handleAcceptAction(item)}
                         className="bg-green-100 text-green-700 p-1 rounded flex items-center justify-center"
                       >
                         <CheckCircle size={12} strokeWidth={2.5} />
                       </button>
                       <button 
-                        onClick={() => navigate('/my-posts')}
+                        onClick={() => handleRejectAction(item)}
                         className="bg-red-100 text-red-700 p-1 rounded flex items-center justify-center"
                       >
                         <XCircle size={12} strokeWidth={2.5} />
                       </button>
                       <button 
-                        onClick={() => navigate('/my-posts')}
+                        onClick={() => handleCounterAction(item)}
                         className="bg-orange-100 text-orange-700 p-1 rounded flex items-center justify-center"
                       >
                         <RotateCcw size={12} strokeWidth={2.5} />
                       </button>
                       <button 
-                        onClick={() => navigate(item.type === 'counter_received' ? '/bids' : '/my-posts')}
+                        onClick={() => {
+                          haptic.light();
+                          navigate(item.type === 'counter_received' ? '/bids' : '/my-posts');
+                        }}
                         className="bg-gray-100 text-gray-700 p-1 rounded flex items-center justify-center"
                       >
                         <Eye size={12} strokeWidth={2.5} />
