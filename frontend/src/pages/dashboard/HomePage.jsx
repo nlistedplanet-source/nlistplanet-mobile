@@ -27,11 +27,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
 import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
+import { useDashboardTour } from '../../components/TourGuide';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  useDashboardTour();
+  const { showLoader, hideLoader } = useLoader();
   const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -346,7 +349,7 @@ const HomePage = () => {
         </div>
 
         {/* Portfolio Value Card */}
-        <div className="bg-white rounded-3xl p-5 shadow-xl shadow-slate-200/50 border border-slate-200">
+        <div id="mobile-portfolio-card" className="bg-white rounded-3xl p-5 shadow-xl shadow-slate-200/50 border border-slate-200">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -384,7 +387,7 @@ const HomePage = () => {
       </div>
 
       {/* Quick Stats Cards */}
-      <div className="px-5 -mt-4">
+      <div id="mobile-quick-stats" className="px-5 -mt-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
             <div className="flex items-center gap-3">
@@ -413,7 +416,7 @@ const HomePage = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="px-5 mt-6">
+      <div id="mobile-quick-actions" className="px-5 mt-6">
         <h3 className="text-base font-bold text-gray-900 mb-3">Quick Actions</h3>
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -447,7 +450,7 @@ const HomePage = () => {
       </div>
 
       {/* My Activity Section */}
-      <div className="px-5 mt-6">
+      <div id="mobile-activity-grid" className="px-5 mt-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold text-gray-900">My Activity</h3>
           <button 
