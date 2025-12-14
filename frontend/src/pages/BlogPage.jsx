@@ -87,8 +87,7 @@ const BlogPage = () => {
     const date = new Date(dateString);
     const day = date.getDate();
     const month = date.toLocaleDateString('en-IN', { month: 'short' });
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${day} ${month}`;
   };
 
   const getCategoryColor = (category) => {
@@ -203,7 +202,7 @@ const BlogPage = () => {
         onTouchEnd={handleTouchEnd}
       >
         {currentArticle && (
-          <div className="h-full w-full flex flex-col p-5 py-8">
+          <div className="h-full w-full flex flex-col px-0 py-4 pb-12">
             <div className="h-full flex flex-col border border-gray-800 rounded-xl overflow-hidden bg-gray-900 shadow-lg">
             {/* Image Section - Clean (No Badges) */}
             <div className={`h-[25%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
@@ -238,34 +237,37 @@ const BlogPage = () => {
                   </div>
                 )}
 
-                {/* Bottom Card Footer - Date, Source (Clickable), Category */}
+                {/* Bottom Card Footer - Date, Segment Tag, Source */}
                 <div className="pt-2.5 border-t border-gray-800 flex-shrink-0">
-                  <div className="flex items-center justify-between gap-2">
-                    {/* Left: Date & Source (Clickable) */}
-                    <div className="flex items-center gap-2 text-gray-500 text-[10px]">
-                      <div className="flex items-center gap-1">
-                        <Calendar size={10} />
-                        <span>{formatDate(currentArticle.publishedAt)}</span>
-                      </div>
-                      <span className="text-gray-700">•</span>
-                      {currentArticle.sourceUrl ? (
-                        <a
-                          href={currentArticle.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors"
-                        >
-                          {currentArticle.sourceName}
-                        </a>
-                      ) : (
-                        <span>{currentArticle.sourceName}</span>
-                      )}
+                  <div className="flex items-center gap-2 text-[10px]">
+                    {/* Date */}
+                    <div className="flex items-center gap-1 text-gray-500">
+                      <Calendar size={10} />
+                      <span>{formatDate(currentArticle.publishedAt)}</span>
                     </div>
                     
-                    {/* Right: Category Tag */}
+                    <span className="text-gray-700">•</span>
+                    
+                    {/* Category Tag */}
                     <span className={`px-2 py-0.5 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-[9px] font-bold rounded-md`}>
                       {currentArticle.category}
                     </span>
+                    
+                    <span className="text-gray-700">•</span>
+                    
+                    {/* Source (Clickable, No Underline) */}
+                    {currentArticle.sourceUrl ? (
+                      <a
+                        href={currentArticle.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        {currentArticle.sourceName}
+                      </a>
+                    ) : (
+                      <span className="text-gray-500">{currentArticle.sourceName}</span>
+                    )}
                   </div>
                 </div>
               </div>
