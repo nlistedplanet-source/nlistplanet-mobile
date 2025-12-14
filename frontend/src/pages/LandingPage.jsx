@@ -78,12 +78,23 @@ const LandingPage = () => {
     }
 
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setShowInstallBanner(false);
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+          setDeferredPrompt(null);
+          setShowInstallBanner(false);
+        } else {
+          console.log('User dismissed the install prompt');
+        }
+      } catch (error) {
+        console.error('Install prompt error:', error);
       }
+    } else {
+      // Show floating banner if not available yet
+      console.log('Install prompt not available. deferredPrompt:', deferredPrompt);
+      setShowInstallBanner(true);
     }
   };
   
