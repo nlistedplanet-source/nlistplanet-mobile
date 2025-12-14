@@ -716,28 +716,6 @@ const HomePage = () => {
         )}
       </div>
 
-      {/* Empty State */}
-      {holdings.length === 0 && (
-        <div className="px-5 mt-8 text-center">
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-10 h-10 text-blue-600" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Activity Yet</h3>
-            <p className="text-gray-500 mb-6 text-sm">
-              Start trading to see your portfolio and activity here
-            </p>
-            <button
-              onClick={() => navigate('/marketplace')}
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-blue-200/50 inline-flex items-center gap-2"
-            >
-              Browse Marketplace
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Create Listing Modal */}
       <CreateListingModal 
         isOpen={showCreateModal}
