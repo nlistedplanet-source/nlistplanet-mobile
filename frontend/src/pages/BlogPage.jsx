@@ -204,8 +204,8 @@ const BlogPage = () => {
       >
         {currentArticle && (
           <div className="h-full flex flex-col">
-            {/* Image Section - Top Half */}
-            <div className={`h-[42%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)}`}>
+            {/* Image Section - Inshorts Style (50% height) */}
+            <div className={`h-[50%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)}`}>
               {currentArticle.thumbnail ? (
                 <img
                   src={currentArticle.thumbnail}
@@ -217,112 +217,112 @@ const BlogPage = () => {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen className="w-20 h-20 text-white/20" />
+                  <BookOpen className="w-16 h-16 text-white/20" />
                 </div>
               )}
               
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/20 to-transparent"></div>
+              {/* Gradient overlay - lighter for better image visibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
               
-              {/* Category Badge */}
-              <div className="absolute top-3 left-3">
-                <span className={`px-3 py-1.5 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-xs font-bold rounded-full shadow-lg`}>
+              {/* Category Badge - Smaller, top-left */}
+              <div className="absolute top-2.5 left-2.5">
+                <span className={`px-2.5 py-1 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-[10px] font-bold rounded-full shadow-lg`}>
                   {currentArticle.category}
                 </span>
               </div>
 
-              {/* Source Badge */}
-              <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg">
-                <span className="text-white text-[10px] font-medium">{currentArticle.sourceName}</span>
+              {/* Source Badge - Compact */}
+              <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md">
+                <span className="text-white text-[9px] font-semibold">{currentArticle.sourceName}</span>
               </div>
 
-              {/* Navigation Arrows */}
-              <div className="absolute right-3 bottom-3 flex flex-col gap-1">
+              {/* Navigation Arrows - Smaller */}
+              <div className="absolute right-2.5 bottom-2.5 flex flex-col gap-1">
                 <button
                   onClick={goToPrev}
                   disabled={currentIndex === 0}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
                     currentIndex === 0 
                       ? 'bg-black/30 text-gray-500' 
-                      : 'bg-black/60 text-white'
+                      : 'bg-black/70 text-white backdrop-blur-sm'
                   }`}
                 >
-                  <ChevronUp size={18} />
+                  <ChevronUp size={16} />
                 </button>
                 <button
                   onClick={goToNext}
                   disabled={currentIndex === news.length - 1}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
                     currentIndex === news.length - 1 
                       ? 'bg-black/30 text-gray-500' 
-                      : 'bg-black/60 text-white'
+                      : 'bg-black/70 text-white backdrop-blur-sm'
                   }`}
                 >
-                  <ChevronDown size={18} />
+                  <ChevronDown size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Content Section - Bottom Half */}
-            <div className="h-[58%] bg-gray-950 px-5 pt-4 pb-20 flex flex-col">
-              {/* Title */}
-              <h1 className="text-white font-bold text-[17px] leading-snug mb-4">
+            {/* Content Section - Inshorts Style (50% height) */}
+            <div className="h-[50%] bg-gray-950 px-4 pt-3 pb-20 flex flex-col">
+              {/* Headline - Inshorts Style (Bigger & Bold) */}
+              <h1 className="text-white font-bold text-[18px] leading-tight mb-3">
                 {currentArticle.title}
               </h1>
 
-              {/* Hindi Summary (Inshorts Style) */}
+              {/* Hindi Summary - Prominent (Inshorts main content) */}
               {currentArticle.hindiSummary && (
-                <div className="mb-4 pb-4 border-b border-gray-800">
-                  <p className="text-gray-200 text-[15px] leading-relaxed font-hindi">
+                <div className="mb-3">
+                  <p className="text-gray-100 text-[15px] leading-[1.65] font-hindi">
                     {currentArticle.hindiSummary}
                   </p>
                 </div>
               )}
 
-              {/* English Summary - scrollable */}
-              <div className="flex-1 overflow-y-auto pr-1 mb-3">
-                <p className="text-gray-400 text-[14px] leading-relaxed">
+              {/* English Summary - Smaller, secondary */}
+              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent mb-2">
+                <p className="text-gray-500 text-[13px] leading-relaxed">
                   {currentArticle.summary}
                 </p>
               </div>
 
-              {/* Bottom Bar - Date & Actions */}
-              <div className="pt-3 border-t border-gray-800">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-gray-500 text-xs">
-                    <Calendar size={14} />
+              {/* Bottom Actions - Compact */}
+              <div className="pt-2.5 border-t border-gray-800/50">
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-1.5 text-gray-600 text-[11px]">
+                    <Calendar size={12} />
                     <span>{formatDate(currentArticle.publishedAt)}</span>
                   </div>
                   
                   <button
                     onClick={() => handleShare(currentArticle)}
-                    className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
+                    className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
                   >
-                    <Share2 size={16} />
+                    <Share2 size={14} />
                   </button>
                 </div>
 
-                {/* Source Link Button - Full Width */}
+                {/* Source Button - Inshorts Green Style */}
                 {currentArticle.sourceUrl && (
                   <a
                     href={currentArticle.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 text-white rounded-xl font-medium text-sm active:scale-[0.98] transition-transform"
+                    className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-500 text-white rounded-lg font-semibold text-[13px] active:scale-[0.98] transition-transform shadow-lg"
                   >
                     <span>पूरी खबर पढ़ें - {currentArticle.sourceName}</span>
-                    <ExternalLink size={16} />
+                    <ExternalLink size={14} />
                   </a>
                 )}
               </div>
             </div>
 
-            {/* Swipe Hint - Only show on first article */}
+            {/* Swipe Hint - Inshorts Style */}
             {currentIndex === 0 && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 animate-bounce">
-                <div className="bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
-                  <ChevronUp size={16} className="text-emerald-400" />
-                  <span className="text-gray-300 text-xs font-medium">Swipe up for next</span>
+              <div className="absolute bottom-[88px] left-1/2 -translate-x-1/2 animate-bounce">
+                <div className="bg-emerald-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-500/30">
+                  <ChevronUp size={14} className="text-emerald-400" />
+                  <span className="text-emerald-400 text-[11px] font-semibold">ऊपर स्वाइप करें</span>
                 </div>
               </div>
             )}
