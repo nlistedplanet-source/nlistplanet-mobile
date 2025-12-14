@@ -203,7 +203,7 @@ const BlogPage = () => {
         onTouchEnd={handleTouchEnd}
       >
         {currentArticle && (
-          <div className="h-full w-full flex flex-col p-3">
+          <div className="h-full w-full flex flex-col p-5 py-8">
             <div className="h-full flex flex-col border border-gray-800 rounded-xl overflow-hidden bg-gray-900 shadow-lg">
             {/* Image Section - Clean (No Badges) */}
             <div className={`h-[25%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
@@ -232,7 +232,7 @@ const BlogPage = () => {
                 {/* Hindi News - Full Content Scrollable */}
                 {currentArticle.hindiSummary && (
                   <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                    <p className="text-gray-100 text-[15px] leading-[1.65] font-hindi">
+                    <p className="text-gray-100 text-[17px] leading-[1.7] font-hindi font-medium">
                       {currentArticle.hindiSummary}
                     </p>
                   </div>
