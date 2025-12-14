@@ -264,47 +264,56 @@ const BlogPage = () => {
             </div>
 
             {/* Content Section - Bottom Half */}
-            <div className="h-[58%] bg-gray-950 px-5 pt-3 pb-20 flex flex-col">
+            <div className="h-[58%] bg-gray-950 px-5 pt-4 pb-20 flex flex-col">
               {/* Title */}
-              <h1 className="text-white font-bold text-lg leading-snug mb-3">
+              <h1 className="text-white font-bold text-[17px] leading-snug mb-4">
                 {currentArticle.title}
               </h1>
 
-              {/* Summary - scrollable */}
-              <div className="flex-1 overflow-y-auto pr-1">
-                <p className="text-gray-300 text-[15px] leading-relaxed">
+              {/* Hindi Summary (Inshorts Style) */}
+              {currentArticle.hindiSummary && (
+                <div className="mb-4 pb-4 border-b border-gray-800">
+                  <p className="text-gray-200 text-[15px] leading-relaxed font-hindi">
+                    {currentArticle.hindiSummary}
+                  </p>
+                </div>
+              )}
+
+              {/* English Summary - scrollable */}
+              <div className="flex-1 overflow-y-auto pr-1 mb-3">
+                <p className="text-gray-400 text-[14px] leading-relaxed">
                   {currentArticle.summary}
                 </p>
               </div>
 
-              {/* Bottom Bar - Date & Source */}
-              <div className="mt-3 pt-3 border-t border-gray-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <span>📅</span>
+              {/* Bottom Bar - Date & Actions */}
+              <div className="pt-3 border-t border-gray-800">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-gray-500 text-xs">
+                    <Calendar size={14} />
                     <span>{formatDate(currentArticle.publishedAt)}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleShare(currentArticle)}
-                      className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
-                    >
-                      <Share2 size={16} />
-                    </button>
-                    {currentArticle.sourceUrl && (
-                      <a
-                        href={currentArticle.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 text-sm font-medium"
-                      >
-                        {currentArticle.sourceName || 'Source'}
-                        <ExternalLink size={14} />
-                      </a>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => handleShare(currentArticle)}
+                    className="w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
+                  >
+                    <Share2 size={16} />
+                  </button>
                 </div>
+
+                {/* Source Link Button - Full Width */}
+                {currentArticle.sourceUrl && (
+                  <a
+                    href={currentArticle.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 text-white rounded-xl font-medium text-sm active:scale-[0.98] transition-transform"
+                  >
+                    <span>पूरी खबर पढ़ें - {currentArticle.sourceName}</span>
+                    <ExternalLink size={16} />
+                  </a>
+                )}
               </div>
             </div>
 
