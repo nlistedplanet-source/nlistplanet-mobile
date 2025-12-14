@@ -570,13 +570,14 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {listing.companyId && (
                 <button
                   onClick={() => {
-                    const details = `
-Company: ${listing.companyName || 'N/A'}
-Sector: ${listing.companyId?.sector || 'N/A'}
-ISIN: ${listing.companyId?.isin || 'N/A'}
-PAN: ${listing.companyId?.pan || 'N/A'}
-CIN: ${listing.companyId?.cin || 'N/A'}
-                    `.trim();
+                    const parts = [
+                      `Company: ${listing.companyName || 'N/A'}`,
+                      `Sector: ${listing.companyId?.sector || 'N/A'}`
+                    ];
+                    if (listing.companyId?.isin) parts.push(`ISIN: ${listing.companyId.isin}`);
+                    if (listing.companyId?.pan) parts.push(`PAN: ${listing.companyId.pan}`);
+                    if (listing.companyId?.cin) parts.push(`CIN: ${listing.companyId.cin}`);
+                    const details = parts.join('\n');
                     haptic.light();
                     toast(details, { duration: 4000 });
                   }}
