@@ -305,12 +305,12 @@ const BlogPage = () => {
                     
                     <button
                       onClick={() => handleShare(currentArticle)}
-                      class*/}
-            {currentIndex === 0 && (
-              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 animate-bounce">
-                <div className="bg-emerald-500/20 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-500/30">
-                  <ChevronUp size={12} className="text-emerald-400" />
-                  <span className="text-emerald-400 text-[10
+                      className="w-7 h-7 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
+                    >
+                      <Share2 size={13} />
+                    </button>
+                  </div>
+
                   {/* Source Button */}
                   {currentArticle.sourceUrl && (
                     <a
@@ -324,6 +324,18 @@ const BlogPage = () => {
                     </a>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* Swipe Hint */}
+            {currentIndex === 0 && (
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 animate-bounce">
+                <div className="bg-emerald-500/20 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-500/30">
+                  <ChevronUp size={12} className="text-emerald-400" />
+                  <span className="text-emerald-400 text-[10px] font-semibold">ऊपर स्वाइप करें</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
