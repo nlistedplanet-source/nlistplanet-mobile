@@ -466,35 +466,49 @@ const HomePage = () => {
           </button>
         </div>
         
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <button
             onClick={() => navigate('/my-posts')}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center"
+            className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center"
           >
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <img src="/Post_icon.png" alt="My Posts" className="w-6 h-6 object-contain" />
             </div>
-            <p className="text-xs font-semibold text-gray-900">My Posts</p>
+            <p className="text-lg font-bold text-gray-900">{stats.activeListings || 0}</p>
+            <p className="text-[10px] font-medium text-gray-600 mt-0.5">My Posts</p>
           </button>
           
           <button
             onClick={() => navigate('/bids')}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center"
+            className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center"
           >
             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <img src="/Bids.png" alt="My Bids" className="w-6 h-6 object-contain" />
             </div>
-            <p className="text-xs font-semibold text-gray-900">My Bids</p>
+            <p className="text-lg font-bold text-gray-900">{holdings.length || 0}</p>
+            <p className="text-[10px] font-medium text-gray-600 mt-0.5">My Bids</p>
           </button>
           
           <button
-            onClick={() => navigate('/offers')}
-            className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 text-center"
+            onClick={() => navigate('/my-posts')}
+            className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center"
           >
             <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Activity className="w-5 h-5 text-orange-600" />
+              <Bell className="w-5 h-5 text-orange-600" />
             </div>
-            <p className="text-xs font-semibold text-gray-900">Received</p>
+            <p className="text-lg font-bold text-gray-900">{actionItems.length || 0}</p>
+            <p className="text-[10px] font-medium text-gray-600 mt-0.5">Pending</p>
+          </button>
+
+          <button
+            onClick={() => navigate('/profile')}
+            className="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 text-center"
+          >
+            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <Target className="w-5 h-5 text-emerald-600" />
+            </div>
+            <p className="text-lg font-bold text-gray-900">{user?.referralCount || 0}</p>
+            <p className="text-[10px] font-medium text-gray-600 mt-0.5">Referral</p>
           </button>
         </div>
       </div>
