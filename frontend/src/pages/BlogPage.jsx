@@ -253,18 +253,6 @@ const BlogPage = () => {
 
             {/* Content Section - With All Info */}
             <div className="h-[55%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
-              {/* Headline - Inshorts Style (Bigger & Bold) */}
-              <h1 className="text-white font-bold text-[18px] leading-tight mb-3">
-                {currentArticle.title}
-              </h1>
-
-              {/* Hindi Summary - Prominent (Inshorts main content) */}
-              {currentArticle.hindiSummary && (
-                <div className="mb-3">
-                  <p className="text-gray-100 text-[15px] leading-[1.65] font-hindi">
-                    {currentArticle.hindiSummary}
-                  </p>With All Info */}
-            <div className="h-[55%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
               <div className="px-3.5 pt-2.5 pb-16 flex flex-col h-full">
                 {/* Category & Source Row */}
                 <div className="flex items-center justify-between mb-2 flex-shrink-0">
