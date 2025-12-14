@@ -342,6 +342,23 @@ ${highlights.map(h => `✦ ${h}`).join('\n')}
 
 // My Post Card Component - Mobile Design with Counter Offers & Pending Bids sections
 const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onMarkSold, onRefresh }) => {
+  // Helper function to get proper logo URL
+  const getLogoUrl = (logo) => {
+    if (!logo) return null;
+    // If logo is already a full URL, return it
+    if (logo.startsWith('http://') || logo.startsWith('https://')) {
+      return logo;
+    }
+    // If logo is a relative path, construct full URL
+    if (logo.startsWith('/')) {
+      return `${window.location.origin}${logo}`;
+    }
+    // If logo is just a filename, assume it's in /images/logos/
+    return `${window.location.origin}/images/logos/${logo}`;
+  };
+
+  const logoUrl = getLogoUrl(listing.companyId?.Logo || listing.companyId?.logo);
+
   const [counterOffersExpanded, setCounterOffersExpanded] = useState(true);
   const [pendingBidsExpanded, setPendingBidsExpanded] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
@@ -523,17 +540,52 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
       {/* Company Info */}
       <div className="px-3 py-2 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-            isSell ? 'bg-red-50' : 'bg-green-50'
-          }`}>
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt={listing.companyId?.scriptName || listing.companyName}
+              className="w-10 h-10 rounded-lg object-cover border border-purple-200 shadow-sm"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div 
+            className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+              isSell ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+            }`}
+            style={{ display: logoUrl ? 'none' : 'flex' }}
+          >
             <span className={`text-lg font-bold ${isSell ? 'text-red-600' : 'text-green-600'}`}>
-              {listing.companyName?.charAt(0) || 'C'}
+              {(listing.companyId?.scriptName || listing.companyName)?.charAt(0) || 'C'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-gray-900 truncate">
-              {listing.companyId?.scriptName || listing.companyId?.name || listing.companyName || 'Unknown'}
-            </h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="text-sm font-bold text-gray-900 truncate">
+                {listing.companyId?.scriptName || listing.companyId?.name || listing.companyName || 'Unknown'}
+              </h3>
+              {listing.companyId && (
+                <button
+                  onClick={() => {
+                    const details = `
+Company: ${listing.companyName || 'N/A'}
+Sector: ${listing.companyId?.Sector || 'N/A'}
+ISIN: ${listing.companyId?.ISIN || 'N/A'}
+PAN: ${listing.companyId?.PAN || 'N/A'}
+CIN: ${listing.companyId?.CIN || 'N/A'}
+                    `.trim();
+                    haptic.light();
+                    toast(details, { duration: 4000 });
+                  }}
+                  className="flex-shrink-0"
+                >
+                  <Info size={14} className="text-blue-500" />
+                </button>
+              )}
+            </div>
             <p className="text-[10px] text-gray-500">
               {listing.companyId?.Sector || 'Unlisted Share'}
             </p>
