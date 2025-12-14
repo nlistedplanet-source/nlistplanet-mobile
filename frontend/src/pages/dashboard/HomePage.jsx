@@ -190,7 +190,27 @@ const HomePage = () => {
                 counterPrice: bid.price,
                 quantity: bid.quantity,
                 user: bid.userId?.username,
-                date: bid.createdAt
+                date: bid.createdAt,
+                status: bid.status
+              });
+            } else if (bid.status === 'accepted') {
+              // High priority: Deal accepted by one party, waiting for other
+              actions.push({
+                type: 'deal_accepted',
+                id: bid._id,
+                listingId: listing._id,
+                company: listing.companyName,
+                companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
+                logo: listing.companyId?.logo || listing.companyId?.Logo,
+                yourPrice: listing.price,
+                counterPrice: bid.price,
+                quantity: bid.quantity,
+                user: bid.userId?.username,
+                date: bid.createdAt,
+                status: bid.status,
+                priority: 'high',
+                buyerAcceptedAt: bid.buyerAcceptedAt,
+                sellerAcceptedAt: bid.sellerAcceptedAt
               });
             }
           });
@@ -211,7 +231,27 @@ const HomePage = () => {
                 counterPrice: offer.price,
                 quantity: offer.quantity,
                 user: offer.userId?.username,
-                date: offer.createdAt
+                date: offer.createdAt,
+                status: offer.status
+              });
+            } else if (offer.status === 'accepted') {
+              // High priority: Deal accepted by one party, waiting for other
+              actions.push({
+                type: 'deal_accepted',
+                id: offer._id,
+                listingId: listing._id,
+                company: listing.companyName,
+                companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
+                logo: listing.companyId?.logo || listing.companyId?.Logo,
+                yourPrice: listing.price,
+                counterPrice: offer.price,
+                quantity: offer.quantity,
+                user: offer.userId?.username,
+                date: offer.createdAt,
+                status: offer.status,
+                priority: 'high',
+                buyerAcceptedAt: offer.buyerAcceptedAt,
+                sellerAcceptedAt: offer.sellerAcceptedAt
               });
             }
           });
@@ -253,8 +293,14 @@ const HomePage = () => {
           }
         });
 
-        setActionItems(actions.sort((a, b) => new Date(b.date) - new Date(a.date)));
-        console.log('✅ Action items loaded:', actions.length);
+        // Sort: high priority (deal_accepted) first, then by date
+        const sortedActions = actions.sort((a, b) => {
+          if (a.priority === 'high' && b.priority !== 'high') return -1;
+          if (a.priority !== 'high' && b.priority === 'high') return 1;
+          return new Date(b.date) - new Date(a.date);
+        });
+        setActionItems(sortedActions);
+        console.log('✅ Action items loaded:', actions.length, '(High priority:', actions.filter(a => a.priority === 'high').length + ')');
       } catch (err) {
         console.error('Failed to load action items:', err);
         setActionItems([]);
@@ -287,15 +333,27 @@ const HomePage = () => {
   const handleAcceptAction = async (item) => {
     try {
       const response = await listingsAPI.acceptBid(item.listingId, item.id);
-      toast.success('Bid/Offer accepted successfully! 🎉');
-      haptic.success();
+      const status = response.data.status;
       
-      // Check if deal is confirmed and has codes (Seller accepted)
-      if (response.data.deal && response.data.deal.status === 'confirmed') {
-        setVerificationDeal(response.data.deal);
-        setShowVerificationModal(true);
+      if (status === 'confirmed') {
+        // Both parties accepted → Deal confirmed
+        toast.success('Deal confirmed! 🎉');
+        haptic.success();
+        
+        // Show verification codes modal
+        if (response.data.deal) {
+          setVerificationDeal(response.data.deal);
+          setShowVerificationModal(true);
+        }
+      } else if (status === 'accepted') {
+        // First acceptance → Waiting for other party
+        toast.success('Accepted! Waiting for other party to confirm. ⏳');
+        haptic.success();
+        await fetchData();
       } else {
-        // Refresh data
+        // Default success
+        toast.success(response.data.message || 'Accepted successfully! 🎉');
+        haptic.success();
         await fetchData();
       }
     } catch (error) {
@@ -577,6 +635,35 @@ const HomePage = () => {
         </div>
       )}
 
+      {/* High Priority Notification Banner */}
+      {actionItems.some(item => item.priority === 'high') && (
+        <div className="px-5 mt-6">
+          <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl p-4 text-white shadow-lg">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-bold text-base">🎉 Deal Accepted!</h3>
+                <p className="text-sm text-emerald-50 mt-0.5">
+                  You have {actionItems.filter(a => a.priority === 'high').length} mutually accepted {actionItems.filter(a => a.priority === 'high').length === 1 ? 'deal' : 'deals'} waiting for confirmation
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  haptic.light();
+                  const firstHighPriority = document.querySelector('[data-priority="high"]');
+                  if (firstHighPriority) {
+                    firstHighPriority.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+                className="bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 text-sm font-semibold"
+              >
+                View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Center */}
       <div className="px-5 mt-6">
         <div className="flex items-center justify-between mb-3">
@@ -603,81 +690,154 @@ const HomePage = () => {
             {actionItems.map((item) => (
               <div 
                 key={item.id}
-                className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"
+                data-priority={item.priority === 'high' ? 'high' : undefined}
+                className={`rounded-xl shadow-sm border overflow-hidden ${
+                  item.priority === 'high' 
+                    ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-300' 
+                    : 'bg-white border-slate-200'
+                }`}
               >
-                {/* Header */}
-                <div className="grid grid-cols-5 bg-slate-50 border-b border-slate-200">
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Type</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Company</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Your Bid</div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">
-                    {item.type === 'counter_received' 
-                      ? (item.isBuyer ? 'Seller' : 'Buyer')
-                      : (item.type === 'bid_received' ? 'Buyer' : 'Seller')}
-                  </div>
-                  <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center">Actions</div>
-                </div>
-                
-                {/* Data */}
-                <div className="grid grid-cols-5 items-stretch">
-                  {/* Type */}
-                  <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center">
-                    <p className="text-[10px] font-bold text-gray-900">
-                      {item.type === 'counter_received' ? 'Counter' : 
-                       item.type === 'bid_received' ? 'Bid In' : 'Offer In'}
-                    </p>
-                    <p className="text-[8px] text-gray-400 mt-0.5">{timeAgo(item.date)}</p>
-                  </div>
-                  
-                  {/* Company (No Logo) */}
-                  <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center min-w-0">
-                    <p className="text-[10px] font-bold text-gray-900 truncate w-full">{item.companySymbol}</p>
-                    <p className="text-[8px] text-gray-500 mt-0.5">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
-                  </div>
-                  
-                  {/* Your Bid */}
-                  <div className="p-2 border-r border-slate-200 flex items-center justify-center">
-                    <p className="text-[10px] font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
-                  </div>
-                  
-                  {/* Seller/Buyer Price */}
-                  <div className="p-2 border-r border-slate-200 flex items-center justify-center">
-                    <p className="text-[10px] font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
-                  </div>
-                  
-                  {/* Actions (2x2 Grid) */}
-                  <div className="p-1.5 flex items-center justify-center">
-                    <div className="grid grid-cols-2 gap-1 w-full">
-                      <button 
-                        onClick={() => handleAcceptAction(item)}
-                        className="bg-green-100 text-green-700 p-1 rounded flex items-center justify-center"
-                      >
-                        <CheckCircle size={12} strokeWidth={2.5} />
-                      </button>
-                      <button 
-                        onClick={() => handleRejectAction(item)}
-                        className="bg-red-100 text-red-700 p-1 rounded flex items-center justify-center"
-                      >
-                        <XCircle size={12} strokeWidth={2.5} />
-                      </button>
-                      <button 
-                        onClick={() => handleCounterAction(item)}
-                        className="bg-orange-100 text-orange-700 p-1 rounded flex items-center justify-center"
-                      >
-                        <RotateCcw size={12} strokeWidth={2.5} />
-                      </button>
-                      <button 
-                        onClick={() => {
-                          haptic.light();
-                          navigate(item.type === 'counter_received' ? '/bids' : '/my-posts');
-                        }}
-                        className="bg-gray-100 text-gray-700 p-1 rounded flex items-center justify-center"
-                      >
-                        <Eye size={12} strokeWidth={2.5} />
-                      </button>
+                {item.priority === 'high' ? (
+                  // High Priority: Deal Accepted Card
+                  <>
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-emerald-500 to-green-600 p-3">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-white" />
+                        <div>
+                          <h4 className="text-sm font-bold text-white">🎉 Deal Accepted!</h4>
+                          <p className="text-xs text-emerald-50">Both parties agreed - Confirm to finalize</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                    
+                    {/* Deal Details */}
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        {item.logo ? (
+                          <img src={item.logo} alt={item.company} className="w-12 h-12 rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
+                            <TrendingUp className="w-6 h-6 text-emerald-600" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-900">{item.companySymbol}</p>
+                          <p className="text-xs text-gray-600">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white rounded-lg p-3 border border-emerald-200">
+                          <p className="text-xs text-gray-600 mb-1">Your Price</p>
+                          <p className="text-sm font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
+                        </div>
+                        <div className="bg-white rounded-lg p-3 border border-emerald-200">
+                          <p className="text-xs text-gray-600 mb-1">Agreed Price</p>
+                          <p className="text-sm font-bold text-emerald-600">{formatCurrency(item.counterPrice)}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleAcceptAction(item)}
+                          className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2"
+                        >
+                          <CheckCircle size={16} />
+                          Confirm Deal
+                        </button>
+                        <button 
+                          onClick={() => {
+                            haptic.light();
+                            navigate('/bids');
+                          }}
+                          className="bg-white text-gray-700 px-4 py-2.5 rounded-lg font-semibold text-sm border border-gray-300 flex items-center justify-center"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
+                      
+                      <p className="text-xs text-gray-500 text-center">{timeAgo(item.date)}</p>
+                    </div>
+                  </>
+                ) : (
+                  // Regular Pending Action Card
+                  <>
+                    {/* Header */}
+                    <div className="grid grid-cols-5 bg-slate-50 border-b border-slate-200">
+                      <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Type</div>
+                      <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Company</div>
+                      <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">Your Bid</div>
+                      <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center border-r border-slate-200">
+                        {item.type === 'counter_received' 
+                          ? (item.isBuyer ? 'Seller' : 'Buyer')
+                          : (item.type === 'bid_received' ? 'Buyer' : 'Seller')}
+                      </div>
+                      <div className="text-[9px] font-bold text-gray-500 uppercase py-2 px-1 text-center">Actions</div>
+                    </div>
+                    
+                    {/* Data */}
+                    <div className="grid grid-cols-5 items-stretch">
+                      {/* Type */}
+                      <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center">
+                        <p className="text-[10px] font-bold text-gray-900">
+                          {item.type === 'counter_received' ? 'Counter' : 
+                           item.type === 'bid_received' ? 'Bid In' : 'Offer In'}
+                        </p>
+                        <p className="text-[8px] text-gray-400 mt-0.5">{timeAgo(item.date)}</p>
+                      </div>
+                      
+                      {/* Company (No Logo) */}
+                      <div className="p-2 border-r border-slate-200 flex flex-col justify-center items-center text-center min-w-0">
+                        <p className="text-[10px] font-bold text-gray-900 truncate w-full">{item.companySymbol}</p>
+                        <p className="text-[8px] text-gray-500 mt-0.5">Qty: {item.quantity?.toLocaleString('en-IN')}</p>
+                      </div>
+                      
+                      {/* Your Bid */}
+                      <div className="p-2 border-r border-slate-200 flex items-center justify-center">
+                        <p className="text-[10px] font-bold text-purple-600">{formatCurrency(item.yourPrice)}</p>
+                      </div>
+                      
+                      {/* Seller/Buyer Price */}
+                      <div className="p-2 border-r border-slate-200 flex items-center justify-center">
+                        <p className="text-[10px] font-bold text-blue-600">{formatCurrency(item.counterPrice)}</p>
+                      </div>
+                      
+                      {/* Actions (2x2 Grid) */}
+                      <div className="p-1.5 flex items-center justify-center">
+                        <div className="grid grid-cols-2 gap-1 w-full">
+                          <button 
+                            onClick={() => handleAcceptAction(item)}
+                            className="bg-green-100 text-green-700 p-1 rounded flex items-center justify-center"
+                          >
+                            <CheckCircle size={12} strokeWidth={2.5} />
+                          </button>
+                          <button 
+                            onClick={() => handleRejectAction(item)}
+                            className="bg-red-100 text-red-700 p-1 rounded flex items-center justify-center"
+                          >
+                            <XCircle size={12} strokeWidth={2.5} />
+                          </button>
+                          <button 
+                            onClick={() => handleCounterAction(item)}
+                            className="bg-orange-100 text-orange-700 p-1 rounded flex items-center justify-center"
+                          >
+                            <RotateCcw size={12} strokeWidth={2.5} />
+                          </button>
+                          <button 
+                            onClick={() => {
+                              haptic.light();
+                              navigate(item.type === 'counter_received' ? '/bids' : '/my-posts');
+                            }}
+                            className="bg-gray-100 text-gray-700 p-1 rounded flex items-center justify-center"
+                          >
+                            <Eye size={12} strokeWidth={2.5} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
           </div>
