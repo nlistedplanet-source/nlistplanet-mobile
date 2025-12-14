@@ -66,55 +66,65 @@ const InstallPrompt = () => {
   if (!showPrompt) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 z-50 animate-slide-up">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4">
+    <div className="fixed bottom-20 left-3 right-3 z-50 animate-slide-up">
+      <div className="relative bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-2xl shadow-2xl overflow-hidden">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 left-0 w-40 h-40 bg-white rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-white rounded-full blur-2xl animate-pulse delay-1000"></div>
+        </div>
+
+        {/* Close Button */}
         <button
           onClick={handleDismiss}
-          className="absolute top-3 right-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-2.5 right-2.5 p-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-all active:scale-90 z-10"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-            <Download className="w-6 h-6 text-white" />
-          </div>
+        {/* Content */}
+        <div className="relative p-4 pb-3">
+          <div className="flex items-center gap-3 mb-3">
+            {/* App Icon */}
+            <div className="flex-shrink-0 w-14 h-14 bg-white rounded-2xl shadow-lg flex items-center justify-center transform rotate-3 hover:rotate-0 transition-transform">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-xl flex items-center justify-center">
+                <Download className="w-7 h-7 text-white" />
+              </div>
+            </div>
 
-          <div className="flex-1 min-w-0 pr-6">
-            <h3 className="font-semibold text-gray-900 mb-1">
-              Install NlistPlanet
-            </h3>
-            <p className="text-sm text-gray-600 mb-3">
-              Add to your home screen for quick access and offline support
-            </p>
-
-            <div className="flex gap-2">
-              <button
-                onClick={handleInstall}
-                className="flex-1 bg-primary-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-primary-700 transition-colors active:scale-95"
-              >
-                Install App
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                Not Now
-              </button>
+            {/* Text Content */}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-white text-base mb-0.5 tracking-tight">
+                Install NlistPlanet App
+              </h3>
+              <p className="text-white/90 text-xs leading-relaxed">
+                Quick access, offline mode & instant updates
+              </p>
             </div>
           </div>
+
+          {/* Action Button */}
+          <button
+            onClick={handleInstall}
+            className="w-full bg-white text-emerald-600 rounded-xl px-4 py-2.5 font-bold text-sm hover:bg-white/95 transition-all active:scale-[0.98] shadow-lg flex items-center justify-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Install Now
+          </button>
         </div>
 
         {/* iOS Instructions */}
         {/iPhone|iPad|iPod/.test(navigator.userAgent) && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-500">
-              <span className="font-medium">On iOS:</span> Tap the Share button 
-              <svg className="inline w-3 h-3 mx-1" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
-              </svg>
-              and select "Add to Home Screen"
-            </p>
+          <div className="px-4 pb-3">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+              <p className="text-[10px] text-white/90 leading-relaxed">
+                <span className="font-semibold">iOS:</span> Tap Share 
+                <svg className="inline w-2.5 h-2.5 mx-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/>
+                </svg>
+                → Add to Home Screen
+              </p>
+            </div>
           </div>
         )}
       </div>
