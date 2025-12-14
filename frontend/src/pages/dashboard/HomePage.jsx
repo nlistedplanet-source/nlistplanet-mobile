@@ -100,21 +100,25 @@ const HomePage = () => {
       console.log('📡 Fetching dashboard data...');
       
       // Step 1: Fetch basic stats and portfolio data
-      const [statsRes, holdingsRes] = await Promise.all([
-        portfolioAPI.getStats(),
-        portfolioAPI.getHoldings(),
-      ]);
+      try {
+        const [statsRes, holdingsRes] = await Promise.all([
+          portfolioAPI.getStats().catch(err => { console.error('Stats API failed:', err); return { data: { data: {} } }; }),
+          portfolioAPI.getHoldings().catch(err => { console.error('Holdings API failed:', err); return { data: { data: [] } }; }),
+        ]);
 
-      const myActiveListings = holdingsRes.data.data || [];
-      
-      setStats({
-        ...(statsRes.data.data || {}),
-        activeListings: myActiveListings.length,
-        completedTrades: statsRes.data.data?.totalTransactions || 0
-      });
-      setHoldings(myActiveListings);
-      
-      console.log('✅ Stats and holdings loaded');
+        const myActiveListings = holdingsRes.data.data || [];
+        
+        setStats({
+          ...(statsRes.data.data || {}),
+          activeListings: myActiveListings.length,
+          completedTrades: statsRes.data.data?.totalTransactions || 0
+        });
+        setHoldings(myActiveListings);
+        
+        console.log('✅ Stats and holdings loaded');
+      } catch (err) {
+        console.error('Failed to load stats/holdings:', err);
+      }
 
       // Step 2: Fetch Recent Activities
       try {
@@ -147,10 +151,11 @@ const HomePage = () => {
 
       // Step 3: Fetch Action Items and Counts
       try {
+        console.log('📡 Fetching my listings and bids...');
         const [sellRes, buyRes, myBidsRes] = await Promise.all([
-          listingsAPI.getMyListings({ type: 'sell' }),
-          listingsAPI.getMyListings({ type: 'buy' }),
-          listingsAPI.getMyPlacedBids()
+          listingsAPI.getMyListings({ type: 'sell' }).catch(err => { console.error('Sell listings failed:', err); return { data: { data: [] } }; }),
+          listingsAPI.getMyListings({ type: 'buy' }).catch(err => { console.error('Buy listings failed:', err); return { data: { data: [] } }; }),
+          listingsAPI.getMyPlacedBids().catch(err => { console.error('My bids failed:', err); return { data: { data: [] } }; })
         ]);
 
         const myBids = myBidsRes.data.data || [];
@@ -158,9 +163,15 @@ const HomePage = () => {
         const buyListings = buyRes.data.data || [];
         
         // Set counts for activity cards
-        setMyBidsCount(myBids.length);
-        setMyPostsCount(sellListings.length + buyListings.length);
-        setReferralCount(user?.referralCount || 0);
+        const bidsCount = myBids.length;
+        const postsCount = sellListings.length + buyListings.length;
+        const referrals = user?.referralCount || 0;
+        
+        setMyBidsCount(bidsCount);
+        setMyPostsCount(postsCount);
+        setReferralCount(referrals);
+        
+        console.log('✅ Counts updated - Posts:', postsCount, 'Bids:', bidsCount, 'Referrals:', referrals);
 
         const actions = [];
 
