@@ -102,64 +102,6 @@ const ActivityPage = () => {
         })}
       </div>
 
-      {/* Quick Stats (Optional - can be populated with real data later) */}
-      <div className="px-6 mt-8">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Stats</h2>
-        <div className="grid grid-cols-4 gap-3">
-          <div className="bg-white rounded-2xl p-4 text-center shadow-mobile">
-            <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Bell className="w-5 h-5 text-orange-700" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-xs text-gray-500 mt-1">Unread</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-mobile">
-            <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Package className="w-5 h-5 text-purple-700" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-xs text-gray-500 mt-1">Posts</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-mobile">
-            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Send className="w-5 h-5 text-blue-700" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-xs text-gray-500 mt-1">Bids</p>
-          </div>
-          <div className="bg-white rounded-2xl p-4 text-center shadow-mobile">
-            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <Briefcase className="w-5 h-5 text-emerald-700" />
-            </div>
-            <p className="text-2xl font-bold text-gray-900">-</p>
-            <p className="text-xs text-gray-500 mt-1">Holdings</p>
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="px-6 mt-8">
-        <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-3xl p-6 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-7 h-7 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">Start Trading</h3>
-              <p className="text-sm text-white/90">Browse the marketplace to find shares</p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              haptic.medium();
-              navigate('/marketplace');
-            }}
-            className="w-full bg-white text-primary-700 rounded-xl py-3 px-6 font-semibold mt-4 hover:bg-white/90 transition-colors touch-feedback"
-          >
-            Browse Marketplace
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
