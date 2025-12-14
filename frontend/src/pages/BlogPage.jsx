@@ -236,17 +236,10 @@ const BlogPage = () => {
                   <span className="text-gray-500 text-[10px] font-medium">{currentArticle.sourceName}</span>
                 </div>
 
-                {/* Hindi Headline */}
+                {/* Hindi News - Full Content Scrollable */}
                 {currentArticle.hindiSummary && (
-                  <h1 className="text-white font-bold text-[16px] leading-tight mb-2.5 flex-shrink-0">
-                    {currentArticle.hindiSummary.split('.')[0] + '।'}
-                  </h1>
-                )}
-
-                {/* Hindi News Content - Scrollable */}
-                {currentArticle.hindiSummary && (
-                  <div className="flex-1 overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
-                    <p className="text-gray-100 text-[14px] leading-[1.6] font-hindi">
+                  <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+                    <p className="text-gray-100 text-[15px] leading-[1.65] font-hindi">
                       {currentArticle.hindiSummary}
                     </p>
                   </div>
