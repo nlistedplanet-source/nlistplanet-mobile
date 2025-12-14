@@ -205,7 +205,7 @@ const BlogPage = () => {
         {currentArticle && (
           <div className="h-full w-full flex flex-col">
             {/* Image Section - Clean (No Badges) */}
-            <div className={`h-[45%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
+            <div className={`h-[25%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
               {currentArticle.thumbnail ? (
                 <img
                   src={currentArticle.thumbnail}
@@ -223,37 +223,11 @@ const BlogPage = () => {
               
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
-
-              {/* Navigation Arrows - Bottom Right */}
-              <div className="absolute right-2 bottom-2 flex flex-col gap-1">
-                <button
-                  onClick={goToPrev}
-                  disabled={currentIndex === 0}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                    currentIndex === 0 
-                      ? 'bg-black/30 text-gray-500' 
-                      : 'bg-black/70 text-white backdrop-blur-sm'
-                  }`}
-                >
-                  <ChevronUp size={14} />
-                </button>
-                <button
-                  onClick={goToNext}
-                  disabled={currentIndex === news.length - 1}
-                  className={`w-7 h-7 rounded-full flex items-center justify-center ${
-                    currentIndex === news.length - 1 
-                      ? 'bg-black/30 text-gray-500' 
-                      : 'bg-black/70 text-white backdrop-blur-sm'
-                  }`}
-                >
-                  <ChevronDown size={14} />
-                </button>
-              </div>
             </div>
 
-            {/* Content Section - With All Info */}
-            <div className="h-[55%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
-              <div className="px-3.5 pt-2.5 pb-16 flex flex-col h-full">
+            {/* Content Section - Hindi Only */}
+            <div className="h-[70%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
+              <div className="px-3.5 pt-2.5 pb-2 flex flex-col h-full">
                 {/* Category & Source Row */}
                 <div className="flex items-center justify-between mb-2 flex-shrink-0">
                   <span className={`px-2 py-0.5 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-[9px] font-bold rounded-md`}>
@@ -262,29 +236,24 @@ const BlogPage = () => {
                   <span className="text-gray-500 text-[10px] font-medium">{currentArticle.sourceName}</span>
                 </div>
 
-                {/* Headline - Compact */}
-                <h1 className="text-white font-bold text-[16px] leading-tight mb-2.5 flex-shrink-0">
-                  {currentArticle.title}
-                </h1>
-
-                {/* Hindi Summary - Main Content */}
+                {/* Hindi Headline */}
                 {currentArticle.hindiSummary && (
-                  <div className="mb-2.5 flex-shrink-0">
+                  <h1 className="text-white font-bold text-[16px] leading-tight mb-2.5 flex-shrink-0">
+                    {currentArticle.hindiSummary.split('.')[0] + '।'}
+                  </h1>
+                )}
+
+                {/* Hindi News Content - Scrollable */}
+                {currentArticle.hindiSummary && (
+                  <div className="flex-1 overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
                     <p className="text-gray-100 text-[14px] leading-[1.6] font-hindi">
                       {currentArticle.hindiSummary}
                     </p>
                   </div>
                 )}
 
-                {/* English Summary - Scrollable */}
-                <div className="flex-1 overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
-                  <p className="text-gray-500 text-[12px] leading-relaxed">
-                    {currentArticle.summary}
-                  </p>
-                </div>
-
-                {/* Bottom Actions */}
-                <div className="pt-2 border-t border-gray-800/50 flex-shrink-0">
+                {/* Bottom Bar - 5% */}
+                <div className="h-[5%] pt-2 border-t border-gray-800/50 flex-shrink-0">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1.5 text-gray-600 text-[10px]">
                       <Calendar size={11} />
