@@ -52,6 +52,9 @@ const HomePage = () => {
   const [holdings, setHoldings] = useState([]);
   const [activities, setActivities] = useState([]);
   const [actionItems, setActionItems] = useState([]);
+  const [myBidsCount, setMyBidsCount] = useState(0);
+  const [myPostsCount, setMyPostsCount] = useState(0);
+  const [referralCount, setReferralCount] = useState(0);
 
   // Fetch data when auth is ready and user is authenticated
   useEffect(() => {
@@ -142,7 +145,7 @@ const HomePage = () => {
         setActivities([]);
       }
 
-      // Step 3: Fetch Action Items
+      // Step 3: Fetch Action Items and Counts
       try {
         const [sellRes, buyRes, myBidsRes] = await Promise.all([
           listingsAPI.getMyListings({ type: 'sell' }),
@@ -150,10 +153,19 @@ const HomePage = () => {
           listingsAPI.getMyPlacedBids()
         ]);
 
+        const myBids = myBidsRes.data.data || [];
+        const sellListings = sellRes.data.data || [];
+        const buyListings = buyRes.data.data || [];
+        
+        // Set counts for activity cards
+        setMyBidsCount(myBids.length);
+        setMyPostsCount(sellListings.length + buyListings.length);
+        setReferralCount(user?.referralCount || 0);
+
         const actions = [];
 
         // Incoming Bids on my Sell Posts
-        (sellRes.data.data || []).forEach(listing => {
+        sellListings.forEach(listing => {
           (listing.bids || []).forEach(bid => {
             if (bid.status === 'pending') {
               actions.push({
@@ -174,7 +186,7 @@ const HomePage = () => {
         });
 
         // Incoming Offers on my Buy Posts
-        (buyRes.data.data || []).forEach(listing => {
+        buyListings.forEach(listing => {
           (listing.offers || []).forEach(offer => {
             if (offer.status === 'pending') {
               actions.push({
@@ -195,7 +207,7 @@ const HomePage = () => {
         });
 
         // Counter Offers on my Bids
-        (myBidsRes.data.data || []).forEach(activity => {
+        myBids.forEach(activity => {
           if (activity.status === 'countered') {
             const counterHistory = activity.counterHistory || [];
             const latestCounter = counterHistory[counterHistory.length - 1];
@@ -474,7 +486,7 @@ const HomePage = () => {
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <img src="/Post_icon.png" alt="My Posts" className="w-6 h-6 object-contain" />
             </div>
-            <p className="text-lg font-bold text-gray-900">{stats.activeListings || 0}</p>
+            <p className="text-lg font-bold text-gray-900">{myPostsCount}</p>
             <p className="text-[10px] font-medium text-gray-600 mt-0.5">My Posts</p>
           </button>
           
@@ -485,7 +497,7 @@ const HomePage = () => {
             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <img src="/Bids.png" alt="My Bids" className="w-6 h-6 object-contain" />
             </div>
-            <p className="text-lg font-bold text-gray-900">{holdings.length || 0}</p>
+            <p className="text-lg font-bold text-gray-900">{myBidsCount}</p>
             <p className="text-[10px] font-medium text-gray-600 mt-0.5">My Bids</p>
           </button>
           
@@ -496,7 +508,7 @@ const HomePage = () => {
             <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <Bell className="w-5 h-5 text-orange-600" />
             </div>
-            <p className="text-lg font-bold text-gray-900">{actionItems.length || 0}</p>
+            <p className="text-lg font-bold text-gray-900">{actionItems.length}</p>
             <p className="text-[10px] font-medium text-gray-600 mt-0.5">Pending</p>
           </button>
 
@@ -507,7 +519,7 @@ const HomePage = () => {
             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-2">
               <Target className="w-5 h-5 text-emerald-600" />
             </div>
-            <p className="text-lg font-bold text-gray-900">{user?.referralCount || 0}</p>
+            <p className="text-lg font-bold text-gray-900">{referralCount}</p>
             <p className="text-[10px] font-medium text-gray-600 mt-0.5">Referral</p>
           </button>
         </div>
