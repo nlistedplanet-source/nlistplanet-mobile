@@ -572,10 +572,10 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                   onClick={() => {
                     const details = `
 Company: ${listing.companyName || 'N/A'}
-Sector: ${listing.companyId?.Sector || 'N/A'}
-ISIN: ${listing.companyId?.ISIN || 'N/A'}
-PAN: ${listing.companyId?.PAN || 'N/A'}
-CIN: ${listing.companyId?.CIN || 'N/A'}
+Sector: ${listing.companyId?.sector || 'N/A'}
+ISIN: ${listing.companyId?.isin || 'N/A'}
+PAN: ${listing.companyId?.pan || 'N/A'}
+CIN: ${listing.companyId?.cin || 'N/A'}
                     `.trim();
                     haptic.light();
                     toast(details, { duration: 4000 });
