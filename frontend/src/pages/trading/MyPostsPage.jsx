@@ -554,7 +554,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Min Lot</p>
-            <p className="text-xs font-bold text-gray-900">{formatShortQty(listing.minQuantity || 1)}</p>
+            <p className="text-xs font-bold text-gray-900">{formatShortQty(listing.minLot || 1)}</p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Total</p>
@@ -1007,7 +1007,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
 const ModifyModal = ({ listing, onClose, onSuccess }) => {
   const [price, setPrice] = useState(listing.price?.toString() || '');
   const [quantity, setQuantity] = useState(listing.quantity?.toString() || '');
-  const [minQuantity, setMinQuantity] = useState(listing.minQuantity?.toString() || '1');
+  const [minQuantity, setMinQuantity] = useState(listing.minLot?.toString() || '1');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
