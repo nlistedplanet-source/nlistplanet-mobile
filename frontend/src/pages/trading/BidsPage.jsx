@@ -13,7 +13,9 @@ import {
   Loader,
   ChevronDown,
   ChevronUp,
-  Eye
+  Eye,
+  AlertTriangle,
+  ShieldCheck
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays } from '../../utils/helpers';
@@ -31,10 +33,11 @@ const BidsPage = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [counterPrice, setCounterPrice] = useState('');
   const [counterQuantity, setCounterQuantity] = useState('');
+  const [dealDetails, setDealDetails] = useState({});
 
   // Define which statuses are "active" vs "expired"
-  const activeStatuses = ['pending', 'countered'];
-  const expiredStatuses = ['accepted', 'rejected', 'expired', 'completed', 'cancelled'];
+  const activeStatuses = ['pending', 'countered', 'pending_seller_confirmation'];
+  const expiredStatuses = ['accepted', 'rejected', 'expired', 'completed', 'cancelled', 'confirmed', 'sold', 'rejected_by_seller'];
 
   useEffect(() => {
     fetchMyActivity();
@@ -44,7 +47,27 @@ const BidsPage = () => {
     try {
       setLoading(true);
       const response = await listingsAPI.getMyPlacedBids();
-      setActivities(response.data.data || []);
+      const activitiesData = response.data.data || [];
+      setActivities(activitiesData);
+
+      // Fetch deal details for confirmed/sold bids
+      const confirmedActivities = activitiesData.filter(a => 
+        a.dealId && (a.status === 'confirmed' || a.status === 'sold' || a.status === 'pending_seller_confirmation')
+      );
+      
+      for (const activity of confirmedActivities) {
+        if (activity.dealId) {
+          try {
+            const dealResponse = await listingsAPI.getDeal(activity.dealId);
+            setDealDetails(prev => ({
+              ...prev,
+              [activity.dealId]: dealResponse.data.data
+            }));
+          } catch (error) {
+            console.error(`Failed to fetch deal ${activity.dealId}:`, error);
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to fetch bids:', error);
       toast.error('Failed to load your bids');
@@ -62,31 +85,35 @@ const BidsPage = () => {
   };
 
   const handleAccept = async (activity) => {
+    if (!window.confirm('Are you sure you want to accept this offer? This will finalize the deal.')) return;
+
     try {
       setActionLoading(activity._id);
       haptic.medium();
       await listingsAPI.acceptBid(activity.listing._id, activity._id);
       haptic.success();
-      toast.success('Counter offer accepted! 🎉');
+      toast.success('Offer accepted! Deal is being finalized... 🎉');
       fetchMyActivity();
     } catch (error) {
       haptic.error();
-      toast.error(error.response?.data?.message || 'Failed to accept counter offer');
+      toast.error(error.response?.data?.message || 'Failed to accept offer');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleReject = async (activity) => {
+    if (!window.confirm('Are you sure you want to reject this offer?')) return;
+
     try {
       setActionLoading(activity._id);
       haptic.medium();
       await listingsAPI.rejectBid(activity.listing._id, activity._id);
-      toast.success('Counter offer rejected');
+      toast.success('Offer rejected');
       fetchMyActivity();
     } catch (error) {
       haptic.error();
-      toast.error(error.response?.data?.message || 'Failed to reject counter offer');
+      toast.error(error.response?.data?.message || 'Failed to reject offer');
     } finally {
       setActionLoading(null);
     }
@@ -95,7 +122,12 @@ const BidsPage = () => {
   const handleCounterClick = (activity) => {
     haptic.light();
     setSelectedActivity(activity);
-    setCounterPrice(activity.price.toString());
+    // Pre-fill with the LAST price from history or original
+    const lastPrice = activity.counterHistory?.length > 0 
+      ? activity.counterHistory[activity.counterHistory.length - 1].price 
+      : activity.price;
+
+    setCounterPrice(lastPrice.toString());
     setCounterQuantity(activity.quantity.toString());
     setShowCounterModal(true);
   };
@@ -124,6 +156,19 @@ const BidsPage = () => {
     }
   };
 
+  // Helper to determine if action is required
+  const isActionRequired = (activity) => {
+    if (activity.status !== 'countered') return false;
+    if (!activity.counterHistory || activity.counterHistory.length === 0) return false;
+    
+    const lastCounter = activity.counterHistory[activity.counterHistory.length - 1];
+    const isBid = activity.type === 'bid'; // I am Buyer
+    
+    // If I am Buyer (isBid=true), action required if last counter is from Seller
+    // If I am Seller (isBid=false), action required if last counter is from Buyer
+    return isBid ? (lastCounter.by === 'seller') : (lastCounter.by === 'buyer');
+  };
+
   // Filter activities based on submenu and status
   const filteredActivities = activities.filter(activity => {
     // First filter by type (bids vs offers)
@@ -145,6 +190,15 @@ const BidsPage = () => {
     }
   });
 
+  // Split active activities into "Action Required" and "Others"
+  const actionRequiredActivities = statusFilter === 'active' 
+    ? filteredActivities.filter(a => isActionRequired(a))
+    : [];
+    
+  const otherActivities = statusFilter === 'active'
+    ? filteredActivities.filter(a => !isActionRequired(a))
+    : filteredActivities;
+
   // Count for badges
   const getStatusCounts = (type) => {
     const typeActivities = activities.filter(a => 
@@ -161,7 +215,12 @@ const BidsPage = () => {
   const currentCounts = getStatusCounts(activeSubmenu);
 
   if (loading) {
-    return null;
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader className="animate-spin text-primary-600 mb-3" size={32} />
+        <p className="text-gray-500 text-sm">Loading...</p>
+      </div>
+    );
   }
 
   return (
@@ -283,19 +342,57 @@ const BidsPage = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-3 pb-4">
-              {filteredActivities.map((activity) => (
-                <ActivityCard 
-                  key={activity._id} 
-                  activity={activity}
-                  actionLoading={actionLoading}
-                  onAccept={() => handleAccept(activity)}
-                  onReject={() => handleReject(activity)}
-                  onCounter={() => handleCounterClick(activity)}
-                  onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
-                  isExpired={statusFilter === 'expired'}
-                />
-              ))}
+            <div className="space-y-4 pb-4">
+              {/* Action Required Section */}
+              {actionRequiredActivities.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-wider px-1">
+                    <AlertTriangle size={14} />
+                    Action Required
+                  </div>
+                  {actionRequiredActivities.map(activity => (
+                    <ActivityCard 
+                      key={activity._id} 
+                      activity={activity}
+                      actionLoading={actionLoading}
+                      onAccept={() => handleAccept(activity)}
+                      onReject={() => handleReject(activity)}
+                      onCounter={() => handleCounterClick(activity)}
+                      onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
+                      isExpired={false}
+                      isActionable={true}
+                      dealDetails={dealDetails}
+                    />
+                  ))}
+                  
+                  {otherActivities.length > 0 && (
+                    <div className="border-t border-gray-200 my-4 pt-2">
+                      <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-wider px-1 mb-3">
+                        <Clock size={14} />
+                        Waiting for Response
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Other Activities */}
+              <div className="space-y-3">
+                {otherActivities.map((activity) => (
+                  <ActivityCard 
+                    key={activity._id} 
+                    activity={activity}
+                    actionLoading={actionLoading}
+                    onAccept={() => handleAccept(activity)}
+                    onReject={() => handleReject(activity)}
+                    onCounter={() => handleCounterClick(activity)}
+                    onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
+                    isExpired={statusFilter === 'expired'}
+                    isActionable={false}
+                    dealDetails={dealDetails}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -409,61 +506,82 @@ const BidsPage = () => {
   );
 };
 
-// Activity Card Component - Desktop Style
-const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, onView, isExpired }) => {
+// Activity Card Component - Mobile Style
+const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, onView, isExpired, isActionable, dealDetails }) => {
   const [expanded, setExpanded] = useState(false);
   
   const isBid = activity.type === 'bid';
   const counterHistory = activity.counterHistory || [];
   const listingPrice = activity.listing?.displayPrice || activity.listing?.listingPrice || activity.listing?.price || 0;
   const hasCounterHistory = counterHistory.length > 0;
-  const showActions = activity.status === 'countered' && !isExpired;
   
   // Check if listing is deleted
   const isListingDeleted = !activity.listing || activity.listing.isActive === false;
   
-  // Check if latest counter is from seller (they need to respond)
+  // Determine display price
   const latestCounter = hasCounterHistory ? counterHistory[counterHistory.length - 1] : null;
-  const isLatestFromSeller = latestCounter?.by === 'seller';
-  const canTakeAction = showActions && isLatestFromSeller;
+  const rawDisplayPrice = latestCounter ? latestCounter.price : (activity.originalPrice || activity.price);
+  
+  let displayPrice = rawDisplayPrice;
+  if (latestCounter) {
+     if (isBid) {
+       displayPrice = latestCounter.by === 'seller' ? calculateBuyerPays(latestCounter.price) : latestCounter.price;
+     } else {
+       displayPrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
+     }
+  } else {
+     displayPrice = activity.price;
+  }
 
   const statusConfig = {
-    pending: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock },
-    accepted: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
-    rejected: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
-    countered: { bg: 'bg-purple-100', text: 'text-purple-700', icon: RotateCcw },
-    expired: { bg: 'bg-gray-100', text: 'text-gray-700', icon: Clock },
-    completed: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
-    cancelled: { bg: 'bg-gray-100', text: 'text-gray-500', icon: XCircle },
+    pending: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock, label: 'Pending' },
+    accepted: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Accepted' },
+    rejected: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Rejected' },
+    rejected_by_seller: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Rejected by Seller' },
+    countered: { bg: 'bg-purple-100', text: 'text-purple-700', icon: RotateCcw, label: 'Negotiating' },
+    expired: { bg: 'bg-gray-100', text: 'text-gray-700', icon: Clock, label: 'Expired' },
+    completed: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Completed' },
+    confirmed: { bg: 'bg-emerald-100', text: 'text-emerald-700', icon: ShieldCheck, label: 'Confirmed' },
+    sold: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Sold' },
+    pending_seller_confirmation: { bg: 'bg-blue-100', text: 'text-blue-700', icon: Clock, label: 'Waiting Seller' },
+    cancelled: { bg: 'bg-gray-100', text: 'text-gray-500', icon: XCircle, label: 'Cancelled' },
   };
   
   const status = statusConfig[activity.status] || statusConfig.pending;
   const StatusIcon = status.icon;
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border overflow-hidden ${isExpired ? 'border-gray-200 opacity-75' : 'border-gray-200'}`}>
+    <div className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${
+      isActionable 
+        ? 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 shadow-md ring-1 ring-amber-100' 
+        : isExpired ? 'border-gray-200 opacity-75' : 'border-gray-200'
+    }`}>
       {/* Header */}
-      <div className={`flex items-center justify-between px-3 py-2.5 border-b border-gray-100 ${isExpired ? 'bg-gray-100' : 'bg-gray-50'}`}>
+      <div className={`flex items-center justify-between px-3 py-2.5 border-b border-gray-100 ${
+        isActionable ? 'bg-amber-50' : isExpired ? 'bg-gray-100' : 'bg-gray-50'
+      }`}>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <h4 className="font-bold text-gray-900 text-sm truncate">{activity.listing?.companyName || 'Deleted Listing'}</h4>
+            <h4 className="font-bold text-gray-900 text-sm truncate">
+              {activity.listing?.companyId?.scriptName || activity.listing?.companyId?.name || activity.listing?.companyName || 'Deleted Listing'}
+            </h4>
             {isListingDeleted && (
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-600">DELETED</span>
+            )}
+            {isActionable && (
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200 animate-pulse">
+                <AlertTriangle size={10} /> ACTION
+              </span>
             )}
           </div>
           <p className="text-[10px] text-gray-500">
             {isBid ? 'Seller' : 'Buyer'}: @{activity.listing?.owner?.username || 'Unknown'}
           </p>
-          {!isListingDeleted && (
-            <p className="text-[10px] text-gray-500">
-              Listed: {formatCurrency(listingPrice)} × {activity.listing?.listingQuantity || 0} shares
-            </p>
-          )}
         </div>
         <div className="flex items-center gap-2 ml-2">
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${status.bg} ${status.text}`}>
             <StatusIcon size={10} />
-            {activity.status}
+            {status.label}
           </span>
           {!isListingDeleted && (
             <button 
@@ -475,6 +593,37 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           )}
         </div>
       </div>
+
+      {/* Action Banner (Only for Actionable Items) */}
+      {isActionable && (
+        <div className="bg-amber-50 px-3 py-3 border-b border-amber-100">
+          <p className="text-xs font-bold text-amber-900 mb-2">
+            New Counter Offer Received!
+          </p>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={onAccept}
+              disabled={actionLoading === activity._id}
+              className="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-bold shadow-sm flex items-center justify-center gap-1"
+            >
+              {actionLoading === activity._id ? <Loader size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+              Accept @ {formatCurrency(displayPrice)}
+            </button>
+            <button 
+              onClick={onCounter}
+              className="px-3 py-2 bg-white text-purple-700 border border-purple-200 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+            >
+              <RotateCcw size={14} />
+            </button>
+            <button 
+              onClick={onReject}
+              className="px-3 py-2 bg-white text-red-600 border border-red-200 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+            >
+              <XCircle size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Your Bid Info */}
       <div className="px-3 py-2 border-b border-gray-100">
@@ -513,13 +662,11 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
               {counterHistory.map((counter, idx) => {
                 const isSellerCounter = counter.by === 'seller';
                 // Viewer perspective logic
-                let displayPrice;
+                let rowPrice;
                 if (isBid) {
-                  // Buyer viewing - seller's counter needs ×1.02
-                  displayPrice = isSellerCounter ? calculateBuyerPays(counter.price) : counter.price;
+                  rowPrice = isSellerCounter ? calculateBuyerPays(counter.price) : counter.price;
                 } else {
-                  // Seller viewing - buyer's counter needs ×0.98
-                  displayPrice = !isSellerCounter ? calculateSellerGets(counter.price) : counter.price;
+                  rowPrice = !isSellerCounter ? calculateSellerGets(counter.price) : counter.price;
                 }
 
                 return (
@@ -537,7 +684,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-gray-900">
-                        {formatCurrency(displayPrice)}
+                        {formatCurrency(rowPrice)}
                       </span>
                       <span className="text-xs font-medium text-gray-600">
                         {counter.quantity} shares
@@ -551,43 +698,39 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
         </div>
       )}
 
-      {/* Actions */}
-      {canTakeAction && (
-        <div className="px-3 py-2 border-t border-gray-100 bg-gray-50">
-          <p className="text-[10px] text-orange-700 font-semibold mb-2 text-center">
-            ⚡ {isBid ? 'Seller' : 'Buyer'} sent a counter offer - Respond now!
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onAccept}
-              disabled={actionLoading === activity._id}
-              className="flex-1 py-2 bg-green-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-            >
-              <CheckCircle size={14} />
-              Accept
-            </button>
-            <button
-              onClick={onReject}
-              disabled={actionLoading === activity._id}
-              className="flex-1 py-2 bg-red-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-            >
-              <XCircle size={14} />
-              Reject
-            </button>
-            <button
-              onClick={onCounter}
-              disabled={actionLoading === activity._id}
-              className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 disabled:opacity-50"
-            >
-              <RotateCcw size={14} />
-              Counter
-            </button>
+      {/* Verification Codes (Confirmed) */}
+      {(activity.status === 'confirmed' || activity.status === 'sold') && activity.dealId && dealDetails[activity.dealId] && (
+        <div className="px-3 py-3 bg-emerald-50 border-t border-emerald-100">
+          <h5 className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 mb-2">
+            <ShieldCheck size={14} className="text-emerald-600" />
+            Deal Confirmed!
+          </h5>
+          
+          <div className="grid grid-cols-3 gap-2 mb-2">
+            <div className="bg-white rounded p-2 border border-blue-200 text-center">
+              <div className="text-[8px] uppercase text-gray-500 font-bold">You</div>
+              <div className="text-xs font-bold text-blue-700 font-mono">
+                BUY-{dealDetails[activity.dealId].buyerVerificationCode}
+              </div>
+            </div>
+            <div className="bg-white rounded p-2 border border-orange-200 text-center">
+              <div className="text-[8px] uppercase text-gray-500 font-bold">Seller</div>
+              <div className="text-xs font-bold text-orange-700 font-mono">
+                SEL-{dealDetails[activity.dealId].sellerVerificationCode}
+              </div>
+            </div>
+            <div className="bg-white rounded p-2 border border-purple-200 text-center">
+              <div className="text-[8px] uppercase text-gray-500 font-bold">Admin</div>
+              <div className="text-xs font-bold text-purple-700 font-mono">
+                ADM-{dealDetails[activity.dealId].rmVerificationCode}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {/* Status Footer */}
-      {!canTakeAction && (
+      {!isActionable && (
         <div className="px-3 py-2 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
           <p className="text-[10px] text-gray-500">
             {timeAgo(activity.createdAt)}
@@ -608,12 +751,6 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
             <span className="text-[10px] font-bold text-amber-700 flex items-center gap-1">
               <Clock size={12} />
               Waiting for response...
-            </span>
-          )}
-          {activity.status === 'countered' && !canTakeAction && (
-            <span className="text-[10px] font-bold text-blue-700 flex items-center gap-1">
-              <Clock size={12} />
-              Waiting for their response...
             </span>
           )}
         </div>

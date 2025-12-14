@@ -27,6 +27,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
 import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
+import AdBanner from '../../components/common/AdBanner';
 import { useDashboardTour } from '../../components/TourGuide';
 import toast from 'react-hot-toast';
 
@@ -345,6 +346,11 @@ const HomePage = () => {
               <RefreshCw className={`w-5 h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
+        </div>
+
+        {/* Ad Banner */}
+        <div className="mb-6">
+          <AdBanner position="dashboard_top" className="h-24" />
         </div>
 
         {/* Portfolio Value Card */}

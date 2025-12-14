@@ -494,9 +494,11 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
             listing.status === 'active' 
               ? 'bg-green-100 text-green-700 border border-green-300' 
+              : listing.status === 'negotiating'
+              ? 'bg-amber-100 text-amber-700 border border-amber-300'
               : 'bg-gray-100 text-gray-600 border border-gray-300'
           }`}>
-            🟢 {listing.status?.toUpperCase() || 'ACTIVE'}
+            {listing.status === 'active' ? '🟢' : listing.status === 'negotiating' ? '🟠' : '⚪'} {listing.status?.toUpperCase() || 'ACTIVE'}
           </span>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
             isSell 
@@ -530,7 +532,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-gray-900 truncate">
-              {listing.companyId?.ScriptName || listing.companyName || 'Unknown'}
+              {listing.companyId?.scriptName || listing.companyId?.name || listing.companyName || 'Unknown'}
             </h3>
             <p className="text-[10px] text-gray-500">
               {listing.companyId?.Sector || 'Unlisted Share'}
