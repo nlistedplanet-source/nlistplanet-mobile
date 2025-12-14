@@ -148,41 +148,41 @@ const BlogPage = () => {
   }
 
   return (
-    <div className="h-screen bg-gray-950 overflow-hidden flex flex-col">
-      {/* Header */}
+    <div className="h-screen bg-gray-950 flex flex-col overflow-hidden">
+      {/* Compact Header */}
       <header className="flex-shrink-0 bg-gray-950 border-b border-gray-800 z-50">
-        <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center justify-between px-3 py-2">
           <button
             onClick={() => navigate('/')}
-            className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400"
+            className="w-8 h-8 bg-gray-800 rounded-lg flex items-center justify-center text-gray-400"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
           
           <div className="flex items-center gap-2">
             <img 
               src="/new_logo.png" 
               alt="NlistPlanet" 
-              className="w-7 h-7 object-contain"
+              className="w-6 h-6 object-contain"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
-            <span className="text-white font-bold">News</span>
+            <span className="text-white font-semibold text-sm">News</span>
           </div>
 
-          <div className="bg-gray-800 px-2 py-1 rounded-lg">
-            <span className="text-emerald-400 text-xs font-bold">{currentIndex + 1}</span>
-            <span className="text-gray-500 text-xs">/{news.length}</span>
+          <div className="bg-gray-800 px-2 py-0.5 rounded-md">
+            <span className="text-emerald-400 text-[10px] font-bold">{currentIndex + 1}</span>
+            <span className="text-gray-500 text-[10px]">/{news.length}</span>
           </div>
         </div>
 
-        {/* Category Pills */}
-        <div className="px-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        {/* Category Pills - Compact */}
+        <div className="px-3 pb-1.5 overflow-x-auto scrollbar-hide">
           <div className="flex gap-1.5">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`px-3 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all ${
+                className={`px-2.5 py-0.5 rounded-full text-[9px] font-semibold whitespace-nowrap transition-all ${
                   activeCategory === category
                     ? 'bg-emerald-500 text-white'
                     : 'bg-gray-800 text-gray-400'
@@ -195,17 +195,17 @@ const BlogPage = () => {
         </div>
       </header>
 
-      {/* Inshorts-style Card */}
+      {/* Inshorts-style Card - Full Height */}
       <div
-        className="flex-1 relative"
+        className="flex-1 relative overflow-hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {currentArticle && (
-          <div className="h-full flex flex-col">
-            {/* Image Section - Inshorts Style (50% height) */}
-            <div className={`h-[50%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)}`}>
+          <div className="h-full w-full flex flex-col">
+            {/* Image Section - Clean (No Badges) */}
+            <div className={`h-[45%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
               {currentArticle.thumbnail ? (
                 <img
                   src={currentArticle.thumbnail}
@@ -221,23 +221,11 @@ const BlogPage = () => {
                 </div>
               )}
               
-              {/* Gradient overlay - lighter for better image visibility */}
+              {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
-              
-              {/* Category Badge - Smaller, top-left */}
-              <div className="absolute top-2.5 left-2.5">
-                <span className={`px-2.5 py-1 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-[10px] font-bold rounded-full shadow-lg`}>
-                  {currentArticle.category}
-                </span>
-              </div>
 
-              {/* Source Badge - Compact */}
-              <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md">
-                <span className="text-white text-[9px] font-semibold">{currentArticle.sourceName}</span>
-              </div>
-
-              {/* Navigation Arrows - Smaller */}
-              <div className="absolute right-2.5 bottom-2.5 flex flex-col gap-1">
+              {/* Navigation Arrows - Bottom Right */}
+              <div className="absolute right-2 bottom-2 flex flex-col gap-1">
                 <button
                   onClick={goToPrev}
                   disabled={currentIndex === 0}
@@ -247,7 +235,7 @@ const BlogPage = () => {
                       : 'bg-black/70 text-white backdrop-blur-sm'
                   }`}
                 >
-                  <ChevronUp size={16} />
+                  <ChevronUp size={14} />
                 </button>
                 <button
                   onClick={goToNext}
@@ -258,13 +246,13 @@ const BlogPage = () => {
                       : 'bg-black/70 text-white backdrop-blur-sm'
                   }`}
                 >
-                  <ChevronDown size={16} />
+                  <ChevronDown size={14} />
                 </button>
               </div>
             </div>
 
-            {/* Content Section - Inshorts Style (50% height) */}
-            <div className="h-[50%] bg-gray-950 px-4 pt-3 pb-20 flex flex-col">
+            {/* Content Section - With All Info */}
+            <div className="h-[55%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
               {/* Headline - Inshorts Style (Bigger & Bold) */}
               <h1 className="text-white font-bold text-[18px] leading-tight mb-3">
                 {currentArticle.title}
@@ -275,57 +263,67 @@ const BlogPage = () => {
                 <div className="mb-3">
                   <p className="text-gray-100 text-[15px] leading-[1.65] font-hindi">
                     {currentArticle.hindiSummary}
+                  </p>With All Info */}
+            <div className="h-[55%] bg-gray-950 flex flex-col flex-shrink-0 overflow-hidden">
+              <div className="px-3.5 pt-2.5 pb-16 flex flex-col h-full">
+                {/* Category & Source Row */}
+                <div className="flex items-center justify-between mb-2 flex-shrink-0">
+                  <span className={`px-2 py-0.5 bg-gradient-to-r ${getCategoryColor(currentArticle.category)} text-white text-[9px] font-bold rounded-md`}>
+                    {currentArticle.category}
+                  </span>
+                  <span className="text-gray-500 text-[10px] font-medium">{currentArticle.sourceName}</span>
+                </div>
+
+                {/* Headline - Compact */}
+                <h1 className="text-white font-bold text-[16px] leading-tight mb-2.5 flex-shrink-0">
+                  {currentArticle.title}
+                </h1>
+
+                {/* Hindi Summary - Main Content */}
+                {currentArticle.hindiSummary && (
+                  <div className="mb-2.5 flex-shrink-0">
+                    <p className="text-gray-100 text-[14px] leading-[1.6] font-hindi">
+                      {currentArticle.hindiSummary}
+                    </p>
+                  </div>
+                )}
+
+                {/* English Summary - Scrollable */}
+                <div className="flex-1 overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+                  <p className="text-gray-500 text-[12px] leading-relaxed">
+                    {currentArticle.summary}
                   </p>
                 </div>
-              )}
 
-              {/* English Summary - Smaller, secondary */}
-              <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent mb-2">
-                <p className="text-gray-500 text-[13px] leading-relaxed">
-                  {currentArticle.summary}
-                </p>
-              </div>
-
-              {/* Bottom Actions - Compact */}
-              <div className="pt-2.5 border-t border-gray-800/50">
-                <div className="flex items-center justify-between mb-2.5">
-                  <div className="flex items-center gap-1.5 text-gray-600 text-[11px]">
-                    <Calendar size={12} />
-                    <span>{formatDate(currentArticle.publishedAt)}</span>
-                  </div>
-                  
-                  <button
-                    onClick={() => handleShare(currentArticle)}
-                    className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-gray-400 active:scale-95 transition-transform"
-                  >
-                    <Share2 size={14} />
-                  </button>
-                </div>
-
-                {/* Source Button - Inshorts Green Style */}
-                {currentArticle.sourceUrl && (
-                  <a
-                    href={currentArticle.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 w-full py-2.5 bg-emerald-500 text-white rounded-lg font-semibold text-[13px] active:scale-[0.98] transition-transform shadow-lg"
-                  >
-                    <span>पूरी खबर पढ़ें - {currentArticle.sourceName}</span>
-                    <ExternalLink size={14} />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Swipe Hint - Inshorts Style */}
+                {/* Bottom Actions */}
+                <div className="pt-2 border-t border-gray-800/50 flex-shrink-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 text-gray-600 text-[10px]">
+                      <Calendar size={11} />
+                      <span>{formatDate(currentArticle.publishedAt)}</span>
+                    </div>
+                    
+                    <button
+                      onClick={() => handleShare(currentArticle)}
+                      class*/}
             {currentIndex === 0 && (
-              <div className="absolute bottom-[88px] left-1/2 -translate-x-1/2 animate-bounce">
-                <div className="bg-emerald-500/20 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-500/30">
-                  <ChevronUp size={14} className="text-emerald-400" />
-                  <span className="text-emerald-400 text-[11px] font-semibold">ऊपर स्वाइप करें</span>
+              <div className="absolute bottom-20 left-1/2 -translate-x-1/2 animate-bounce">
+                <div className="bg-emerald-500/20 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-500/30">
+                  <ChevronUp size={12} className="text-emerald-400" />
+                  <span className="text-emerald-400 text-[10
+                  {/* Source Button */}
+                  {currentArticle.sourceUrl && (
+                    <a
+                      href={currentArticle.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1.5 w-full py-2 bg-emerald-500 text-white rounded-lg font-semibold text-[12px] active:scale-[0.98] transition-transform shadow-lg"
+                    >
+                      <span>पूरी खबर - {currentArticle.sourceName}</span>
+                      <ExternalLink size={13} />
+                    </a>
+                  )}
                 </div>
-              </div>
-            )}
           </div>
         )}
       </div>
