@@ -90,60 +90,53 @@ const MyPostsPage = () => {
     haptic.light();
     
     const isSell = listing.type === 'sell';
-    const price = formatCurrency(listing.price);
-    const qty = listing.quantity >= 100000 
-      ? (listing.quantity / 100000).toFixed(1) + ' Lakh' 
-      : listing.quantity >= 1000 
-      ? (listing.quantity / 1000).toFixed(1) + 'K' 
-      : listing.quantity?.toLocaleString('en-IN');
     
     // Main site referral link for tracking
     const referralLink = `https://nlistplanet.com/listing/${listing._id}?ref=${user?._id || 'guest'}&source=share`;
     
     // Get company highlights
-    const sector = listing.companyId?.Sector || listing.companyId?.sector || 'Unlisted Share';
-    const highlights = [
-      `Sector: ${sector}`,
+    const companyName = listing.companyId?.name || listing.companyName || 'Company';
+    const sector = listing.companyId?.sector || 'Unlisted Share';
+    const companyHighlights = listing.companyId?.highlights || [
       'Pre-IPO Investment Opportunity',
-      'Verified on NlistPlanet'
+      'Verified on NlistPlanet',
+      `${sector} Sector`,
+      'Direct Peer-to-Peer Trading'
     ];
     
-    // Professional Share Caption
-    const caption = `━━━━━━━━━━━━━━━━━━━━━
+    const highlightsList = companyHighlights.slice(0, 4).map((h, i) => `${i + 1}. ${h}`).join('\n');
+    
+    // Investor-Focused Share Caption (NO PRICE/QUANTITY)
+    const caption = `💎 Premium Investment Opportunity
+
+━━━━━━━━━━━━━━━━━━━━━
    📈 N L I S T P L A N E T
       Trade Unlisted Shares
 ━━━━━━━━━━━━━━━━━━━━━
 
-🏷️ *UNLISTED SHARE*
+🏢 *${companyName}*
+📊 ${sector}
+
+✨ *Investment Highlights:*
+${highlightsList}
+
+${isSell ? '🚀 Seeking Serious Investors' : '💎 Seeking Quality Sellers'}
+
+👉 *Explore this opportunity:*
+${referralLink}
 
 ═══════════════════════════
 
-        ${isSell ? '🟢 *SELLING*' : '🔵 *BUYING*'}
+🔒 Verified Trading on NlistPlanet
+
+⚠️ *Investment Note:*
+• Unlisted shares carry market risks
+• Conduct thorough research
+• Connect with verified traders
 
 ━━━━━━━━━━━━━━━━━━━━━
-
-🏢 *${listing.companyName}*
-    ${sector}
-
-${highlights.map(h => `✦ ${h}`).join('\n')}
-
-━━━━━━━━━━━━━━━━━━━━━
-  💰 PRICE       ${price}/share
-  📦 QUANTITY    ${qty} shares
-━━━━━━━━━━━━━━━━━━━━━
-
-👉 *View & Trade:* ${referralLink}
-
-═══════════════════════════
-
-⚠️ *IMPORTANT DISCLAIMER*
-
-• Unlisted shares are NOT traded on NSE/BSE
-• HIGH RISK investment - Do your research
-• NlistPlanet is a marketplace, not an advisor
-
-━━━━━━━━━━━━━━━━━━━━━
-🔒 Verified • Secure • Trusted
+#UnlistedShares #Investment #PreIPO
+#${sector.replace(/\s+/g, '')} #NlistPlanet
 ━━━━━━━━━━━━━━━━━━━━━`;
 
     // Try native share first, then WhatsApp
