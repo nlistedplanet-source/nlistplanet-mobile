@@ -1,21 +1,16 @@
 {
   "name": "nlistplanet-mobile",
   "version": "1.0.0",
-  "description": "NList Planet Mobile App - Complete PWA with backend",
+  "description": "NList Planet Mobile PWA - Frontend only (uses shared backend from UnlistedHub-USM)",
   "private": true,
   "workspaces": [
-    "frontend",
-    "backend"
+    "frontend"
   ],
   "scripts": {
-    "start": "npm run start:backend",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "dev:frontend": "cd frontend && npm start",
-    "dev:backend": "cd backend && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "build:frontend": "cd frontend && npm run build",
-    "start:backend": "cd backend && npm start",
-    "start:frontend": "cd frontend && serve -s build"
+    "start": "cd frontend && npm start",
+    "install:all": "npm install && cd frontend && npm install",
+    "dev": "cd frontend && npm start",
+    "build": "cd frontend && npm run build"
   },
   "keywords": [
     "unlisted-shares",
