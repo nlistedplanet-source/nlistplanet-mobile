@@ -560,6 +560,10 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
     <div className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all ${
       isActionable 
         ? 'border-l-4 border-l-amber-500 border-y-amber-200 border-r-amber-200 shadow-md ring-1 ring-amber-100' 
+        : (activity.status === 'pending_confirmation' || activity.status === 'accepted') ? 'border-l-4 border-l-green-500 border-y-green-200 border-r-green-200'
+        : (activity.status === 'confirmed' || activity.status === 'sold') ? 'border-l-4 border-l-emerald-500 border-y-emerald-200 border-r-emerald-200'
+        : activity.status === 'rejected' ? 'border-l-4 border-l-red-500 border-y-red-200 border-r-red-200'
+        : activity.status === 'countered' ? 'border-l-4 border-l-purple-500 border-y-purple-200 border-r-purple-200'
         : isExpired ? 'border-gray-200 opacity-75' : 'border-gray-200'
     }`}>
       {/* Header */}
@@ -632,11 +636,28 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
       )}
 
       {/* Your Bid Info */}
-      <div className="px-3 py-2 border-b border-gray-100">
+      <div className={`px-3 py-2 border-b ${
+        (activity.status === 'pending_confirmation' || activity.status === 'accepted') ? 'border-green-200 bg-green-50' :
+        activity.status === 'rejected' ? 'border-red-200 bg-red-50' :
+        activity.status === 'confirmed' || activity.status === 'sold' ? 'border-emerald-200 bg-emerald-50' :
+        'border-gray-100'
+      }`}>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-green-50 rounded-lg p-2">
-            <p className="text-[9px] text-gray-500 uppercase font-semibold">Your {isBid ? 'Bid' : 'Offer'}</p>
-            <p className="text-xs font-bold text-green-700">
+          <div className={`rounded-lg p-2 ${
+            (activity.status === 'pending_confirmation' || activity.status === 'accepted') ? 'bg-green-100' :
+            activity.status === 'rejected' ? 'bg-red-100' :
+            'bg-green-50'
+          }`}>
+            <p className="text-[9px] text-gray-500 uppercase font-semibold">
+              {(activity.status === 'pending_confirmation' || activity.status === 'accepted' || activity.status === 'confirmed' || activity.status === 'sold') 
+                ? 'You Accepted' 
+                : `Your ${isBid ? 'Bid' : 'Offer'}`}
+            </p>
+            <p className={`text-xs font-bold ${
+              (activity.status === 'pending_confirmation' || activity.status === 'accepted') ? 'text-green-700' :
+              activity.status === 'rejected' ? 'text-red-700' :
+              'text-green-700'
+            }`}>
               {formatCurrency(isBid ? (activity.buyerOfferedPrice || activity.originalPrice || activity.price) : (activity.sellerReceivesPrice || activity.originalPrice || activity.price))}
             </p>
           </div>
