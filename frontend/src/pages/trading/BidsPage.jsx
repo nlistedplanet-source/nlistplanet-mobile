@@ -36,7 +36,7 @@ const BidsPage = () => {
   const [dealDetails, setDealDetails] = useState({});
 
   // Define which statuses are "active" vs "expired"
-  const activeStatuses = ['pending', 'countered', 'pending_seller_confirmation'];
+  const activeStatuses = ['pending', 'countered', 'pending_seller_confirmation', 'pending_confirmation'];
   const expiredStatuses = ['accepted', 'rejected', 'expired', 'completed', 'cancelled', 'confirmed', 'sold', 'rejected_by_seller'];
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const BidsPage = () => {
       haptic.medium();
       await listingsAPI.acceptBid(activity.listing._id, activity._id);
       haptic.success();
-      toast.success('Offer accepted! Deal is being finalized... 🎉');
+      toast.success('Deal accepted! Waiting for other party to confirm or reject');
       fetchMyActivity();
     } catch (error) {
       haptic.error();
@@ -541,6 +541,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
   const statusConfig = {
     pending: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock, label: 'Pending' },
     accepted: { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle, label: 'Accepted' },
+    pending_confirmation: { bg: 'bg-amber-100', text: 'text-amber-700', icon: AlertTriangle, label: 'Confirm/Reject' },
     rejected: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Rejected' },
     rejected_by_seller: { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle, label: 'Rejected by Seller' },
     countered: { bg: 'bg-purple-100', text: 'text-purple-700', icon: RotateCcw, label: 'Negotiating' },
@@ -744,10 +745,10 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           <p className="text-[10px] text-gray-500">
             {timeAgo(activity.createdAt)}
           </p>
-          {activity.status === 'accepted' && (
-            <span className="text-[10px] font-bold text-green-700 flex items-center gap-1">
-              <CheckCircle size={12} />
-              Deal Accepted!
+          {(activity.status === 'accepted' || activity.status === 'pending_confirmation') && (
+            <span className="text-[10px] font-bold text-amber-700 flex items-center gap-1">
+              <AlertTriangle size={12} />
+              {activity.status === 'pending_confirmation' ? 'Waiting for confirmation' : 'Deal Accepted!'}
             </span>
           )}
           {activity.status === 'rejected' && (
