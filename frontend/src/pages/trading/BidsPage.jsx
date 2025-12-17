@@ -530,11 +530,11 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
        displayPrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
      }
   } else {
-     // Initial bid/offer - show correct price based on role
+     // Initial bid/offer - show correct price based on role using helpers
      if (isBid) {
-       displayPrice = activity.buyerOfferedPrice || activity.originalPrice || activity.price;
+       displayPrice = calculateBuyerPays(activity.originalPrice || activity.price);
      } else {
-       displayPrice = activity.sellerReceivesPrice || activity.originalPrice || activity.price;
+       displayPrice = calculateSellerGets(activity.originalPrice || activity.price);
      }
   }
 
@@ -658,7 +658,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
               activity.status === 'rejected' ? 'text-red-700' :
               'text-green-700'
             }`}>
-              {formatCurrency(isBid ? (activity.buyerOfferedPrice || activity.originalPrice || activity.price) : (activity.sellerReceivesPrice || activity.originalPrice || activity.price))}
+              {formatCurrency(isBid ? calculateBuyerPays(activity.originalPrice || activity.price) : calculateSellerGets(activity.originalPrice || activity.price))}
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
@@ -668,7 +668,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           <div className="bg-blue-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Total</p>
             <p className="text-xs font-bold text-blue-700">
-              {formatCurrency((isBid ? (activity.buyerOfferedPrice || activity.originalPrice || activity.price) : (activity.sellerReceivesPrice || activity.originalPrice || activity.price)) * activity.quantity)}
+              {formatCurrency((isBid ? calculateBuyerPays(activity.originalPrice || activity.price) : calculateSellerGets(activity.originalPrice || activity.price)) * activity.quantity)}
             </p>
           </div>
         </div>

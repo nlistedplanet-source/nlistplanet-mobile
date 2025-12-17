@@ -114,6 +114,7 @@ export const listingsAPI = {
   update: (id, data) => api.put(`/listings/${id}`, data),
   delete: (id) => api.delete(`/listings/${id}`),
   placeBid: (id, data) => api.post(`/listings/${id}/bid`, data),
+  acceptListing: (id) => api.post(`/listings/${id}/accept`), // Accept from marketplace
   getBids: (id) => api.get(`/listings/${id}/bids`),
   acceptBid: (listingId, bidId) => api.put(`/listings/${listingId}/bids/${bidId}/accept`),
   rejectBid: (listingId, bidId) => api.put(`/listings/${listingId}/bids/${bidId}/reject`),
