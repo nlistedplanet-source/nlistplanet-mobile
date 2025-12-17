@@ -530,7 +530,12 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
        displayPrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
      }
   } else {
-     displayPrice = activity.price;
+     // Initial bid/offer - show correct price based on role
+     if (isBid) {
+       displayPrice = activity.buyerOfferedPrice || activity.originalPrice || activity.price;
+     } else {
+       displayPrice = activity.sellerReceivesPrice || activity.originalPrice || activity.price;
+     }
   }
 
   const statusConfig = {
@@ -630,7 +635,9 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
         <div className="grid grid-cols-3 gap-2 text-center">
           <div className="bg-green-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Your {isBid ? 'Bid' : 'Offer'}</p>
-            <p className="text-xs font-bold text-green-700">{formatCurrency(activity.price)}</p>
+            <p className="text-xs font-bold text-green-700">
+              {formatCurrency(isBid ? (activity.buyerOfferedPrice || activity.originalPrice || activity.price) : (activity.sellerReceivesPrice || activity.originalPrice || activity.price))}
+            </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Qty</p>
@@ -638,7 +645,9 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           </div>
           <div className="bg-blue-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Total</p>
-            <p className="text-xs font-bold text-blue-700">{formatCurrency(activity.price * activity.quantity)}</p>
+            <p className="text-xs font-bold text-blue-700">
+              {formatCurrency((isBid ? (activity.buyerOfferedPrice || activity.originalPrice || activity.price) : (activity.sellerReceivesPrice || activity.originalPrice || activity.price)) * activity.quantity)}
+            </p>
           </div>
         </div>
       </div>
