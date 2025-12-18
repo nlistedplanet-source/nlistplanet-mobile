@@ -189,11 +189,11 @@ const HomePage = () => {
                 yourPrice: listing.price,
                 counterPrice: bid.price,
                 quantity: bid.quantity,
-                user: bid.userId?.username,
+                user: bid.userId?.username || bid.username,
                 date: bid.createdAt,
                 status: bid.status
               });
-            } else if (bid.status === 'accepted') {
+            } else if (bid.status === 'accepted' || bid.status === 'pending_confirmation') {
               // High priority: Deal accepted by one party, waiting for other
               actions.push({
                 type: 'deal_accepted',

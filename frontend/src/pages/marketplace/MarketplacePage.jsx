@@ -22,7 +22,6 @@ import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDis
 import { useLoader } from '../../context/LoaderContext';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
-import ShareCardGenerator from '../../components/ShareCardGenerator';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -71,21 +70,15 @@ const numberToWords = (num) => {
 const MarketplacePage = () => {
   const navigate = useNavigate();
   const { showLoader, hideLoader } = useLoader();
-  
-  // State management
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedListing, setSelectedListing] = useState(null);
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [showBidModal, setShowBidModal] = useState(false);
-
-  // Share card state
-  const [shareListing, setShareListing] = useState(null);
-  const [showShareCard, setShowShareCard] = useState(false);
+  const [selectedListing, setSelectedListing] = useState(null); // For popup modal
+  const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
+  const [showBidModal, setShowBidModal] = useState(false); // Bid modal
 
   useEffect(() => {
     fetchListings();
@@ -241,10 +234,6 @@ const MarketplacePage = () => {
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
           onBidClick={() => setShowBidModal(true)}
-          onShareClick={(listing) => {
-            setShareListing(listing);
-            setShowShareCard(true);
-          }}
         />
       )}
 
@@ -261,17 +250,6 @@ const MarketplacePage = () => {
           fetchListings(); // Refresh listings
         }}
       />
-
-      {/* Share Card Generator Modal */}
-      {showShareCard && shareListing && (
-        <ShareCardGenerator
-          listing={shareListing}
-          onClose={() => {
-            setShowShareCard(false);
-            setShareListing(null);
-          }}
-        />
-      )}
     </div>
   );
 };
@@ -289,22 +267,9 @@ const CompactCard = ({ listing, onClick }) => {
   const fullQty = formatNumber(qty);
   const qtyInWords = numberToWords(qty);
   
-  // Check if listing is boosted
-  const isBoosted = listing.isBoosted || (listing.boostExpiresAt && new Date(listing.boostExpiresAt) > new Date());
-  
   // BUY opportunity = green theme (seller is selling, user can buy)
   // SELL opportunity = blue theme (buyer is buying, user can sell to them)
-  // BOOSTED = premium golden theme
-  const cardStyles = isBoosted ? {
-    border: 'border-2 border-amber-400',
-    gradient: 'from-amber-50 via-yellow-50 to-orange-50',
-    tagBg: 'bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500',
-    tagText: 'text-white',
-    priceColor: 'text-amber-600',
-    iconBg: 'bg-amber-100',
-    iconColor: 'text-amber-600',
-    shadow: 'shadow-lg shadow-amber-200/60'
-  } : isSell ? {
+  const cardStyles = isSell ? {
     border: 'border-blue-200',
     gradient: 'from-blue-50 to-white',
     tagBg: 'bg-gradient-to-r from-blue-500 to-blue-600',
@@ -327,39 +292,39 @@ const CompactCard = ({ listing, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border} ${isBoosted && 'ring-2 ring-amber-300/50'}`}
+      className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border}`}
     >
       <div className="p-3">
         {/* Top Row: Logo and Company Info */}
         <div className="flex items-start gap-2.5 mb-3">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <img
-              src={listing.companyId?.logo || listing.companyId?.Logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`}
-              alt={listing.companyName}
-              className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
-              onError={(e) => { 
-                e.target.onerror = null; 
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`;
-              }}
-            />
+            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
+              <img
+                src={listing.companyId.logo || listing.companyId.Logo}
+                alt={listing.companyName}
+                className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className={`w-11 h-11 rounded-xl ${cardStyles.iconBg} flex items-center justify-center border-2 border-white shadow-sm`}>
+                <span className={`${cardStyles.iconColor} font-bold text-lg`}>
+                  {listing.companyName?.[0] || 'C'}
+                </span>
+              </div>
+            )}
           </div>
           
-          {/* Company Name + Premium Badge */}
-          <div className="flex-1 min-w-0 pt-0.5 flex items-start gap-1.5">
-            <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2 flex-1">
+          {/* Company Name */}
+          <div className="flex-1 min-w-0 pt-0.5">
+            <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2">
               {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
             </h3>
-            {isBoosted && (
-              <span className="flex-shrink-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full text-[8px] font-bold shadow-sm">
-                ⚡ PREMIUM
-              </span>
-            )}
           </div>
         </div>
 
         {/* Divider */}
-        <div className={`h-px ${isBoosted ? 'bg-amber-200' : isSell ? 'bg-blue-100' : 'bg-green-100'} mb-2.5`}></div>
+        <div className={`h-px ${isSell ? 'bg-blue-100' : 'bg-green-100'} mb-2.5`}></div>
 
         {/* Price & Qty Row */}
         <div className="flex items-center justify-between">
@@ -411,7 +376,7 @@ const CompactCard = ({ listing, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 // POPUP MODAL - Card click opens animated popup with full details
 // ═══════════════════════════════════════════════════════════════
-const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick, onShareClick }) => {
+const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
@@ -456,8 +421,14 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleShare = (e) => {
     e.stopPropagation();
     haptic.light();
-    if (onShareClick) {
-      onShareClick(listing);
+    if (navigator.share) {
+      navigator.share({ 
+        title: listing.companyName, 
+        url: window.location.origin + `/listing/${listing._id}`
+      }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(window.location.origin + `/listing/${listing._id}`);
+      toast.success('Link copied!');
     }
   };
 
@@ -533,15 +504,19 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
           <div className="flex items-start gap-3 mb-4">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <img
-                src={company.logo || company.Logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`}
-                alt={listing.companyName}
-                className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(listing.companyName)}&background=random&color=fff&size=128`;
-                }}
-              />
+              {(company.logo || company.Logo) ? (
+                <img
+                  src={company.logo || company.Logo}
+                  alt={listing.companyName}
+                  className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">
+                    {listing.companyName?.[0] || 'C'}
+                  </span>
+                </div>
+              )}
             </div>
             
             {/* Company Info */}
@@ -601,12 +576,6 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 <p className="text-gray-600">
                   <span className="text-gray-400 w-16 inline-block">CIN:</span> 
                   <span className="font-mono text-gray-800 text-[10px]">{company.cin || company.CIN}</span>
-                </p>
-              )}
-              {(company.registrationDate || company.RegistrationDate) && (
-                <p className="text-gray-600">
-                  <span className="text-gray-400 w-16 inline-block">Reg Date:</span> 
-                  <span className="font-mono text-gray-800">{formatDate(company.registrationDate || company.RegistrationDate)}</span>
                 </p>
               )}
             </div>
@@ -833,7 +802,6 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

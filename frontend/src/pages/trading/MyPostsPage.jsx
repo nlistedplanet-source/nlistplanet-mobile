@@ -306,10 +306,14 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
   const isSell = listing.type === 'sell';
   const bidsArray = (isSell ? listing.bids : listing.offers) || [];
   
-  // Separate bids into Counter Offers (in-progress) and Pending Bids
+  // Separate bids into different categories:
+  // 1. Buyer Accepted - waiting for seller to accept (pending_confirmation)
+  // 2. Counter Offers (in-progress negotiations)
+  // 3. Pending Bids (new bids awaiting response)
+  const buyerAcceptedBids = bidsArray.filter(b => b.status === 'pending_confirmation');
   const counterOfferBids = bidsArray.filter(b => b.status === 'countered');
   const pendingBids = bidsArray.filter(b => b.status === 'pending');
-  const activeBidsCount = counterOfferBids.length + pendingBids.length;
+  const activeBidsCount = buyerAcceptedBids.length + counterOfferBids.length + pendingBids.length;
   
   const sellerPrice = isSell ? (listing.sellerDesiredPrice || listing.price) : (listing.buyerMaxPrice || listing.price);
   const totalAmount = sellerPrice * listing.quantity;
@@ -681,7 +685,65 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
             </div>
           )}
 
-          {/* Section 2: Pending Bids */}
+          {/* Section 2: Buyer Accepted - Waiting for Seller */}
+          {buyerAcceptedBids.length > 0 && (
+            <div>
+              <div className="w-full bg-gradient-to-r from-green-100 to-emerald-100 px-3 py-2 rounded-lg border-2 border-green-500 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-green-600">✅</span>
+                  <span className="text-xs font-bold text-green-800">Buyer Accepted ({buyerAcceptedBids.length})</span>
+                </div>
+              </div>
+              
+              <div className="mt-2 space-y-2">
+                {buyerAcceptedBids.map((bid, index) => {
+                  const displayPrice = bid.originalPrice || bid.price;
+                  const bidTotal = displayPrice * bid.quantity;
+                  
+                  return (
+                    <div 
+                      key={bid._id}
+                      onClick={() => handleBidCardClick(bid)}
+                      className="p-3 rounded-lg border-2 bg-green-50 border-green-300 hover:bg-green-100 cursor-pointer transition-all"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-green-700">
+                            👤 @{bid.user?.username || bid.username || `trader_${index + 1}`}
+                          </span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-green-200 text-green-800">
+                            Confirm Now
+                          </span>
+                        </div>
+                        <ChevronRight size={16} className="text-gray-400" />
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <div>
+                          <span className="text-gray-500">Price: </span>
+                          <span className="font-bold text-gray-900">{formatCurrency(displayPrice)}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Qty: </span>
+                          <span className="font-bold text-gray-900">{formatShortQty(bid.quantity)}</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-500">Total: </span>
+                          <span className="font-bold text-green-700">{formatCurrency(bidTotal)}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="text-[10px] text-gray-500">
+                        Accepted: {bid.buyerAcceptedAt ? new Date(bid.buyerAcceptedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section 3: Pending Bids */}
           {pendingBids.length > 0 && (
             <div>
               <button 
