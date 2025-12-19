@@ -526,9 +526,17 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-gray-500">
-              {listing.companyId?.Sector || 'Unlisted Share'}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-[10px] text-gray-500">
+                {listing.companyId?.Sector || 'Unlisted Share'}
+              </p>
+              {/* Post ID Badge */}
+              {listing.postId && (
+                <span className="text-[9px] font-mono font-semibold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-200">
+                  {listing.postId}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

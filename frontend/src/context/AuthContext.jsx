@@ -1,7 +1,11 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authAPI } from '../utils/api';
-import { storage } from '../utils/helpers';
+import { storage, haptic } from '../utils/helpers';
 import toast from 'react-hot-toast';
+import { 
+  requestNotificationPermission, 
+  onForegroundMessage 
+} from '../config/firebase';
 
 const AuthContext = createContext();
 
@@ -17,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
+  const [fcmToken, setFcmToken] = useState(null);
 
   // Auto-logout after 30 minutes of inactivity
   useEffect(() => {
@@ -81,6 +86,106 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
+  // Register FCM token when user logs in
+  useEffect(() => {
+    if (!user || fcmToken) return;
+
+    const registerFCMToken = async () => {
+      try {
+        const token = await requestNotificationPermission();
+        
+        if (token) {
+          setFcmToken(token);
+          
+          // Register token with backend
+          const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com'}/api/notifications/register-device`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${storage.get('token')}`
+            },
+            body: JSON.stringify({ fcmToken: token })
+          });
+          
+          if (response.ok) {
+            console.log('FCM token registered successfully');
+            haptic.success();
+            toast.success('🔔 Push notifications enabled!', { duration: 2000 });
+          }
+        }
+      } catch (error) {
+        console.error('Failed to register FCM token:', error);
+      }
+    };
+
+    // Ask for permission after a short delay (better UX)
+    const timer = setTimeout(() => {
+      registerFCMToken();
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [user, fcmToken]);
+
+  // Listen for foreground messages
+  useEffect(() => {
+    if (!user) return;
+
+    const unsubscribe = onForegroundMessage((notification) => {
+      // Trigger haptic feedback
+      haptic.notification();
+      
+      // Show toast notification
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? 'animate-enter' : 'animate-leave'
+            } max-w-md w-full bg-white shadow-xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+            onClick={() => {
+              if (notification.actionUrl) {
+                window.location.href = notification.actionUrl;
+              }
+              toast.dismiss(t.id);
+            }}
+          >
+            <div className="flex-1 w-0 p-4">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg">
+                    <span className="text-white text-2xl">🔔</span>
+                  </div>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-bold text-gray-900">
+                    {notification.title}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    {notification.body}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex border-l border-gray-200">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  haptic.light();
+                  toast.dismiss(t.id);
+                }}
+                className="w-full border border-transparent rounded-none rounded-r-2xl p-4 flex items-center justify-center text-sm font-medium text-primary-600 hover:text-primary-500 active:bg-gray-50"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ),
+        { duration: 6000, position: 'top-center' }
+      );
+    });
+
+    return unsubscribe;
+  }, [user]);
+
   const login = async (email, password) => {
     try {
       // Backend expects field name `username` (can be email or username)
@@ -113,11 +218,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      // Unregister FCM token if present
+      if (fcmToken) {
+        await fetch(`${process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com'}/api/notifications/unregister-device`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${storage.get('token')}`
+          },
+          body: JSON.stringify({ fcmToken })
+        });
+        setFcmToken(null);
+      }
+    } catch (error) {
+      console.error('Failed to unregister FCM token:', error);
+    }
+    
     setUser(null);
     setToken(null);
     storage.remove('token');
     storage.remove('user');
+    haptic.success();
     toast.success('Logged out successfully');
   };
 

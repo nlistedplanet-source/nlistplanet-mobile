@@ -112,7 +112,7 @@ const ListingDetailPage = () => {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-white mb-1">{listing.companyName}</h1>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               {isSell ? (
                 <TrendingDown className="w-4 h-4 text-white" />
               ) : (
@@ -122,6 +122,12 @@ const ListingDetailPage = () => {
                 {isSell ? 'SELLING' : 'BUYING'}
               </span>
             </div>
+            {/* Post ID Badge */}
+            {listing.postId && (
+              <div className="inline-block bg-white/20 backdrop-blur-sm border border-white/30 text-white text-[10px] font-mono font-semibold px-2 py-1 rounded-md">
+                {listing.postId}
+              </div>
+            )}
           </div>
         </div>
       </div>

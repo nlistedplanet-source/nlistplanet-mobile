@@ -294,6 +294,13 @@ const CompactCard = ({ listing, onClick }) => {
       onClick={onClick}
       className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border}`}
     >
+      {/* Post ID Badge */}
+      {listing.postId && (
+        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm border border-gray-300 text-gray-700 text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md shadow-sm z-10">
+          {listing.postId}
+        </div>
+      )}
+
       <div className="p-3">
         {/* Top Row: Logo and Company Info */}
         <div className="flex items-start gap-2.5 mb-3">
