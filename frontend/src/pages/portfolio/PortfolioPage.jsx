@@ -376,12 +376,15 @@ const PortfolioPage = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity (Shares) *</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={addForm.quantity}
-                  onChange={(e) => setAddForm(prev => ({ ...prev, quantity: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setAddForm(prev => ({ ...prev, quantity: val }));
+                  }}
                   placeholder="Enter number of shares"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  min="1"
                 />
               </div>
 
@@ -389,13 +392,15 @@ const PortfolioPage = () => {
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Buy Price (per share) *</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={addForm.buyPrice}
-                  onChange={(e) => setAddForm(prev => ({ ...prev, buyPrice: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    setAddForm(prev => ({ ...prev, buyPrice: val }));
+                  }}
                   placeholder="Enter price per share"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  min="0.01"
-                  step="0.01"
                 />
               </div>
 

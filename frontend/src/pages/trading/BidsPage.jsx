@@ -422,7 +422,15 @@ const BidsPage = () => {
                     <span className="text-gray-500 text-xs block">Price</span>
                     <span className="font-bold text-gray-900">
                       {selectedActivity.status === 'countered' && selectedActivity.counterHistory?.length > 0
-                        ? formatCurrency(calculateBuyerPays(selectedActivity.counterHistory[selectedActivity.counterHistory.length - 1].price))
+                          ? (() => {
+                              const lastCounter = selectedActivity.counterHistory[selectedActivity.counterHistory.length - 1];
+                              const isBid = selectedActivity.type === 'bid';
+                              if (isBid) {
+                                return formatCurrency(lastCounter.by === 'seller' ? calculateBuyerPays(lastCounter.price) : lastCounter.price);
+                              } else {
+                                return formatCurrency(lastCounter.by === 'buyer' ? calculateSellerGets(lastCounter.price) : lastCounter.price);
+                              }
+                            })()
                         : formatCurrency(selectedActivity.price)
                       }
                     </span>
@@ -442,12 +450,14 @@ const BidsPage = () => {
               <div className="mb-3">
                 <label className="block text-sm font-bold text-gray-700 mb-1">Counter Price *</label>
                 <input 
-                  type="number" 
+                  type="text" 
+                  inputMode="decimal"
                   required 
-                  min="1" 
-                  step="0.01" 
                   value={counterPrice} 
-                  onChange={(e) => setCounterPrice(e.target.value)} 
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    setCounterPrice(val);
+                  }} 
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold text-gray-900" 
                   placeholder="Enter counter price" 
                 />
@@ -456,11 +466,14 @@ const BidsPage = () => {
               <div className="mb-4">
                 <label className="block text-sm font-bold text-gray-700 mb-1">Quantity *</label>
                 <input 
-                  type="number" 
+                  type="text" 
+                  inputMode="numeric"
                   required 
-                  min="1" 
                   value={counterQuantity} 
-                  onChange={(e) => setCounterQuantity(e.target.value)} 
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setCounterQuantity(val);
+                  }} 
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-semibold text-gray-900" 
                   placeholder="Enter quantity" 
                 />
@@ -530,12 +543,8 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
        displayPrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
      }
   } else {
-     // Initial bid/offer - show correct price based on role using helpers
-     if (isBid) {
-       displayPrice = calculateBuyerPays(activity.originalPrice || activity.price);
-     } else {
-       displayPrice = calculateSellerGets(activity.originalPrice || activity.price);
-     }
+     // Initial bid/offer - show the actual price entered by the user
+     displayPrice = activity.originalPrice || activity.price;
   }
 
   const statusConfig = {
@@ -658,7 +667,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
               activity.status === 'rejected' ? 'text-red-700' :
               'text-green-700'
             }`}>
-              {formatCurrency(isBid ? calculateBuyerPays(activity.originalPrice || activity.price) : calculateSellerGets(activity.originalPrice || activity.price))}
+              {formatCurrency(displayPrice)}
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-2">
@@ -668,7 +677,7 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
           <div className="bg-blue-50 rounded-lg p-2">
             <p className="text-[9px] text-gray-500 uppercase font-semibold">Total</p>
             <p className="text-xs font-bold text-blue-700">
-              {formatCurrency((isBid ? calculateBuyerPays(activity.originalPrice || activity.price) : calculateSellerGets(activity.originalPrice || activity.price)) * activity.quantity)}
+              {formatCurrency(displayPrice * activity.quantity)}
             </p>
           </div>
         </div>

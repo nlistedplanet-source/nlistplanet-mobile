@@ -237,7 +237,15 @@ export const storage = {
   get: (key) => {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : null;
+      if (!item) return null;
+      
+      // Try to parse as JSON, if fails return raw string (for tokens)
+      try {
+        return JSON.parse(item);
+      } catch {
+        // Not valid JSON, return as-is (raw token string)
+        return item;
+      }
     } catch (error) {
       console.error('Error reading from localStorage:', error);
       return null;
@@ -245,7 +253,9 @@ export const storage = {
   },
   set: (key, value) => {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      // Store strings directly, objects as JSON
+      const toStore = typeof value === 'string' ? value : JSON.stringify(value);
+      localStorage.setItem(key, toStore);
       return true;
     } catch (error) {
       console.error('Error writing to localStorage:', error);

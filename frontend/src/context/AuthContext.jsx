@@ -4,7 +4,8 @@ import { storage, haptic } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { 
   requestNotificationPermission, 
-  onForegroundMessage 
+  onForegroundMessage,
+  signInWithGoogle as firebaseGoogleSignIn
 } from '../config/firebase';
 
 const AuthContext = createContext();
@@ -88,17 +89,32 @@ export const AuthProvider = ({ children }) => {
 
   // Register FCM token when user logs in
   useEffect(() => {
-    if (!user || fcmToken) return;
+    console.log('🔔 FCM Registration Effect - user:', !!user, 'fcmToken:', !!fcmToken);
+    
+    if (!user) {
+      console.log('⏳ Waiting for user to login...');
+      return;
+    }
+    
+    if (fcmToken) {
+      console.log('✅ FCM token already registered');
+      return;
+    }
 
     const registerFCMToken = async () => {
+      console.log('🚀 Starting FCM token registration...');
       try {
         const token = await requestNotificationPermission();
+        console.log('📱 requestNotificationPermission result:', token ? 'Got token!' : 'No token');
         
         if (token) {
           setFcmToken(token);
           
           // Register token with backend
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com'}/api/notifications/register-device`, {
+          const apiUrl = process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com';
+          console.log('📤 Sending FCM token to backend:', apiUrl);
+          
+          const response = await fetch(`${apiUrl}/api/notifications/register-device`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -107,18 +123,27 @@ export const AuthProvider = ({ children }) => {
             body: JSON.stringify({ fcmToken: token })
           });
           
+          console.log('📥 Backend response status:', response.status);
+          
           if (response.ok) {
-            console.log('FCM token registered successfully');
+            console.log('✅ FCM token registered successfully with backend!');
             haptic.success();
             toast.success('🔔 Push notifications enabled!', { duration: 2000 });
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            console.error('❌ Backend rejected FCM token:', errorData);
           }
+        } else {
+          console.warn('⚠️ No FCM token received - check notification permission');
         }
       } catch (error) {
-        console.error('Failed to register FCM token:', error);
+        console.error('❌ Failed to register FCM token:', error);
+        console.error('Error details:', error.message, error.stack);
       }
     };
 
     // Ask for permission after a short delay (better UX)
+    console.log('⏱️ Scheduling FCM registration in 2 seconds...');
     const timer = setTimeout(() => {
       registerFCMToken();
     }, 2000);

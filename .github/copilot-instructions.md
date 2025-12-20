@@ -1,103 +1,66 @@
-# Copilot Instructions for NListPlanet Mobile
+# Copilot Instructions — NListPlanet Mobile PWA
 
-## Architecture Overview
-P2P marketplace for unlisted shares with admin-mediated transactions. Mobile PWA (forked from UnlistedHub-USM).
+> **See [root copilot-instructions](../../.github/copilot-instructions.md) for full architecture, fee model, and backend details.**
 
-**Tech Stack:** React 19, Node.js/Express, MongoDB (Mongoose), JWT auth, Tailwind CSS
+## Mobile PWA Specifics
 
-## Project Structure
-```
-backend/
-├── server.js          # Express app with Helmet, CORS, rate limiting
-├── models/            # Mongoose schemas (User, Listing, Company, Transaction...)
-├── routes/            # API endpoints (/api/auth, /api/listings, /api/admin...)
-├── middleware/        # auth.js (JWT), validation.js, securityLogger.js
-└── utils/             # emailService.js, smsService.js
+**Tech Stack:** React 19 + Tailwind CSS + PWA
 
-frontend/src/
-├── context/           # AuthContext.jsx (login state, axios interceptor)
-├── pages/             # Route components
-├── components/        # Reusable UI (ListingCard, etc.)
-└── utils/             # api.js (axios wrappers), helpers.js (price calculations + mobile utils)
-```
-
-## Developer Workflows
 ```bash
-# Backend
-cd backend && npm install
-npm run dev          # nodemon hot-reload
-npm start            # production
-GET /api/health      # health check
-
-# Frontend
-cd frontend && npm install
-npm start            # dev server (localhost:3000)
-npm run build        # production build
+cd nlistplanet-mobile/frontend && npm install && npm start  # Port 3001
 ```
-**Environment:** Copy `.env.example` → `.env`, never commit secrets. Restart server after changes.
 
-## Critical Business Logic: Platform Fee (2%)
-The platform fee is the core pricing mechanism. Use helper functions from `utils/helpers.js`:
+## Mobile-Only Utilities (`src/utils/helpers.js`)
 
 ```javascript
-// frontend/src/utils/helpers.js
-calculateBuyerPays(price)  // → price * 1.02 (buyer pays +2%)
-calculateSellerGets(price) // → price * 0.98 (seller gets -2%)
-getPriceDisplay(price, listingType, isOwner) // → { displayPrice, label }
+// Haptic feedback
+haptic.light()           // 10ms vibration
+haptic.medium()          // 20ms vibration  
+haptic.success()         // [10, 50, 10]ms pattern
+haptic.error()           // [50, 100, 50]ms pattern
+triggerHaptic('medium')  // Generic trigger
+
+// Short number formatting
+formatShortNumber(1500000)   // → "15 L"
+formatShortNumber(25000000)  // → "2.5 Cr"
+
+// Safe localStorage wrapper
+storage.get('key')       // Returns parsed JSON or null
+storage.set('key', obj)  // Stores as JSON string
+storage.remove('key')
+storage.clear()
 ```
 
-**Price Display Rules:**
-| Listing Type | Owner Sees | Others See |
-|--------------|------------|------------|
-| SELL (₹100)  | ₹100 (Your Price) | ₹102 (Buyer Pays) |
-| BUY (₹100)   | ₹100 (Your Price) | ₹98 (Seller Gets) |
+## Key Pages Structure
 
-Backend mirrors this in `models/Listing.js` with `buyerOfferedPrice`, `sellerReceivesPrice`, `platformFee` fields on bids.
+```
+src/pages/
+├── auth/           # Login, Register, ForgotPassword
+├── dashboard/      # User dashboard tabs
+├── marketplace/    # Browse listings
+├── listing/        # Create/view listings
+├── trading/        # Bid management, negotiations
+├── portfolio/      # Holdings tracker
+├── referrals/      # Referral earnings
+├── kyc/            # KYC verification
+└── settings/       # User preferences
+```
 
-## Auth Pattern
-- **Backend:** JWT via `middleware/auth.js` - `protect` (required), `optionalAuth` (guest allowed), `authorize(...roles)`
-- **Frontend:** `AuthContext.jsx` - `useAuth()` hook provides `{ user, login, logout, isAuthenticated }`
-- **Header:** `Authorization: Bearer <token>` (axios default set in AuthContext)
-- **30-min inactivity logout** in frontend
+## Components to Keep Synced with Desktop
 
-## API Structure
-All endpoints prefixed with `/api`. See `frontend/src/utils/api.js` for axios wrappers:
+**Always update BOTH when modifying:**
+- `ShareCardGenerator.jsx` — html2canvas investment cards
+- `helpers.js` — Price calculation functions (fee logic must match)
+
+## Firebase Push (Mobile)
+
 ```javascript
-listingsAPI.getAll(), listingsAPI.create(), listingsAPI.placeBid()
-companiesAPI.getAll(), companiesAPI.search()
-adminAPI.getStats(), adminAPI.banUser()
+// In AuthContext.jsx after login:
+import { requestNotificationPermission } from '../config/firebase';
+const fcmToken = await requestNotificationPermission();
 ```
 
-## Key Patterns & Conventions
-1. **Anonymous Trading:** System-generated usernames (`@trader_xyz`), real identity only visible to admin
-2. **Validation:** Use `middleware/validation.js` - `validateListing`, `validateBid`, `validateObjectId`
-3. **CORS:** Whitelist in `server.js` + `CORS_ORIGINS` env var; auto-allows `*.vercel.app` previews
-4. **Security:** Helmet, rate limiting (300/15min global, 20/15min auth), Argon2 passwords, mongo-sanitize
-5. **No automated tests:** Validate manually via Postman/browser after changes
-6. **ES Modules:** Backend uses `"type": "module"` - use `import/export`, not `require`
-
-## Data Flow: Bid Lifecycle
-```
-Buyer places Bid → status: 'pending'
-  ↓
-Seller: Accept/Reject/Counter → status: 'accepted'/'rejected'/'countered'
-  ↓
-Counter rounds (max 4) with counterHistory array
-  ↓
-Both accept → Transaction created → Admin manual closure
-```
-
-## Mobile-Specific Utilities
-`frontend/src/utils/helpers.js` has additional mobile helpers:
-```javascript
-haptic.light()    // Vibration feedback
-haptic.success()  // Success pattern [10, 50, 10]ms
-triggerHaptic('medium')
-formatShortNumber(1500000)  // → "15 L"
-```
-
-## Deployment
-- **Backend:** Render.com auto-deploy on push to main (see `RENDER_AUTODEPLOY.md`)
+Service worker: `public/firebase-messaging-sw.js`
 - **Frontend:** Vercel auto-deploy with preview URLs
 - **Required env vars:** `MONGODB_URI`, `JWT_SECRET` (32+ chars), `FRONTEND_URL`, `CORS_ORIGINS`
 - **Mobile domain:** `mobile.nlistplanet.com`

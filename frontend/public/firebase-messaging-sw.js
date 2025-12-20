@@ -1,13 +1,13 @@
 // Firebase Cloud Messaging Service Worker
 // Handles background notifications when app is not in focus
 
-// Import Firebase scripts
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+// Import Firebase scripts - MUST match version in index.html
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
 // Firebase configuration (same as in firebase.js)
 const firebaseConfig = {
-  apiKey: "AIzaSyA7jdJrLTnfOcECcmQyrZDL5iEH97zOoJ8",
+  apiKey: "AIzaSyA7jdJrLTnFOcECcmQyrZDL5iEH97zOoJ8",
   authDomain: "nlistplanet.firebaseapp.com",
   projectId: "nlistplanet",
   storageBucket: "nlistplanet.firebasestorage.app",

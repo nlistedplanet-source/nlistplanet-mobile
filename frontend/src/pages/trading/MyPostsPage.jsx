@@ -1004,9 +1004,13 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Your Counter Price</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     value={counterPrice}
-                    onChange={(e) => setCounterPrice(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9.]/g, '');
+                      setCounterPrice(val);
+                    }}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 text-sm font-semibold"
                     placeholder="Enter price"
                   />
@@ -1014,9 +1018,13 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1">Quantity</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     value={counterQuantity}
-                    onChange={(e) => setCounterQuantity(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/[^0-9]/g, '');
+                      setCounterQuantity(val);
+                    }}
                     className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-0 text-sm font-semibold"
                     placeholder="Enter quantity"
                   />
@@ -1100,29 +1108,42 @@ const ModifyModal = ({ listing, onClose, onSuccess }) => {
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">Price (per share)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  setPrice(val);
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-0 text-sm font-semibold"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">Total Quantity</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setQuantity(val);
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-0 text-sm font-semibold"
               />
             </div>
             <div>
               <label className="block text-xs font-semibold text-gray-700 mb-1">Min Lot Size</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={minQuantity}
-                onChange={(e) => setMinQuantity(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setMinQuantity(val);
+                }}
                 className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-0 text-sm font-semibold"
               />
+            </div>
             </div>
           </div>
 
@@ -1357,9 +1378,13 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold">₹</span>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={soldPrice}
-                  onChange={(e) => setSoldPrice(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '');
+                    setSoldPrice(val);
+                  }}
                   className="w-full pl-8 pr-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-sm font-semibold"
                   placeholder="Enter final price"
                 />
@@ -1371,9 +1396,13 @@ const SoldModal = ({ listing, onClose, onSuccess }) => {
                 Quantity {isSell ? 'Sold' : 'Bought'}
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={soldQuantity}
-                onChange={(e) => setSoldQuantity(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setSoldQuantity(val);
+                }}
                 className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-0 text-sm font-semibold"
                 placeholder={`Max: ${listing.quantity}`}
               />
