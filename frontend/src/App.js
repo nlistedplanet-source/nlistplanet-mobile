@@ -20,6 +20,7 @@ const FAQPage = lazy(() => import('./pages/FAQPage'));
 const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const CompleteProfilePage = lazy(() => import('./pages/auth/CompleteProfilePage'));
 const EmailVerificationPage = lazy(() => import('./pages/auth/EmailVerificationPage'));
 const OTPVerificationPage = lazy(() => import('./pages/auth/OTPVerificationPage'));
 const CheckEmailPage = lazy(() => import('./pages/auth/CheckEmailPage'));
@@ -106,6 +107,7 @@ function AppRoutes() {
           <Route path="/verify-otp" element={<OTPVerificationPage />} />
           <Route path="/check-email" element={<CheckEmailPage />} />
           <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+          <Route path="/complete-profile" element={<ProtectedRoute><CompleteProfilePage /></ProtectedRoute>} />
 
           {/* Protected routes with bottom nav */}
           <Route path="/" element={<ProtectedRoute><AppLayout><HomePage /></AppLayout></ProtectedRoute>} />

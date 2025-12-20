@@ -274,6 +274,70 @@ export const AuthProvider = ({ children }) => {
     storage.set('user', userData);
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      const googleUser = await firebaseGoogleSignIn();
+      
+      // Send Google ID token to backend for verification
+      const response = await authAPI.googleLogin({
+        idToken: googleUser.idToken,
+        email: googleUser.email,
+        displayName: googleUser.displayName,
+        photoURL: googleUser.photoURL
+      });
+
+      const { token: jwtToken, user: userData, profileComplete } = response.data;
+      
+      setToken(jwtToken);
+      storage.set('token', jwtToken);
+      setUser(userData);
+      storage.set('user', userData);
+      
+      toast.success(`Welcome ${userData.fullName || userData.username}!`);
+      return { success: true, profileComplete };
+    } catch (error) {
+      console.error('Google login error:', error);
+      const message = error.response?.data?.message || error.message || 'Google login failed';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  const completeProfile = async (fullName, phone) => {
+    try {
+      const response = await authAPI.completeProfile({
+        fullName,
+        phone
+      });
+      
+      toast.success(response.data.message);
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to complete profile';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
+  const verifyProfileOtp = async (otp) => {
+    try {
+      const response = await authAPI.verifyProfileOtp({
+        otp
+      });
+      
+      // Update user with completed profile
+      setUser(response.data.user);
+      storage.set('user', response.data.user);
+      
+      toast.success(response.data.message);
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'OTP verification failed';
+      toast.error(message);
+      return { success: false, message };
+    }
+  };
+
   const value = {
     user,
     token,
@@ -282,6 +346,9 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    loginWithGoogle,
+    completeProfile,
+    verifyProfileOtp,
     isAuthenticated: !!token && !!user,
     isAdmin: user?.role === 'admin',
   };

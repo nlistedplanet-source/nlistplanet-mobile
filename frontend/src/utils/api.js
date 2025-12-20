@@ -100,6 +100,9 @@ export const authAPI = {
   updateProfile: (data) => api.put('/auth/profile', data),
   changePassword: (data) => api.put('/auth/change-password', data),
   updateEmail: (data) => api.put('/auth/update-email', data),
+  googleLogin: (data) => api.post('/auth/google-login', data),
+  completeProfile: (data) => api.post('/auth/complete-profile', data),
+  verifyProfileOtp: (data) => api.post('/auth/verify-profile-otp', data),
 };
 
 // Listings API
