@@ -5,7 +5,7 @@ import App from './App';
 import { ThemeProvider } from './context/ThemeContext';
 import reportWebVitals from './reportWebVitals';
 
-// Force rebuild: v1.0.2 - Dec 14, 2025
+// Force rebuild: v1.0.3 - Dec 20, 2025
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
