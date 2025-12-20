@@ -24,24 +24,33 @@ const SettingsPage = () => {
 
   const handleForceUpdate = async () => {
     haptic.success();
+    toast.loading('Updating app...', { id: 'update-toast' });
+    
     try {
+      // 1. Unregister service workers
       if ('serviceWorker' in navigator) {
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (let registration of registrations) {
           await registration.unregister();
         }
       }
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
       
-      // Clear local storage except auth token if we want to keep them logged in
-      // but for a full reset, clearing everything is safer
-      // localStorage.clear(); 
+      // 2. Clear all caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
       
-      window.location.reload(true);
+      toast.success('Cache cleared! Reloading...', { id: 'update-toast' });
+      
+      // 3. Small delay before reload to ensure operations finish
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?v=' + Date.now();
+      }, 1000);
+      
     } catch (error) {
       console.error('Update failed:', error);
-      window.location.reload(true);
+      window.location.reload();
     }
   };
 
