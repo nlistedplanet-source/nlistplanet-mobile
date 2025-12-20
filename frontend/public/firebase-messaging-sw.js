@@ -1,6 +1,6 @@
 // Firebase Cloud Messaging Service Worker
 // Handles background notifications when app is not in focus
-// Version: 1.0.5 - Enhanced lock screen notifications
+// Version: 1.0.6 - Fixed lock screen notifications with push fallback
 
 // Import Firebase scripts - MUST match version in index.html
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
@@ -102,11 +102,55 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle service worker activation
 self.addEventListener('activate', (event) => {
-  console.log('[firebase-messaging-sw.js] Service worker activated');
+  console.log('[firebase-messaging-sw.js] Service worker activated v1.0.5');
+  event.waitUntil(self.clients.claim());
 });
 
 // Handle service worker installation
 self.addEventListener('install', (event) => {
-  console.log('[firebase-messaging-sw.js] Service worker installed');
+  console.log('[firebase-messaging-sw.js] Service worker installed v1.0.5');
   self.skipWaiting();
+});
+
+// CRITICAL: Handle push events directly (fallback if onBackgroundMessage doesn't work)
+self.addEventListener('push', (event) => {
+  console.log('[firebase-messaging-sw.js] Push event received:', event);
+  
+  if (!event.data) {
+    console.log('[firebase-messaging-sw.js] No data in push event');
+    return;
+  }
+
+  try {
+    const payload = event.data.json();
+    console.log('[firebase-messaging-sw.js] Push payload:', payload);
+
+    // Check if notification is already handled by FCM
+    if (payload.notification) {
+      console.log('[firebase-messaging-sw.js] FCM notification, letting Firebase handle it');
+      return;
+    }
+
+    // Handle data-only messages
+    const notificationTitle = payload.data?.title || payload.title || 'NListPlanet';
+    const notificationBody = payload.data?.body || payload.body || payload.data?.message || 'You have a new notification';
+    
+    const notificationOptions = {
+      body: notificationBody,
+      icon: '/Logo.png',
+      badge: '/Logo.png',
+      tag: payload.data?.type || 'nlistplanet-push',
+      timestamp: Date.now(),
+      data: payload.data || {},
+      requireInteraction: true,
+      vibrate: [200, 100, 200, 100, 200],
+      renotify: true
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(notificationTitle, notificationOptions)
+    );
+  } catch (error) {
+    console.error('[firebase-messaging-sw.js] Error handling push:', error);
+  }
 });
