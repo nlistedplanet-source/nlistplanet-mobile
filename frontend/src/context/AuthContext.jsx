@@ -246,7 +246,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Unregister FCM token if present
       if (fcmToken) {
-        await fetch(`${process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com'}/api/notifications/unregister-device`, {
+        await fetch(`${API_BASE_URL}/notifications/unregister-device`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
