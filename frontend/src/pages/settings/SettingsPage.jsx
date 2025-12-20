@@ -54,13 +54,13 @@ const SettingsPage = () => {
   const handleTestPush = async () => {
     haptic.light();
     setIsTestingPush(true);
-    const success = await sendTestNotification();
+    const result = await sendTestNotification();
     setIsTestingPush(false);
     
-    if (success) {
+    if (result.success) {
       toast.success('Test notification sent! Check your tray.', { icon: '🚀' });
     } else {
-      toast.error('Failed to send test notification. Check permissions.');
+      toast.error(result.message || 'Failed to send test notification. Check permissions.');
     }
   };
 

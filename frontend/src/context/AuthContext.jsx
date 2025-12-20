@@ -347,10 +347,17 @@ export const AuthProvider = ({ children }) => {
           'Authorization': `Bearer ${storage.get('token')}`
         }
       });
-      return response.ok;
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        return { success: false, message: data.message || 'Failed to send notification' };
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error('Test push failed:', error);
-      return false;
+      return { success: false, message: 'Network error. Please check your connection.' };
     }
   };
 
