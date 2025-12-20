@@ -223,7 +223,8 @@ const SettingsPage = () => {
             <span className="text-3xl font-bold text-white">N</span>
           </div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
-          <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>Version 1.0.7</p>
+          <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>Version 1.1.0 (Latest)</p>
+          <p className="text-[10px] mb-3 opacity-50" style={{ color: 'var(--muted)' }}>Build: Dec 20, 2025 - 10:30 PM</p>
           
           <button
             onClick={handleForceUpdate}

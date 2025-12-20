@@ -5,7 +5,8 @@ import App from './App';
 import { ThemeProvider } from './context/ThemeContext';
 import reportWebVitals from './reportWebVitals';
 
-// Force rebuild: v1.0.5 - Dec 20, 2025 - Enhanced lock screen notifications
+// Force rebuild: v1.1.0 - Dec 20, 2025 - Major update
+console.log('NlistPlanet Mobile v1.1.0 starting...');
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

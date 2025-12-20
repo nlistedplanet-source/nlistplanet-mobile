@@ -1,6 +1,6 @@
 // Firebase Cloud Messaging Service Worker
 // Handles background notifications when app is not in focus
-// Version: 1.0.7 - Force update + Lock screen fix
+// Version: 1.1.0 - Force update + Lock screen fix
 
 // Import Firebase scripts - MUST match version in index.html
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
