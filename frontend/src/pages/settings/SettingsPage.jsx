@@ -8,20 +8,37 @@ import {
   HelpCircle,
   ChevronRight,
   Globe,
-  Vibrate
+  Vibrate,
+  Send
 } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../context/AuthContext';
 
 const SettingsPage = () => {
   const navigate = useNavigate();
+  const { sendTestNotification } = useAuth();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [hapticEnabled, setHapticEnabled] = useState(true);
+  const [isTestingPush, setIsTestingPush] = useState(false);
 
   const handleNotificationToggle = () => {
     haptic.light();
     setNotificationsEnabled(!notificationsEnabled);
     toast.success(`Notifications ${!notificationsEnabled ? 'enabled' : 'disabled'}`);
+  };
+
+  const handleTestPush = async () => {
+    haptic.light();
+    setIsTestingPush(true);
+    const success = await sendTestNotification();
+    setIsTestingPush(false);
+    
+    if (success) {
+      toast.success('Test notification sent! Check your tray.', { icon: '🚀' });
+    } else {
+      toast.error('Failed to send test notification. Check permissions.');
+    }
   };
 
   const handleHapticToggle = () => {
@@ -115,6 +132,16 @@ const SettingsPage = () => {
 
           <div style={{ borderTop: '1px solid var(--border-light)' }}>
             <SettingItem
+              icon={Send}
+              title="Test Push Notification"
+              subtitle={isTestingPush ? "Sending..." : "Verify your device registration"}
+              onClick={handleTestPush}
+              rightElement={isTestingPush ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600" /> : null}
+            />
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border-light)' }}>
+            <SettingItem
               icon={Vibrate}
               title="Haptic Feedback"
               subtitle="Vibration on button taps"
@@ -173,7 +200,7 @@ const SettingsPage = () => {
             <span className="text-3xl font-bold text-white">N</span>
           </div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
-          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.0</p>
+          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.4</p>
           <p className="text-xs" style={{ color: 'var(--muted)' }}>© 2025 NlistPlanet. All rights reserved.</p>
         </div>
       </div>

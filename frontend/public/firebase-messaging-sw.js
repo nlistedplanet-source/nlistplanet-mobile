@@ -1,5 +1,6 @@
 // Firebase Cloud Messaging Service Worker
 // Handles background notifications when app is not in focus
+// Version: 1.0.5 - Enhanced lock screen notifications
 
 // Import Firebase scripts - MUST match version in index.html
 importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
@@ -29,22 +30,32 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification?.title || 'NListPlanet';
   const notificationOptions = {
     body: payload.notification?.body || 'You have a new notification',
-    icon: payload.notification?.icon || '/logo192.png',
-    badge: '/logo192.png',
-    tag: payload.messageId || 'default',
+    icon: payload.notification?.icon || '/Logo.png',
+    badge: '/Logo.png',
+    image: payload.notification?.image || payload.data?.imageUrl,
+    tag: payload.data?.type || payload.messageId || 'default',
+    timestamp: Date.now(),
     data: {
-      url: payload.data?.actionUrl || '/dashboard',
-      clickAction: payload.data?.actionUrl || '/dashboard'
+      url: payload.data?.actionUrl || payload.fcm_options?.link || '/',
+      clickAction: payload.data?.actionUrl || payload.fcm_options?.link || '/',
+      type: payload.data?.type || 'general',
+      payload: payload.data || {}
     },
     requireInteraction: true,
+    silent: false,
+    vibrate: [200, 100, 200, 100, 200],
+    renotify: true,
+    dir: 'ltr',
+    lang: 'en-US',
     actions: [
       {
         action: 'open',
-        title: 'Open'
+        title: '📱 Open',
+        icon: '/Logo.png'
       },
       {
         action: 'close',
-        title: 'Close'
+        title: '❌ Dismiss'
       }
     ]
   };

@@ -4,8 +4,8 @@
     { "source": "/manifest.json", "destination": "/manifest.json" },
     { "source": "/asset-manifest.json", "destination": "/asset-manifest.json" },
     { "source": "/favicon.ico", "destination": "/favicon.ico" },
-    { "source": "/logo192.png", "destination": "/logo192.png" },
-    { "source": "/logo512.png", "destination": "/logo512.png" },
+    { "source": "/Logo.png", "destination": "/Logo.png" },
+    { "source": "/firebase-messaging-sw.js", "destination": "/firebase-messaging-sw.js" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/service-worker.js", "destination": "/service-worker.js" },
     { "source": "/(.*)", "destination": "/index.html" }
@@ -22,6 +22,15 @@
     },
     {
       "source": "/service-worker.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/firebase-messaging-sw.js",
       "headers": [
         {
           "key": "Cache-Control",

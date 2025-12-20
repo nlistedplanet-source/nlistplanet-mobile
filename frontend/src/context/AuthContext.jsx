@@ -338,6 +338,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendTestNotification = async () => {
+    try {
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com';
+      const response = await fetch(`${apiUrl}/api/notifications/test-push`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${storage.get('token')}`
+        }
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Test push failed:', error);
+      return false;
+    }
+  };
+
   const value = {
     user,
     token,
@@ -349,6 +365,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     completeProfile,
     verifyProfileOtp,
+    sendTestNotification,
     isAuthenticated: !!token && !!user,
     isAdmin: user?.role === 'admin',
   };
