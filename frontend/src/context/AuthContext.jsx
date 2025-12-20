@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }) => {
           setFcmToken(token);
           
           // Register token with backend
-          const apiUrl = process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com';
+          const apiUrl = process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com';
           console.log('📤 Sending FCM token to backend:', apiUrl);
           
           const response = await fetch(`${apiUrl}/api/notifications/register-device`, {
@@ -247,7 +247,7 @@ export const AuthProvider = ({ children }) => {
     try {
       // Unregister FCM token if present
       if (fcmToken) {
-        await fetch(`${process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com'}/api/notifications/unregister-device`, {
+        await fetch(`${process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com'}/api/notifications/unregister-device`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -340,7 +340,7 @@ export const AuthProvider = ({ children }) => {
 
   const sendTestNotification = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'https://unlistedhub-usm-backend.onrender.com';
+      const apiUrl = process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com';
       const response = await fetch(`${apiUrl}/api/notifications/test-push`, {
         method: 'POST',
         headers: {
