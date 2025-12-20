@@ -79,7 +79,7 @@ const PBLoader = ({ show = false }) => {
           {currentIndex === 0 ? (
             // Show N Logo - same as bottom nav
             <img 
-              src="/Logo copy.png" 
+              src="/crismas logo.png" 
               alt="NlistPlanet" 
               className="w-12 h-12 object-contain"
               onError={(e) => {

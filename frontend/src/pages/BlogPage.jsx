@@ -160,7 +160,7 @@ const BlogPage = () => {
           
           <div className="flex items-center gap-2">
             <img 
-              src="/new_logo.png" 
+              src="/crismas logo.png" 
               alt="NlistPlanet" 
               className="w-6 h-6 object-contain"
               onError={(e) => { e.target.style.display = 'none'; }}

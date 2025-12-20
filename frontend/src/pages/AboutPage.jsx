@@ -57,7 +57,7 @@ const AboutPage = () => {
             <h1 className="text-lg font-bold text-white">About Us</h1>
           </div>
           <img 
-            src="/new_logo.png" 
+            src="/crismas logo.png" 
             alt="NlistPlanet" 
             className="w-10 h-10 object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}
@@ -70,7 +70,7 @@ const AboutPage = () => {
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/30">
             <img 
-              src="/new_logo.png" 
+              src="/crismas logo.png" 
               alt="NlistPlanet" 
               className="w-16 h-16 object-contain"
               onError={(e) => { 

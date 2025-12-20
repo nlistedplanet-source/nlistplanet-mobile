@@ -127,7 +127,7 @@ const FAQPage = () => {
             </div>
           </div>
           <img 
-            src="/new_logo.png" 
+            src="/crismas logo.png" 
             alt="NlistPlanet" 
             className="w-10 h-10 object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}

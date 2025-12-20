@@ -602,7 +602,7 @@ const LandingPage = () => {
               {currentLogoIndex === 0 ? (
                 // Show N Logo
                 <img 
-                  src="/Logo copy.png" 
+                  src="/crismas logo.png" 
                   alt="NlistPlanet" 
                   className="w-10 h-10 object-contain animate-logo-fade"
                   onError={(e) => {
