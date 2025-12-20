@@ -294,13 +294,6 @@ const CompactCard = ({ listing, onClick }) => {
       onClick={onClick}
       className={`relative bg-gradient-to-br ${cardStyles.gradient} rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 shadow-md hover:shadow-lg ${cardStyles.shadow} active:scale-[0.97] border ${cardStyles.border}`}
     >
-      {/* Post ID Badge */}
-      {listing.postId && (
-        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm border border-gray-300 text-gray-700 text-[9px] font-mono font-semibold px-2 py-0.5 rounded-md shadow-sm z-10">
-          {listing.postId}
-        </div>
-      )}
-
       <div className="p-3">
         {/* Top Row: Logo and Company Info */}
         <div className="flex items-start gap-2.5 mb-3">
@@ -538,6 +531,12 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 }`}>
                   {isSell ? 'BUY' : 'SELL'}
                 </span>
+                {/* Post ID Badge */}
+                {listing.postId && (
+                  <span className="px-1.5 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-600 text-[9px] font-mono font-bold">
+                    {listing.postId}
+                  </span>
+                )}
                 {/* Info Tooltip Trigger */}
                 <button 
                   onClick={(e) => { e.stopPropagation(); setShowTooltip(!showTooltip); }}
