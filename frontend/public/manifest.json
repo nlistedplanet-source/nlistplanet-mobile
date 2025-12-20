@@ -1,6 +1,7 @@
 {
   "short_name": "NlistPlanet",
   "name": "NlistPlanet - Trade Unlisted Shares",
+  "version": "1.0.5",
   "description": "Trade unlisted shares on the go with NlistPlanet mobile app",
   "icons": [
     {

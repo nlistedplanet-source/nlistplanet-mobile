@@ -200,7 +200,7 @@ const SettingsPage = () => {
             <span className="text-3xl font-bold text-white">N</span>
           </div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
-          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.4</p>
+          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.5</p>
           <p className="text-xs" style={{ color: 'var(--muted)' }}>© 2025 NlistPlanet. All rights reserved.</p>
         </div>
       </div>
