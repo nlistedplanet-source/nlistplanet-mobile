@@ -1144,7 +1144,6 @@ const ModifyModal = ({ listing, onClose, onSuccess }) => {
                 className="w-full px-3 py-2 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-0 text-sm font-semibold"
               />
             </div>
-            </div>
           </div>
 
           {price && quantity && (
