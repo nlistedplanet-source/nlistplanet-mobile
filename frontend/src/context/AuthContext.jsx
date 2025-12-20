@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI } from '../utils/api';
+import { authAPI, API_BASE_URL } from '../utils/api';
 import { storage, haptic } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { 
@@ -111,10 +111,9 @@ export const AuthProvider = ({ children }) => {
           setFcmToken(token);
           
           // Register token with backend
-          const apiUrl = process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com';
-          console.log('📤 Sending FCM token to backend:', apiUrl);
+          console.log('📤 Sending FCM token to backend:', API_BASE_URL);
           
-          const response = await fetch(`${apiUrl}/api/notifications/register-device`, {
+          const response = await fetch(`${API_BASE_URL}/notifications/register-device`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -340,8 +339,7 @@ export const AuthProvider = ({ children }) => {
 
   const sendTestNotification = async () => {
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || 'https://nlistplanet-usm-v8dc.onrender.com';
-      const response = await fetch(`${apiUrl}/api/notifications/test-push`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/test-push`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${storage.get('token')}`

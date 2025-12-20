@@ -4,7 +4,7 @@ import { storage } from './helpers';
 // API Base URL - Update for production
 // Use hardcoded production URL to avoid stale Vercel env vars
 const PROD_API_URL = 'https://nlistplanet-usm-v8dc.onrender.com/api';
-const API_BASE_URL = process.env.NODE_ENV === 'development' 
+export const API_BASE_URL = process.env.NODE_ENV === 'development' 
   ? (process.env.REACT_APP_API_URL || 'http://localhost:5001/api')
   : PROD_API_URL;
 
