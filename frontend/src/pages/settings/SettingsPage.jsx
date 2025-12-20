@@ -22,6 +22,29 @@ const SettingsPage = () => {
   const [hapticEnabled, setHapticEnabled] = useState(true);
   const [isTestingPush, setIsTestingPush] = useState(false);
 
+  const handleForceUpdate = async () => {
+    haptic.success();
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (let registration of registrations) {
+          await registration.unregister();
+        }
+      }
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+      
+      // Clear local storage except auth token if we want to keep them logged in
+      // but for a full reset, clearing everything is safer
+      // localStorage.clear(); 
+      
+      window.location.reload(true);
+    } catch (error) {
+      console.error('Update failed:', error);
+      window.location.reload(true);
+    }
+  };
+
   const handleNotificationToggle = () => {
     haptic.light();
     setNotificationsEnabled(!notificationsEnabled);
@@ -200,7 +223,20 @@ const SettingsPage = () => {
             <span className="text-3xl font-bold text-white">N</span>
           </div>
           <h3 className="font-bold mb-1" style={{ color: 'var(--text)' }}>NlistPlanet Mobile</h3>
-          <p className="text-sm mb-1" style={{ color: 'var(--muted)' }}>Version 1.0.6</p>
+          <p className="text-sm mb-3" style={{ color: 'var(--muted)' }}>Version 1.0.7</p>
+          
+          <button
+            onClick={handleForceUpdate}
+            className="px-4 py-2 rounded-xl text-xs font-medium mb-4 transition-all active:scale-95"
+            style={{ 
+              backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+              color: '#10b981',
+              border: '1px solid rgba(16, 185, 129, 0.2)'
+            }}
+          >
+            Clear Cache & Update
+          </button>
+
           <p className="text-xs" style={{ color: 'var(--muted)' }}>© 2025 NlistPlanet. All rights reserved.</p>
         </div>
       </div>

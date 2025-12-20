@@ -1,6 +1,6 @@
-// Update cache version to force refresh - Dec 20, 2025 v1.0.5
-const CACHE_NAME = 'nlistplanet-v5';
-const STATIC_CACHE = 'nlistplanet-static-v5';
+// Update cache version to force refresh - Dec 20, 2025 v1.0.7
+const CACHE_NAME = 'nlistplanet-v6';
+const STATIC_CACHE = 'nlistplanet-static-v6';
 
 // Only cache static assets, not HTML
 const urlsToCache = [
