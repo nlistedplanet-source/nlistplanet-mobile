@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }) => {
           if (response.ok) {
             console.log('✅ FCM token registered successfully with backend!');
             haptic.success();
-            toast.success('🔔 Push notifications enabled!', { duration: 2000 });
+            // toast.success('🔔 Push notifications enabled!', { duration: 2000 });
           } else {
             const errorData = await response.json().catch(() => ({}));
             console.error('❌ Backend rejected FCM token:', errorData);

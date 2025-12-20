@@ -29,9 +29,9 @@ const InstallPrompt = () => {
       setDeferredPrompt(e);
       
       // Show prompt after 30 seconds of usage
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 30000);
+      // setTimeout(() => {
+      //   setShowPrompt(true);
+      // }, 30000);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
