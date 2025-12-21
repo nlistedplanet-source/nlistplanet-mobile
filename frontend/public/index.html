@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/Logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0, viewport-fit=cover, user-scalable=yes" />
-    <meta name="theme-color" content="#0a1628" />
+    <meta name="theme-color" content="#f8fafc" />
     <meta name="description" content="Trade unlisted shares on the go with NlistPlanet mobile app" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
@@ -48,18 +48,53 @@
     <!-- Splash screen background color -->
     <style>
       body {
-        background-color: #0a1628;
+        background-color: #f8fafc;
+        margin: 0;
+        padding: 0;
+      }
+      @keyframes loading-bar {
+        0% { transform: translateX(-100%); }
+        50% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+      @keyframes fade-in {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
       }
     </style>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root">
-      <div style="position: fixed; inset: 0; background-color: #0a1628; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-family: sans-serif;">
-        <div style="width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-          <span style="color: #10b981; font-size: 40px; font-weight: bold;">N</span>
+      <div style="position: fixed; inset: 0; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; z-index: 9999;">
+        <div style="display: flex; flex-direction: column; align-items: center; animation: fade-in 0.8s ease-out forwards;">
+          <!-- Logo -->
+          <div style="width: 112px; height: 112px; background: white; border-radius: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); border: 1px solid rgba(0,0,0,0.05); transform: rotate(3deg);">
+            <img src="/crismas logo.png" alt="N" style="width: 80px; height: 80px; object-fit: contain; transform: rotate(-3deg);" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color:#0ea5e9; font-size:48px; font-weight:900;&quot;>N</span>'">
+          </div>
+          
+          <!-- Brand -->
+          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+            <span style="font-size: 30px; font-weight: 800; color: #0ea5e9; letter-spacing: -0.5px;">Nlist</span>
+            <span style="font-size: 30px; font-weight: 800; color: #1e293b; letter-spacing: -0.5px;">Planet</span>
+          </div>
+          
+          <!-- Tagline -->
+          <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 2.4px; margin-bottom: 48px;">
+            P2P Platform for Unlisted Shares
+          </div>
+          
+          <!-- Loading Bar -->
+          <div style="width: 192px; height: 6px; background: #e2e8f0; border-radius: 100px; overflow: hidden; position: relative;">
+            <div style="position: absolute; inset: 0; background: linear-gradient(90deg, #0ea5e9, #6366f1, #0ea5e9); width: 50%; border-radius: 100px; animation: loading-bar 2s infinite ease-in-out;"></div>
+          </div>
         </div>
-        <div style="font-size: 14px; opacity: 0.8;">Loading NlistPlanet...</div>
+        
+        <!-- Footer -->
+        <div style="position: absolute; bottom: 48px; display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(255,255,255,0.5); border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+          <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
+          <span style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Secure P2P Trading</span>
+        </div>
       </div>
     </div>
   </body>
