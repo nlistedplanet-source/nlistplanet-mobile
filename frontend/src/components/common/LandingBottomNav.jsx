@@ -38,137 +38,156 @@ const LandingBottomNav = ({ onInstallClick }) => {
   }, []);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 safe-area-bottom">
-      <div className="flex items-center justify-around py-2 px-4">
-        {/* Home */}
-        <button
-          onClick={() => navigate('/')}
-          className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
-            activeTab === 'home' 
-              ? 'text-emerald-400' 
-              : 'text-gray-400 hover:text-gray-300'
-          }`}
-        >
-          <Home size={22} />
-          <span className="text-[10px] font-medium">Home</span>
-        </button>
-
-        {/* Blog */}
-        <button
-          onClick={() => navigate('/blog')}
-          className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
-            activeTab === 'blog' 
-              ? 'text-emerald-400' 
-              : 'text-gray-400 hover:text-gray-300'
-          }`}
-        >
-          <BookOpen size={22} />
-          <span className="text-[10px] font-medium">Blog</span>
-        </button>
-
-        {/* Center Logo - Rotating between Logo and Lottie animations */}
-        <button
-          onClick={() => navigate('/register')}
-          className="relative -mt-6 flex items-center justify-center"
-        >
-          <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30 border-4 border-gray-900 overflow-hidden">
-            {currentLogoIndex === 0 ? (
-              // Show N Logo
-              <img 
-                src="/crismas logo.png" 
-                alt="NlistPlanet" 
-                className="w-10 h-10 object-contain animate-fade-in"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.parentElement.innerHTML = '<span class="text-2xl font-bold text-emerald-600">N</span>';
-                }}
-              />
-            ) : (
-              // Show Lottie animation using DotLottieReact
-              <div className="animate-fade-in" style={{ width: 52, height: 52 }}>
-                <DotLottieReact
-                  src={LOTTIE_ANIMATIONS[currentLogoIndex - 1]}
-                  loop
-                  autoplay
-                  style={{ width: '100%', height: '100%' }}
-                />
-              </div>
-            )}
-          </div>
-        </button>
-
-        {/* App Download */}
-        <button
-          onClick={onInstallClick}
-          className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all text-gray-400 hover:text-gray-300"
-        >
-          <Download size={22} />
-          <span className="text-[10px] font-medium">App</span>
-        </button>
-
-        {/* More Menu */}
-        <div className="relative">
+    <div className="fixed bottom-4 left-4 right-4 z-50 safe-area-bottom">
+      <nav className="mx-auto max-w-md bg-gray-900/90 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)] rounded-[2.5rem] px-2 py-2">
+        <div className="flex items-center justify-around">
+          {/* Home */}
           <button
-            onClick={() => setShowMoreMenu(!showMoreMenu)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition-all ${
-              showMoreMenu || ['about', 'contact', 'faq'].includes(activeTab)
+            onClick={() => navigate('/')}
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all relative ${
+              activeTab === 'home' 
                 ? 'text-emerald-400' 
                 : 'text-gray-400 hover:text-gray-300'
             }`}
           >
-            <MoreHorizontal size={22} />
-            <span className="text-[10px] font-medium">More</span>
+            <div className={`p-1.5 rounded-xl transition-all duration-300 ${activeTab === 'home' ? 'bg-emerald-500/10 scale-110' : ''}`}>
+              <Home size={22} />
+            </div>
+            <span className="text-[10px] font-medium">Home</span>
+            {activeTab === 'home' && (
+              <div className="absolute -bottom-1 w-1 h-1 bg-emerald-400 rounded-full animate-fade-in" />
+            )}
           </button>
 
-          {/* More Dropdown */}
-          {showMoreMenu && (
-            <>
-              <div 
-                className="fixed inset-0 z-40"
-                onClick={() => setShowMoreMenu(false)}
-              />
-              <div className="absolute bottom-full right-0 mb-2 w-40 bg-gray-800 rounded-xl shadow-xl border border-gray-700 overflow-hidden z-50">
-                <button
-                  onClick={() => {
-                    navigate('/about');
-                    setShowMoreMenu(false);
+          {/* Blog */}
+          <button
+            onClick={() => navigate('/blog')}
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all relative ${
+              activeTab === 'blog' 
+                ? 'text-emerald-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all duration-300 ${activeTab === 'blog' ? 'bg-emerald-500/10 scale-110' : ''}`}>
+              <BookOpen size={22} />
+            </div>
+            <span className="text-[10px] font-medium">Blog</span>
+            {activeTab === 'blog' && (
+              <div className="absolute -bottom-1 w-1 h-1 bg-emerald-400 rounded-full animate-fade-in" />
+            )}
+          </button>
+
+          {/* Center Logo - Rotating between Logo and Lottie animations */}
+          <button
+            onClick={() => navigate('/register')}
+            className="relative -mt-10 flex items-center justify-center"
+          >
+            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/40 border-4 border-gray-900 overflow-hidden transform active:scale-90 transition-transform">
+              {currentLogoIndex === 0 ? (
+                // Show N Logo
+                <img 
+                  src="/crismas logo.png" 
+                  alt="NlistPlanet" 
+                  className="w-10 h-10 object-contain animate-fade-in"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<span class="text-2xl font-bold text-emerald-600">N</span>';
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-700 transition-colors ${
-                    activeTab === 'about' ? 'text-emerald-400 bg-gray-700/50' : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  <Info size={18} />
-                  <span className="text-sm font-medium">About</span>
-                </button>
-                <button
-                  onClick={() => {
-                    navigate('/contact');
-                    setShowMoreMenu(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 border-t border-gray-700 hover:bg-gray-700 transition-colors ${
-                    activeTab === 'contact' ? 'text-emerald-400 bg-gray-700/50' : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  <Mail size={18} />
-                  <span className="text-sm font-medium">Contact</span>
-                </button>
-                <button
-                  onClick={() => {
-                    navigate('/faq');
-                    setShowMoreMenu(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-4 py-3 border-t border-gray-700 hover:bg-gray-700 transition-colors ${
-                    activeTab === 'faq' ? 'text-emerald-400 bg-gray-700/50' : 'text-gray-300 hover:text-white'
-                  }`}
-                >
-                  <HelpCircle size={18} />
-                  <span className="text-sm font-medium">FAQ</span>
-                </button>
+                />
+              ) : (
+                // Show Lottie animation using DotLottieReact
+                <div className="animate-fade-in" style={{ width: 52, height: 52 }}>
+                  <DotLottieReact
+                    src={LOTTIE_ANIMATIONS[currentLogoIndex - 1]}
+                    loop
+                    autoplay
+                    style={{ width: '100%', height: '100%' }}
+                  />
+                </div>
+              )}
+            </div>
+          </button>
+
+          {/* App Download */}
+          <button
+            onClick={onInstallClick}
+            className="flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all text-gray-400 hover:text-gray-300"
+          >
+            <div className="p-1.5 rounded-xl">
+              <Download size={22} />
+            </div>
+            <span className="text-[10px] font-medium">App</span>
+          </button>
+
+          {/* More Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowMoreMenu(!showMoreMenu)}
+              className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all relative ${
+                showMoreMenu || ['about', 'contact', 'faq'].includes(activeTab)
+                  ? 'text-emerald-400' 
+                  : 'text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              <div className={`p-1.5 rounded-xl transition-all duration-300 ${showMoreMenu || ['about', 'contact', 'faq'].includes(activeTab) ? 'bg-emerald-500/10 scale-110' : ''}`}>
+                <MoreHorizontal size={22} />
               </div>
-            </>
-          )}
+              <span className="text-[10px] font-medium">More</span>
+              {['about', 'contact', 'faq'].includes(activeTab) && (
+                <div className="absolute -bottom-1 w-1 h-1 bg-emerald-400 rounded-full animate-fade-in" />
+              )}
+            </button>
+
+            {/* More Dropdown */}
+            {showMoreMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMoreMenu(false)}
+                />
+                <div className="absolute bottom-full right-0 mb-4 w-44 bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden z-50 animate-scale-in">
+                  <button
+                    onClick={() => {
+                      navigate('/about');
+                      setShowMoreMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors ${
+                      activeTab === 'about' ? 'text-emerald-400 bg-emerald-500/10' : 'text-gray-300'
+                    }`}
+                  >
+                    <Info size={18} />
+                    <span className="text-sm font-medium">About Us</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/contact');
+                      setShowMoreMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 border-t border-white/5 hover:bg-white/5 transition-colors ${
+                      activeTab === 'contact' ? 'text-emerald-400 bg-emerald-500/10' : 'text-gray-300'
+                    }`}
+                  >
+                    <Mail size={18} />
+                    <span className="text-sm font-medium">Contact</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/faq');
+                      setShowMoreMenu(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 border-t border-white/5 hover:bg-white/5 transition-colors ${
+                      activeTab === 'faq' ? 'text-emerald-400 bg-emerald-500/10' : 'text-gray-300'
+                    }`}
+                  >
+                    <HelpCircle size={18} />
+                    <span className="text-sm font-medium">FAQ</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </nav>
 
       <style>{`
         @keyframes fade-in {
@@ -179,7 +198,7 @@ const LandingBottomNav = ({ onInstallClick }) => {
           animation: fade-in 0.3s ease-out forwards;
         }
       `}</style>
-    </nav>
+    </div>
   );
 };
 

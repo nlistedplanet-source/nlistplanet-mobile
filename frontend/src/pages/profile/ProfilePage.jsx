@@ -101,44 +101,49 @@ const ProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-24">
       {/* Profile Header */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-600 px-6 pt-safe pb-8 rounded-b-3xl shadow-lg">
-        <div className="flex items-center gap-4 mb-4">
+      <div className="bg-gradient-to-br from-primary-600 to-indigo-700 px-6 pt-safe pb-20 rounded-b-[3rem] shadow-lg relative overflow-hidden">
+        {/* Decorative Circles */}
+        <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-primary-400/20 rounded-full blur-2xl" />
+        
+        <div className="relative z-10 flex flex-col items-center text-center mt-4">
           {/* Avatar with Logo Overlay */}
-          <div className="relative">
-            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <span className="text-3xl font-bold text-blue-600">
+          <div className="relative mb-4">
+            <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3">
+              <span className="text-4xl font-bold text-primary-600 dark:text-primary-400 -rotate-3">
                 {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
               </span>
             </div>
-            <div className="absolute -bottom-1 -right-1">
-              <BrandLogo size={28} />
+            <div className="absolute -bottom-2 -right-2 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl shadow-lg">
+              <BrandLogo size={24} />
             </div>
           </div>
 
           {/* User Info */}
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white mb-1">
-              {user?.fullName || 'User'}
-            </h1>
-            <p className="text-blue-100 text-sm">@{user?.username}</p>
+          <h1 className="text-2xl font-bold text-white mb-1">
+            {user?.fullName || 'User'}
+          </h1>
+          <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full">
+            <p className="text-white/90 text-xs font-medium">@{user?.username}</p>
           </div>
         </div>
-
-        {/* Stats - REMOVED as per user request */}
       </div>
 
-      {/* Account Information */}
-      <div className="px-6 mt-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Account Information</h2>
-        <div className="bg-white rounded-2xl shadow-mobile overflow-hidden">
-          <InfoRow icon={Mail} label="Email" value={user?.email} />
-          <InfoRow icon={Phone} label="Phone" value={user?.phone || 'Not provided'} />
+      {/* Account Information Card */}
+      <div className="px-6 -mt-12 relative z-20">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-xl shadow-black/5 overflow-hidden border border-white/20 dark:border-zinc-800/50">
+          <div className="p-4 border-b border-gray-50 dark:border-zinc-800">
+            <h2 className="text-sm font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">Account Details</h2>
+          </div>
+          <InfoRow icon={Mail} label="Email" value={user?.email} color="blue" />
+          <InfoRow icon={Phone} label="Phone" value={user?.phone || 'Not provided'} color="indigo" />
           <InfoRow 
             icon={Calendar} 
             label="Member Since" 
             value={formatDate(user?.createdAt)} 
+            color="purple"
           />
           <InfoRow 
             icon={Shield} 
@@ -146,33 +151,31 @@ const ProfilePage = () => {
             value={
               <div className="flex items-center gap-2">
                 {user?.kycStatus === 'verified' ? (
-                  <>
-                    <CheckCircle size={16} className="text-green-600" />
-                    <span className="text-green-600 font-semibold">Verified</span>
-                  </>
+                  <span className="text-green-600 dark:text-green-400 font-bold text-sm flex items-center gap-1">
+                    <CheckCircle size={14} /> Verified
+                  </span>
                 ) : user?.kycStatus === 'pending' ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-yellow-600 font-semibold">Pending</span>
-                  </>
+                  <span className="text-amber-600 dark:text-amber-400 font-bold text-sm flex items-center gap-1">
+                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" /> Pending
+                  </span>
                 ) : (
-                  <>
-                    <XCircle size={16} className="text-red-600" />
-                    <span className="text-red-600 font-semibold">Not Verified</span>
-                  </>
+                  <span className="text-red-600 dark:text-red-400 font-bold text-sm flex items-center gap-1">
+                    <XCircle size={14} /> Not Verified
+                  </span>
                 )}
               </div>
             }
             isLast
+            color="emerald"
           />
         </div>
       </div>
 
       {/* Settings & Actions */}
-      <div className="px-6 mt-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-4">Settings & Support</h2>
-        <div className="bg-white rounded-2xl shadow-mobile overflow-hidden">
-          {menuItems.map((item, index) => (
+      <div className="px-6 mt-8">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 px-2">Settings & Support</h2>
+        <div className="grid grid-cols-1 gap-3">
+          {menuItems.map((item) => (
             <MenuItem
               key={item.id}
               icon={item.icon}
@@ -183,20 +186,19 @@ const ProfilePage = () => {
                 haptic.light();
                 item.onClick();
               }}
-              isLast={index === menuItems.length - 1}
             />
           ))}
         </div>
       </div>
 
       {/* Logout Button */}
-      <div className="px-6 mt-6 mb-6">
+      <div className="px-6 mt-10 mb-6">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-50 text-red-600 rounded-2xl p-4 font-semibold flex items-center justify-center gap-3 touch-feedback border-2 border-red-100"
+          className="w-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl p-4 font-bold flex items-center justify-center gap-3 touch-feedback border border-red-100 dark:border-red-500/20 shadow-sm active:scale-[0.98] transition-transform"
         >
           <LogOut size={20} />
-          Logout
+          Logout Account
         </button>
       </div>
 
@@ -233,43 +235,54 @@ const ProfilePage = () => {
 };
 
 // Info Row Component
-const InfoRow = ({ icon: Icon, label, value, isLast }) => (
-  <div className={`flex items-center gap-4 p-4 ${!isLast ? 'border-b border-gray-100' : ''}`}>
-    <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-      <Icon size={20} className="text-gray-600" />
+const InfoRow = ({ icon: Icon, label, value, isLast, color = 'blue' }) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400',
+    indigo: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+    purple: 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400',
+    emerald: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  };
+
+  return (
+    <div className={`flex items-center gap-4 p-4 ${!isLast ? 'border-b border-gray-50 dark:border-zinc-800' : ''}`}>
+      <div className={`w-10 h-10 ${colorClasses[color]} rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm`}>
+        <Icon size={20} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider">{label}</p>
+        <div className="text-gray-900 dark:text-zinc-100 font-semibold truncate">{value}</div>
+      </div>
     </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-gray-900 font-medium truncate">{value}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 // Menu Item Component
-const MenuItem = ({ icon: Icon, label, description, badge, onClick, isLast }) => (
+const MenuItem = ({ icon: Icon, label, description, badge, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-4 p-4 text-left touch-feedback ${
-      !isLast ? 'border-b border-gray-100' : ''
-    }`}
+    className="w-full flex items-center gap-4 p-4 text-left touch-feedback bg-white dark:bg-zinc-900 rounded-3xl shadow-sm border border-gray-50 dark:border-zinc-800/50 active:scale-[0.98] transition-all"
   >
-    <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center flex-shrink-0">
-      <Icon size={20} className="text-primary-600" />
+    <div className="w-12 h-12 bg-primary-50 dark:bg-primary-500/10 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-inner">
+      <Icon size={22} className="text-primary-600 dark:text-primary-400" />
     </div>
     <div className="flex-1 min-w-0">
-      <p className="font-semibold text-gray-900">{label}</p>
-      <p className="text-sm text-gray-500">{description}</p>
+      <p className="font-bold text-gray-900 dark:text-zinc-100">{label}</p>
+      <p className="text-xs text-gray-500 dark:text-zinc-500 mt-0.5">{description}</p>
     </div>
-    {badge && (
-      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-        badge === 'verified' 
-          ? 'bg-green-50 text-green-700' 
-          : 'bg-slate-50 text-amber-700'
-      }`}>
-        {badge}
-      </span>
-    )}
-    <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
+    <div className="flex items-center gap-2">
+      {badge && (
+        <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold uppercase tracking-tight ${
+          badge === 'verified' 
+            ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' 
+            : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+        }`}>
+          {badge}
+        </span>
+      )}
+      <div className="w-8 h-8 bg-gray-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center">
+        <ChevronRight size={18} className="text-gray-400 dark:text-zinc-600" />
+      </div>
+    </div>
   </button>
 );
 
