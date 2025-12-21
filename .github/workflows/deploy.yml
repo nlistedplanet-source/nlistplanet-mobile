@@ -1,0 +1,18 @@
+name: Auto Deploy Mobile to Vercel
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+
+jobs:
+  deploy:
+    name: Deploy Mobile Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        run: |
+          curl -X POST "${{ secrets.VERCEL_MOBILE_DEPLOY_HOOK }}"
+          echo "✅ Mobile deployment triggered!"
