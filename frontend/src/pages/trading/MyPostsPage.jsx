@@ -21,17 +21,18 @@ import {
   Clock,
   AlertCircle,
   XCircle,
-  ChevronRight
+  ChevronRight,
+  Bell
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import ShareCardGenerator from '../../components/ShareCardGenerator';
 import toast from 'react-hot-toast';
 
 const MyPostsPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, unreadCount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
@@ -125,18 +126,33 @@ const MyPostsPage = () => {
     <>
       <div className="min-h-screen bg-slate-50 pb-24">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-          <div className="px-4 pt-safe pb-3">
-            <div className="flex items-center justify-between mb-3">
-              <h1 className="text-xl font-bold text-gray-900">My Listings</h1>
+        <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col">
+              <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">My Listings</h1>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Manage your posts</p>
+            </div>
+            <div className="flex items-center gap-2">
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="w-9 h-9 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
+                className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 active:scale-90 transition-transform"
               >
                 <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
+              <button 
+                onClick={() => navigate('/notifications')}
+                className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 relative active:scale-90 transition-transform"
+              >
+                <Bell className="w-5 h-5 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
             </div>
+          </div>
 
             {/* SELL / BUY Tabs */}
             <div className="flex gap-2">
@@ -170,7 +186,6 @@ const MyPostsPage = () => {
               </button>
             </div>
           </div>
-        </div>
 
         {/* Listings */}
         <div className="px-4 pt-3">
@@ -320,27 +335,42 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
 
   // Helper to get latest counter info for a bid
   const getLatestCounterInfo = (bid) => {
+    // Helper to get price visible to the OWNER of this listing
+    const getVisibleToOwner = (price, by) => {
+      return getNetPriceForUser({ price }, isSell ? 'sell' : 'buy', true, by);
+    };
+
     if (!bid.counterHistory || bid.counterHistory.length === 0) {
-      return { buyerBid: bid.price, buyerQty: bid.quantity, yourPrice: null, yourQty: null, rounds: 0, latestBy: 'buyer' };
+      const oppositeParty = isSell ? 'buyer' : 'seller';
+      return { 
+        buyerBid: getVisibleToOwner(bid.price, oppositeParty), 
+        buyerQty: bid.quantity, 
+        yourPrice: null, 
+        yourQty: null, 
+        rounds: 0, 
+        latestBy: oppositeParty 
+      };
     }
     
     const history = bid.counterHistory;
-    let latestBuyerCounter = null;
-    let latestSellerCounter = null;
+    let latestOppositeCounter = null;
+    let latestOwnerCounter = null;
+    const oppositeParty = isSell ? 'buyer' : 'seller';
+    const ownerParty = isSell ? 'seller' : 'buyer';
     
     for (let i = history.length - 1; i >= 0; i--) {
-      if (!latestBuyerCounter && history[i].by === 'buyer') latestBuyerCounter = history[i];
-      if (!latestSellerCounter && history[i].by === 'seller') latestSellerCounter = history[i];
-      if (latestBuyerCounter && latestSellerCounter) break;
+      if (!latestOppositeCounter && history[i].by === oppositeParty) latestOppositeCounter = history[i];
+      if (!latestOwnerCounter && history[i].by === ownerParty) latestOwnerCounter = history[i];
+      if (latestOppositeCounter && latestOwnerCounter) break;
     }
     
     const latestEntry = history[history.length - 1];
     
     return {
-      buyerBid: latestBuyerCounter ? latestBuyerCounter.price : bid.price,
-      buyerQty: latestBuyerCounter ? latestBuyerCounter.quantity : bid.quantity,
-      yourPrice: latestSellerCounter ? latestSellerCounter.price : null,
-      yourQty: latestSellerCounter ? latestSellerCounter.quantity : null,
+      buyerBid: getVisibleToOwner(latestOppositeCounter ? latestOppositeCounter.price : bid.price, oppositeParty),
+      buyerQty: latestOppositeCounter ? latestOppositeCounter.quantity : bid.quantity,
+      yourPrice: latestOwnerCounter ? getVisibleToOwner(latestOwnerCounter.price, ownerParty) : null,
+      yourQty: latestOwnerCounter ? latestOwnerCounter.quantity : null,
       rounds: history.length,
       latestBy: latestEntry.by
     };
@@ -705,7 +735,7 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               
               <div className="mt-2 space-y-2">
                 {buyerAcceptedBids.map((bid, index) => {
-                  const displayPrice = bid.originalPrice || bid.price;
+                  const displayPrice = isSell ? bid.price * 0.98 : bid.price * 1.02;
                   const bidTotal = displayPrice * bid.quantity;
                   
                   return (
@@ -771,9 +801,8 @@ const MyPostCard = ({ listing, userId, onShare, onBoost, onModify, onDelete, onM
               {pendingBidsExpanded && (
                 <div className="mt-2 space-y-2">
                   {pendingBids.map((bid, index) => {
-                    // Seller sees what they will RECEIVE (buyer's bid × 0.98)
-                    const buyerBidPrice = bid.originalPrice || bid.price;
-                    const displayPrice = calculateSellerGets(buyerBidPrice);
+                    // Show adjusted price to owner
+                    const displayPrice = isSell ? bid.price * 0.98 : bid.price * 1.02;
                     const bidTotal = displayPrice * bid.quantity;
                     
                     return (

@@ -1,37 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, TrendingUp, PlusCircle, Bell, User } from 'lucide-react';
-import { notificationsAPI } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 import { haptic } from '../../utils/helpers';
 import CreateListingModal from '../modals/CreateListingModal';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
-
-  // Fetch unread notifications
-  useEffect(() => {
-    const fetchUnread = async () => {
-      try {
-        const response = await notificationsAPI.getAll({ limit: 1 });
-        setUnreadCount(response.data.unreadCount || 0);
-      } catch (error) {
-        console.error('Failed to fetch notifications:', error);
-      }
-    };
-
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 30000); // Every 30s
-    return () => clearInterval(interval);
-  }, []);
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
     { icon: TrendingUp, label: 'Market', path: '/marketplace' },
     { icon: PlusCircle, label: 'Post', path: '/create', highlight: true },
-    { icon: Bell, label: 'Activity', path: '/activity', badge: unreadCount },
+    { icon: Bell, label: 'Activity', path: '/activity' },
     { icon: User, label: 'Profile', path: '/profile' },
   ];
 
@@ -94,11 +78,6 @@ const BottomNav = () => {
                             strokeWidth={active ? 2.5 : 2}
                           />
                         </div>
-                        {item.badge > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 animate-scale-in border-2 border-white dark:border-zinc-900">
-                            {item.badge > 99 ? '99+' : item.badge}
-                          </span>
-                        )}
                         {/* Active Indicator Dot */}
                         {active && (
                           <div className="absolute -bottom-1.5 w-1 h-1 bg-primary-600 dark:bg-primary-400 rounded-full animate-fade-in" />

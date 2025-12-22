@@ -15,14 +15,17 @@ import {
   ChevronUp,
   Eye,
   AlertTriangle,
-  ShieldCheck
+  ShieldCheck,
+  Bell
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays } from '../../utils/helpers';
+import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays, getNetPriceForUser } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const BidsPage = () => {
   const navigate = useNavigate();
+  const { unreadCount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activities, setActivities] = useState([]);
@@ -122,12 +125,25 @@ const BidsPage = () => {
   const handleCounterClick = (activity) => {
     haptic.light();
     setSelectedActivity(activity);
-    // Pre-fill with the LAST price from history or original
-    const lastPrice = activity.counterHistory?.length > 0 
-      ? activity.counterHistory[activity.counterHistory.length - 1].price 
-      : activity.price;
+    
+    // Determine the visible price for the current user to pre-fill
+    const isBid = activity.type === 'bid'; // I am Buyer
+    const hasCounterHistory = activity.counterHistory?.length > 0;
+    const latestCounter = hasCounterHistory ? activity.counterHistory[activity.counterHistory.length - 1] : null;
+    
+    let lastVisiblePrice = activity.price;
+    
+    if (latestCounter) {
+      if (isBid) {
+        // I am Buyer, if last counter was by seller, adjust it
+        lastVisiblePrice = latestCounter.by === 'seller' ? calculateBuyerPays(latestCounter.price) : latestCounter.price;
+      } else {
+        // I am Seller, if last counter was by buyer, adjust it
+        lastVisiblePrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
+      }
+    }
 
-    setCounterPrice(lastPrice.toString());
+    setCounterPrice(lastVisiblePrice.toString());
     setCounterQuantity(activity.quantity.toString());
     setShowCounterModal(true);
   };
@@ -227,130 +243,168 @@ const BidsPage = () => {
     <>
       <div className="min-h-screen bg-slate-50 pb-24">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-          <div className="px-4 pt-safe pb-3">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">My Bids & Offers</h1>
-                <p className="text-xs text-gray-500">{activities.length} Total</p>
-              </div>
+        <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-4 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-col">
+              <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">My Bids & Offers</h1>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{activities.length} Total Activities</p>
+            </div>
+            <div className="flex items-center gap-2">
               <button 
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="w-9 h-9 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
+                className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 active:scale-90 transition-transform"
               >
                 <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
               </button>
-            </div>
-
-            {/* Submenu Tabs */}
-            <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 mb-2">
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setActiveSubmenu('bids');
-                  setStatusFilter('active');
-                }}
-                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
-                  activeSubmenu === 'bids'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                    : 'text-gray-600'
-                }`}
+              <button 
+                onClick={() => navigate('/notifications')}
+                className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 relative active:scale-90 transition-transform"
               >
-                <TrendingUp size={16} />
-                Bids Placed
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  activeSubmenu === 'bids' ? 'bg-white/20' : 'bg-gray-300'
-                }`}>
-                  {activities.filter(a => a.type === 'bid').length}
-                </span>
+                <Bell className="w-5 h-5 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setActiveSubmenu('offers');
-                  setStatusFilter('active');
-                }}
-                className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
-                  activeSubmenu === 'offers'
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                    : 'text-gray-600'
-                }`}
-              >
-                <TrendingDown size={16} />
-                Offers Made
-                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                  activeSubmenu === 'offers' ? 'bg-white/20' : 'bg-gray-300'
-                }`}>
-                  {activities.filter(a => a.type === 'offer').length}
-                </span>
-              </button>
-            </div>
-
-            {/* Active/Expired Toggle - Small Switch */}
-            <div className="flex items-center justify-end gap-2 mt-2">
-              <span className={`text-[10px] font-semibold ${statusFilter === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
-                Active ({currentCounts.activeCount})
-              </span>
-              <button
-                onClick={() => {
-                  haptic.light();
-                  setStatusFilter(statusFilter === 'active' ? 'expired' : 'active');
-                }}
-                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
-                  statusFilter === 'expired' ? 'bg-gray-400' : 'bg-emerald-500'
-                }`}
-              >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${
-                  statusFilter === 'expired' ? 'left-6' : 'left-1'
-                }`} />
-              </button>
-              <span className={`text-[10px] font-semibold ${statusFilter === 'expired' ? 'text-gray-700' : 'text-gray-400'}`}>
-                Expired ({currentCounts.expiredCount})
-              </span>
             </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="px-4 pt-3">
-          {filteredActivities.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                {statusFilter === 'active' ? (
-                  <Clock className="w-8 h-8 text-gray-400" />
-                ) : (
-                  <CheckCircle className="w-8 h-8 text-gray-400" />
+          {/* Submenu Tabs */}
+          <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 mb-2">
+            <button
+              onClick={() => {
+                haptic.light();
+                setActiveSubmenu('bids');
+                setStatusFilter('active');
+              }}
+              className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                activeSubmenu === 'bids'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                  : 'text-gray-600'
+              }`}
+            >
+              <TrendingUp size={16} />
+              Bids Placed
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                activeSubmenu === 'bids' ? 'bg-white/20' : 'bg-gray-300'
+              }`}>
+                {activities.filter(a => a.type === 'bid').length}
+              </span>
+            </button>
+            <button
+              onClick={() => {
+                haptic.light();
+                setActiveSubmenu('offers');
+                setStatusFilter('active');
+              }}
+              className={`flex-1 py-2 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                activeSubmenu === 'offers'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
+                  : 'text-gray-600'
+              }`}
+            >
+              <TrendingDown size={16} />
+              Offers Made
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
+                activeSubmenu === 'offers' ? 'bg-white/20' : 'bg-gray-300'
+              }`}>
+                {activities.filter(a => a.type === 'offer').length}
+              </span>
+            </button>
+          </div>
+
+          {/* Active/Expired Toggle - Small Switch */}
+          <div className="flex items-center justify-end gap-2 mt-2">
+            <span className={`text-[10px] font-semibold ${statusFilter === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
+              Active ({currentCounts.activeCount})
+            </span>
+            <button
+              onClick={() => {
+                haptic.light();
+                setStatusFilter(statusFilter === 'active' ? 'expired' : 'active');
+              }}
+              className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
+                statusFilter === 'expired' ? 'bg-gray-400' : 'bg-emerald-500'
+              }`}
+            >
+              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${
+                statusFilter === 'expired' ? 'left-6' : 'left-1'
+              }`} />
+            </button>
+            <span className={`text-[10px] font-semibold ${statusFilter === 'expired' ? 'text-gray-700' : 'text-gray-400'}`}>
+              Expired ({currentCounts.expiredCount})
+            </span>
+          </div>
+
+          {/* Content */}
+          <div className="px-4 pt-3">
+            {filteredActivities.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-2xl">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  {statusFilter === 'active' ? (
+                    <Clock className="w-8 h-8 text-gray-400" />
+                  ) : (
+                    <CheckCircle className="w-8 h-8 text-gray-400" />
+                  )}
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  No {statusFilter === 'active' ? 'Active' : 'Expired/Completed'} {activeSubmenu === 'bids' ? 'Bids' : 'Offers'}
+                </h3>
+                <p className="text-gray-500 text-sm mb-4">
+                  {statusFilter === 'active'
+                    ? `Your active ${activeSubmenu === 'bids' ? 'bids' : 'offers'} will appear here`
+                    : `${activeSubmenu === 'bids' ? 'Bids' : 'Offers'} that are expired, rejected, or completed will appear here`
+                  }
+                </p>
+                {statusFilter === 'active' && (
+                  <button
+                    onClick={() => navigate('/marketplace')}
+                    className="btn-primary inline-flex text-sm px-4 py-2"
+                  >
+                    Browse Marketplace
+                  </button>
                 )}
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1">
-                No {statusFilter === 'active' ? 'Active' : 'Expired/Completed'} {activeSubmenu === 'bids' ? 'Bids' : 'Offers'}
-              </h3>
-              <p className="text-gray-500 text-sm mb-4">
-                {statusFilter === 'active'
-                  ? `Your active ${activeSubmenu === 'bids' ? 'bids' : 'offers'} will appear here`
-                  : `${activeSubmenu === 'bids' ? 'Bids' : 'Offers'} that are expired, rejected, or completed will appear here`
-                }
-              </p>
-              {statusFilter === 'active' && (
-                <button
-                  onClick={() => navigate('/marketplace')}
-                  className="btn-primary inline-flex text-sm px-4 py-2"
-                >
-                  Browse Marketplace
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4 pb-4">
-              {/* Action Required Section */}
-              {actionRequiredActivities.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-wider px-1">
-                    <AlertTriangle size={14} />
-                    Action Required
+            ) : (
+              <div className="space-y-4 pb-4">
+                {/* Action Required Section */}
+                {actionRequiredActivities.length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-amber-600 font-bold text-xs uppercase tracking-wider px-1">
+                      <AlertTriangle size={14} />
+                      Action Required
+                    </div>
+                    {actionRequiredActivities.map(activity => (
+                      <ActivityCard 
+                        key={activity._id} 
+                        activity={activity}
+                        actionLoading={actionLoading}
+                        onAccept={() => handleAccept(activity)}
+                        onReject={() => handleReject(activity)}
+                        onCounter={() => handleCounterClick(activity)}
+                        onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
+                        isExpired={false}
+                        isActionable={true}
+                        dealDetails={dealDetails}
+                      />
+                    ))}
+
+                    {otherActivities.length > 0 && (
+                      <div className="border-t border-gray-200 my-4 pt-2">
+                        <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-wider px-1 mb-3">
+                          <Clock size={14} />
+                          Waiting for Response
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {actionRequiredActivities.map(activity => (
+                )}
+
+                {/* Other Activities */}
+                <div className="space-y-3">
+                  {otherActivities.map((activity) => (
                     <ActivityCard 
                       key={activity._id} 
                       activity={activity}
@@ -359,44 +413,18 @@ const BidsPage = () => {
                       onReject={() => handleReject(activity)}
                       onCounter={() => handleCounterClick(activity)}
                       onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
-                      isExpired={false}
-                      isActionable={true}
+                      isExpired={statusFilter === 'expired'}
+                      isActionable={false}
                       dealDetails={dealDetails}
                     />
                   ))}
-                  
-                  {otherActivities.length > 0 && (
-                    <div className="border-t border-gray-200 my-4 pt-2">
-                      <div className="flex items-center gap-2 text-gray-400 font-bold text-xs uppercase tracking-wider px-1 mb-3">
-                        <Clock size={14} />
-                        Waiting for Response
-                      </div>
-                    </div>
-                  )}
                 </div>
-              )}
-
-              {/* Other Activities */}
-              <div className="space-y-3">
-                {otherActivities.map((activity) => (
-                  <ActivityCard 
-                    key={activity._id} 
-                    activity={activity}
-                    actionLoading={actionLoading}
-                    onAccept={() => handleAccept(activity)}
-                    onReject={() => handleReject(activity)}
-                    onCounter={() => handleCounterClick(activity)}
-                    onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
-                    isExpired={statusFilter === 'expired'}
-                    isActionable={false}
-                    dealDetails={dealDetails}
-                  />
-                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+
+        </div>
 
       {/* Counter Modal */}
       {showCounterModal && selectedActivity && (
@@ -533,19 +561,9 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
   
   // Determine display price
   const latestCounter = hasCounterHistory ? counterHistory[counterHistory.length - 1] : null;
-  const rawDisplayPrice = latestCounter ? latestCounter.price : (activity.originalPrice || activity.price);
   
-  let displayPrice = rawDisplayPrice;
-  if (latestCounter) {
-     if (isBid) {
-       displayPrice = latestCounter.by === 'seller' ? calculateBuyerPays(latestCounter.price) : latestCounter.price;
-     } else {
-       displayPrice = latestCounter.by === 'buyer' ? calculateSellerGets(latestCounter.price) : latestCounter.price;
-     }
-  } else {
-     // Initial bid/offer - show the actual price entered by the user
-     displayPrice = activity.originalPrice || activity.price;
-  }
+  // Use universal helper for display price
+  const displayPrice = getNetPriceForUser(activity, activity.type === 'bid' ? 'sell' : 'buy', false, latestCounter?.by);
 
   const statusConfig = {
     pending: { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock, label: 'Pending' },
@@ -701,13 +719,8 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
             <div className="mt-2 space-y-2">
               {counterHistory.map((counter, idx) => {
                 const isSellerCounter = counter.by === 'seller';
-                // Viewer perspective logic
-                let rowPrice;
-                if (isBid) {
-                  rowPrice = isSellerCounter ? calculateBuyerPays(counter.price) : counter.price;
-                } else {
-                  rowPrice = !isSellerCounter ? calculateSellerGets(counter.price) : counter.price;
-                }
+                // Use universal helper for row price
+                const rowPrice = getNetPriceForUser(counter, activity.type === 'bid' ? 'sell' : 'buy', false, counter.by);
 
                 return (
                   <div key={idx} className={`p-2 rounded-lg border ${isSellerCounter ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200'}`}>

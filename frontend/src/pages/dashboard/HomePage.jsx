@@ -22,7 +22,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
-import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets } from '../../utils/helpers';
+import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
 import CreateListingModal from '../../components/modals/CreateListingModal';
@@ -33,7 +33,7 @@ import toast from 'react-hot-toast';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, unreadCount } = useAuth();
   useDashboardTour();
   const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
@@ -178,6 +178,9 @@ const HomePage = () => {
         // Incoming Bids on my Sell Posts
         sellListings.forEach(listing => {
           (listing.bids || []).forEach(bid => {
+            // Use universal helper for display price
+            const displayPrice = getNetPriceForUser(bid, 'sell', true);
+            
             if (bid.status === 'pending') {
               actions.push({
                 type: 'bid_received',
@@ -187,7 +190,7 @@ const HomePage = () => {
                 companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
-                counterPrice: bid.price,
+                counterPrice: displayPrice,
                 quantity: bid.quantity,
                 user: bid.userId?.username || bid.username,
                 date: bid.createdAt,
@@ -203,7 +206,7 @@ const HomePage = () => {
                 companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
-                counterPrice: bid.price,
+                counterPrice: displayPrice,
                 quantity: bid.quantity,
                 user: bid.userId?.username,
                 date: bid.createdAt,
@@ -219,6 +222,9 @@ const HomePage = () => {
         // Incoming Offers on my Buy Posts
         buyListings.forEach(listing => {
           (listing.offers || []).forEach(offer => {
+            // Use universal helper for display price
+            const displayPrice = getNetPriceForUser(offer, 'buy', true);
+            
             if (offer.status === 'pending') {
               actions.push({
                 type: 'offer_received',
@@ -228,7 +234,7 @@ const HomePage = () => {
                 companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
-                counterPrice: offer.price,
+                counterPrice: displayPrice,
                 quantity: offer.quantity,
                 user: offer.userId?.username,
                 date: offer.createdAt,
@@ -244,7 +250,7 @@ const HomePage = () => {
                 companySymbol: listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.symbol || listing.companyName,
                 logo: listing.companyId?.logo || listing.companyId?.Logo,
                 yourPrice: listing.price,
-                counterPrice: offer.price,
+                counterPrice: displayPrice,
                 quantity: offer.quantity,
                 user: offer.userId?.username,
                 date: offer.createdAt,
@@ -269,12 +275,8 @@ const HomePage = () => {
               ? calculateBuyerPays(rawListingPrice)
               : calculateSellerGets(rawListingPrice);
 
-            let otherPrice = activity.price;
-            if (latestCounter) {
-              otherPrice = isBuyer 
-                ? calculateBuyerPays(latestCounter.price)
-                : calculateSellerGets(latestCounter.price);
-            }
+            // Use universal helper for the counter received
+            const otherPrice = getNetPriceForUser(activity, activity.type === 'bid' ? 'sell' : 'buy', false, latestCounter?.by);
 
             actions.push({
               type: 'counter_received',
@@ -415,9 +417,14 @@ const HomePage = () => {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => navigate('/notifications')}
-              className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200"
+              className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200 relative"
             >
               <Bell className="w-5 h-5 text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </button>
             <button 
               onClick={handleRefresh}

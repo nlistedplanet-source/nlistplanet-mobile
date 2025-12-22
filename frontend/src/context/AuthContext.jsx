@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { authAPI, API_BASE_URL } from '../utils/api';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { authAPI, notificationsAPI, API_BASE_URL } from '../utils/api';
 import { storage, haptic } from '../utils/helpers';
 import toast from 'react-hot-toast';
 import { 
@@ -23,8 +23,30 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [fcmToken, setFcmToken] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
-  // Auto-logout after 30 minutes of inactivity
+  // Fetch unread notifications count
+  const refreshUnreadCount = useCallback(async () => {
+    if (!storage.get('token')) return;
+    try {
+      const response = await notificationsAPI.getAll({ limit: 1 });
+      setUnreadCount(response.data.unreadCount || 0);
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  }, []);
+
+  // Poll for unread notifications
+  useEffect(() => {
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
+
+    refreshUnreadCount();
+    const interval = setInterval(refreshUnreadCount, 30000); // Every 30s
+    return () => clearInterval(interval);
+  }, [user, refreshUnreadCount]);
   useEffect(() => {
     if (!user) return;
 
@@ -371,6 +393,8 @@ export const AuthProvider = ({ children }) => {
     completeProfile,
     verifyProfileOtp,
     sendTestNotification,
+    unreadCount,
+    refreshUnreadCount,
     isAuthenticated: !!token && !!user,
     isAdmin: user?.role === 'admin',
   };

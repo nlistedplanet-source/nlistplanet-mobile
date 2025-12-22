@@ -10,9 +10,11 @@ import {
   Archive
 } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 
 const ActivityPage = () => {
   const navigate = useNavigate();
+  const { unreadCount } = useAuth();
 
   const activitySections = [
     {
@@ -70,10 +72,23 @@ const ActivityPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-        <div className="px-6 pt-safe pb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Activity</h1>
-          <p className="text-gray-500 mt-1">Manage your trading activities</p>
+      <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">Activity</h1>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Manage your trading</p>
+          </div>
+          <button 
+            onClick={() => navigate('/notifications')}
+            className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 relative active:scale-90 transition-transform"
+          >
+            <Bell className="w-5 h-5 text-gray-600" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 
@@ -81,15 +96,22 @@ const ActivityPage = () => {
       <div className="px-6 pt-6 space-y-4">
         {activitySections.map((section) => {
           const Icon = section.icon;
+          const isNotifications = section.id === 'notifications';
+          
           return (
             <button
               key={section.id}
               onClick={() => handleCardClick(section.path)}
-              className="w-full bg-white rounded-2xl p-5 shadow-mobile active:scale-98 transition-transform text-left"
+              className="w-full bg-white rounded-2xl p-5 shadow-mobile active:scale-98 transition-transform text-left border border-gray-50"
             >
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${section.iconBg}`}>
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 relative ${section.iconBg}`}>
                   <Icon className={`w-7 h-7 ${section.iconColor}`} />
+                  {isNotifications && unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-[20px] flex items-center justify-center px-1 border-2 border-white">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-900 text-lg mb-1">{section.title}</h3>

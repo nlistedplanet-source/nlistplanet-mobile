@@ -15,11 +15,13 @@ import {
   Check,
   Send,
   Gavel,
-  Star
+  Star,
+  Bell
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, haptic, debounce, formatDate, formatNumber, getPriceDisplay } from '../../utils/helpers';
 import { useLoader } from '../../context/LoaderContext';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
 
@@ -70,6 +72,7 @@ const numberToWords = (num) => {
 const MarketplacePage = () => {
   const navigate = useNavigate();
   const { showLoader, hideLoader } = useLoader();
+  const { unreadCount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
@@ -150,17 +153,30 @@ const MarketplacePage = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header - Compact Amber Theme */}
-      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-20 shadow-sm border-b border-slate-200">
+      <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-20 shadow-sm border-b border-gray-100">
         <div className="px-3 pt-safe pb-2">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-base font-bold text-gray-900">Marketplace</h1>
-            <button 
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+              <button 
+                onClick={() => navigate('/notifications')}
+                className="w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 relative"
+              >
+                <Bell className="w-4 h-4 text-gray-600" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-[16px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Search Bar - Smaller */}
@@ -302,14 +318,14 @@ const CompactCard = ({ listing, onClick }) => {
             {(listing.companyId?.logo || listing.companyId?.Logo) ? (
               <img
                 src={listing.companyId.logo || listing.companyId.Logo}
-                alt={listing.companyName}
+                alt={listing.companyId?.name || listing.companyName}
                 className="w-11 h-11 rounded-xl object-contain bg-white border-2 border-white shadow-sm"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             ) : (
               <div className={`w-11 h-11 rounded-xl ${cardStyles.iconBg} flex items-center justify-center border-2 border-white shadow-sm`}>
                 <span className={`${cardStyles.iconColor} font-bold text-lg`}>
-                  {listing.companyName?.[0] || 'C'}
+                  {(listing.companyId?.name || listing.companyName)?.[0] || 'C'}
                 </span>
               </div>
             )}
@@ -318,7 +334,7 @@ const CompactCard = ({ listing, onClick }) => {
           {/* Company Name */}
           <div className="flex-1 min-w-0 pt-0.5">
             <h3 className="font-bold text-[13px] text-gray-900 leading-tight line-clamp-2">
-              {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyName}
+              {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.name || listing.companyName}
             </h3>
           </div>
         </div>
@@ -507,13 +523,13 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
               {(company.logo || company.Logo) ? (
                 <img
                   src={company.logo || company.Logo}
-                  alt={listing.companyName}
+                  alt={company.name || listing.companyName}
                   className="w-14 h-14 rounded-xl object-contain bg-gray-50 border border-gray-100"
                 />
               ) : (
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
                   <span className="text-white font-bold text-xl">
-                    {listing.companyName?.[0] || 'C'}
+                    {(company.name || listing.companyName)?.[0] || 'C'}
                   </span>
                 </div>
               )}
@@ -523,7 +539,7 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
             <div className="flex-1 min-w-0 pt-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-bold text-gray-900 text-base truncate">
-                  {company.scriptName || company.ScripName || listing.companyName}
+                  {company.scriptName || company.ScripName || company.name || listing.companyName}
                 </h3>
                 {/* Type Badge (Flipped for marketplace) */}
                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
@@ -566,22 +582,22 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
                 <span className="text-gray-400 w-16 inline-block">Company:</span> 
                 <span className="font-medium text-gray-800">{company.companyName || company.name || listing.companyName}</span>
               </p>
-              {(company.pan || company.PAN) && (
+              {(company.pan || company.PAN || listing.companyPan) && (
                 <p className="text-gray-600">
                   <span className="text-gray-400 w-16 inline-block">PAN:</span> 
-                  <span className="font-mono text-gray-800">{company.pan || company.PAN}</span>
+                  <span className="font-mono text-gray-800">{company.pan || company.PAN || listing.companyPan}</span>
                 </p>
               )}
-              {(company.isin || company.ISIN) && (
+              {(company.isin || company.ISIN || listing.companyIsin) && (
                 <p className="text-gray-600">
                   <span className="text-gray-400 w-16 inline-block">ISIN:</span> 
-                  <span className="font-mono text-gray-800">{company.isin || company.ISIN}</span>
+                  <span className="font-mono text-gray-800">{company.isin || company.ISIN || listing.companyIsin}</span>
                 </p>
               )}
-              {(company.cin || company.CIN) && (
+              {(company.cin || company.CIN || listing.companyCin) && (
                 <p className="text-gray-600">
                   <span className="text-gray-400 w-16 inline-block">CIN:</span> 
-                  <span className="font-mono text-gray-800 text-[10px]">{company.cin || company.CIN}</span>
+                  <span className="font-mono text-gray-800 text-[10px]">{company.cin || company.CIN || listing.companyCin}</span>
                 </p>
               )}
             </div>

@@ -21,7 +21,7 @@ import { BrandLogo } from '../../components/common';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, unreadCount } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
@@ -108,7 +108,22 @@ const ProfilePage = () => {
         <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute bottom-[-20%] left-[-10%] w-48 h-48 bg-primary-400/20 rounded-full blur-2xl" />
         
-        <div className="relative z-10 flex flex-col items-center text-center mt-4">
+        {/* Header Actions */}
+        <div className="relative z-20 flex justify-end pt-4">
+          <button 
+            onClick={() => navigate('/notifications')}
+            className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm border border-white/20 relative active:scale-90 transition-transform"
+          >
+            <Bell className="w-5 h-5 text-white" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-primary-600 animate-scale-in">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center text-center mt-2">
           {/* Avatar with Logo Overlay */}
           <div className="relative mb-4">
             <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3">

@@ -13,14 +13,17 @@ import {
   Shield,
   Key,
   Handshake,
-  AlertCircle
+  AlertCircle,
+  Bell
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, formatDate, haptic } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const HistoryPage = () => {
   const navigate = useNavigate();
+  const { unreadCount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [historyItems, setHistoryItems] = useState([]);
@@ -103,35 +106,47 @@ const HistoryPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-        <div className="px-6 pt-safe pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => {
-                  haptic.light();
-                  navigate(-1);
-                }}
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-700" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">History</h1>
-                <p className="text-sm text-gray-500">{displayItems.length} items</p>
-              </div>
+      <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                haptic.light();
+                navigate(-1);
+              }}
+              className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <div className="flex flex-col">
+              <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">History</h1>
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{displayItems.length} items</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
             <button 
               onClick={handleRefresh}
               disabled={refreshing}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm"
+              className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 active:scale-90 transition-transform"
             >
               <RefreshCw className={`w-5 h-5 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
+            <button 
+              onClick={() => navigate('/notifications')}
+              className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 relative active:scale-90 transition-transform"
+            >
+              <Bell className="w-5 h-5 text-gray-600" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 border-2 border-white animate-scale-in">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
           </div>
+        </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
+        {/* Filter Tabs */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
             <FilterButton 
               value="completed" 
               label="Completed" 
@@ -144,27 +159,26 @@ const HistoryPage = () => {
             <FilterButton value="expired" label="Expired" activeColor="bg-gray-600" />
           </div>
         </div>
-      </div>
 
-      {/* History Items */}
-      <div className="px-6 pt-4">
-        {displayItems.length === 0 ? (
-          <EmptyState filterStatus={filterStatus} />
-        ) : (
-          <div className="space-y-3 pb-4">
-            {displayType === 'completed' ? (
-              displayItems.map((deal) => (
-                <CompletedDealCard key={deal._id} deal={deal} />
-              ))
-            ) : (
-              displayItems.map((item) => (
-                <HistoryCard key={item._id} item={item} />
-              ))
-            )}
-          </div>
-        )}
+        {/* History Items */}
+        <div className="px-6 pt-4">
+          {displayItems.length === 0 ? (
+            <EmptyState filterStatus={filterStatus} />
+          ) : (
+            <div className="space-y-3 pb-4">
+              {displayType === 'completed' ? (
+                displayItems.map((deal) => (
+                  <CompletedDealCard key={deal._id} deal={deal} />
+                ))
+              ) : (
+                displayItems.map((item) => (
+                  <HistoryCard key={item._id} item={item} />
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

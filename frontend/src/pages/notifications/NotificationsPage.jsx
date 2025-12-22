@@ -16,10 +16,12 @@ import {
 } from 'lucide-react';
 import { notificationsAPI } from '../../utils/api';
 import { timeAgo, haptic } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
+  const { refreshUnreadCount, unreadCount: unreadCountCtx } = useAuth();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -35,6 +37,7 @@ const NotificationsPage = () => {
       setLoading(true);
       const response = await notificationsAPI.getAll();
       setNotifications(response.data.data || []);
+      refreshUnreadCount(); // Update global count
     } catch (error) {
       console.error('Failed to fetch notifications:', error);
       toast.error('Failed to load notifications');
@@ -57,6 +60,7 @@ const NotificationsPage = () => {
       setNotifications(prev =>
         prev.map(n => n._id === id ? { ...n, isRead: true } : n)
       );
+      refreshUnreadCount(); // Update global count
     } catch (error) {
       console.error('Failed to mark as read:', error);
     }
@@ -67,6 +71,7 @@ const NotificationsPage = () => {
       haptic.light();
       await notificationsAPI.markAllAsRead();
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      refreshUnreadCount(); // Update global count
       toast.success('All notifications marked as read');
     } catch (error) {
       console.error('Failed to mark all as read:', error);
@@ -117,7 +122,7 @@ const NotificationsPage = () => {
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const localUnreadCount = notifications.filter(n => !n.isRead).length;
 
   const FilterButton = ({ value, label, count }) => (
     <button
@@ -142,50 +147,48 @@ const NotificationsPage = () => {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-100 to-gray-50 sticky top-0 z-10 shadow-sm border-b border-slate-200">
-        <div className="px-6 pt-safe pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-              {unreadCount > 0 && (
-                <p className="text-sm text-gray-500 mt-1">{unreadCount} unread</p>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {unreadCount > 0 && (
-                <button 
-                  onClick={markAllAsRead}
-                  className="px-3 py-2 bg-blue-100 text-slate-700 rounded-xl font-semibold text-sm hover:bg-blue-200 transition-colors touch-feedback flex items-center gap-1"
-                >
-                  <Check size={14} />
-                  Mark all
-                </button>
-              )}
+      <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-30 px-6 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">Notifications</h1>
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+              {localUnreadCount > 0 ? `${localUnreadCount} unread updates` : 'Stay updated'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center shadow-sm border border-gray-100 active:scale-90 transition-transform"
+            >
+              <RefreshCw className={`w-4 h-4 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
+            {localUnreadCount > 0 && (
               <button 
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="w-10 h-10 bg-white rounded-full flex items-center justify-center touch-feedback shadow-sm"
+                onClick={markAllAsRead}
+                className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shadow-sm border border-blue-100 active:scale-90 transition-transform"
+                title="Mark all as read"
               >
-                <RefreshCw className={`w-5 h-5 text-gray-700 ${refreshing ? 'animate-spin' : ''}`} />
+                <Check className="w-5 h-5 text-blue-600" />
               </button>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Filter Tabs */}
-          <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
-            <FilterButton value="all" label="All" count={notifications.length} />
-            <FilterButton value="unread" label="Unread" count={unreadCount} />
-            <FilterButton 
-              value="trading" 
-              label="Trading" 
-              count={notifications.filter(n => ['bid_received', 'bid_accepted', 'bid_rejected', 'trade_completed'].includes(n.type)).length}
-            />
-            <FilterButton 
-              value="system" 
-              label="System" 
-              count={notifications.filter(n => ['system', 'announcement', 'kyc_update'].includes(n.type)).length}
-            />
-          </div>
+        {/* Filter Tabs */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-none -mx-6 px-6">
+          <FilterButton value="all" label="All" count={notifications.length} />
+          <FilterButton value="unread" label="Unread" count={localUnreadCount} />
+          <FilterButton 
+            value="trading" 
+            label="Trading" 
+            count={notifications.filter(n => ['bid_received', 'bid_accepted', 'bid_rejected', 'trade_completed'].includes(n.type)).length}
+          />
+          <FilterButton 
+            value="system" 
+            label="System" 
+            count={notifications.filter(n => ['system', 'announcement', 'kyc_update'].includes(n.type)).length}
+          />
         </div>
       </div>
 

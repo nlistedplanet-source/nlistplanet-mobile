@@ -12,7 +12,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
-import { formatCurrency, formatDate, timeAgo, shareListing, haptic } from '../../utils/helpers';
+import { formatCurrency, formatDate, timeAgo, shareListing, haptic, getPriceDisplay } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import BidOfferModal from '../../components/modals/BidOfferModal';
 import toast from 'react-hot-toast';
@@ -79,8 +79,10 @@ const ListingDetailPage = () => {
 
   const isSell = listing.type === 'sell';
   const isOwnListing = user && listing.userId === user._id;
-  const totalAmount = listing.price * listing.quantity;
-  const platformFee = (totalAmount * 2) / 100;
+  
+  const priceInfo = getPriceDisplay(listing.price, listing.type, isOwnListing);
+  const displayPrice = priceInfo.displayPrice;
+  const totalAmount = displayPrice * listing.quantity;
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
@@ -105,13 +107,23 @@ const ListingDetailPage = () => {
         </div>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl font-bold text-primary-700">
-              {listing.companyName?.charAt(0) || '?'}
-            </span>
+          <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-lg overflow-hidden">
+            {(listing.companyId?.logo || listing.companyId?.Logo) ? (
+              <img 
+                src={listing.companyId.logo || listing.companyId.Logo} 
+                alt={listing.companyId?.name || listing.companyName}
+                className="w-full h-full object-contain p-2"
+              />
+            ) : (
+              <span className="text-2xl font-bold text-primary-700">
+                {(listing.companyId?.name || listing.companyName)?.charAt(0) || '?'}
+              </span>
+            )}
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white mb-1">{listing.companyName}</h1>
+            <h1 className="text-2xl font-bold text-white mb-1">
+              {listing.companyId?.scriptName || listing.companyId?.ScripName || listing.companyId?.name || listing.companyName}
+            </h1>
             <div className="flex items-center gap-2 mb-2">
               {isSell ? (
                 <TrendingDown className="w-4 h-4 text-white" />
@@ -135,9 +147,9 @@ const ListingDetailPage = () => {
       {/* Price Card */}
       <div className="px-6 -mt-4">
         <div className="bg-white rounded-2xl p-6 shadow-mobile">
-          <p className="text-sm text-gray-500 mb-1">Price per share</p>
+          <p className="text-sm text-gray-500 mb-1">{priceInfo.label}</p>
           <p className="text-3xl font-bold text-gray-900 mb-4">
-            {formatCurrency(listing.price)}
+            {formatCurrency(displayPrice)}
           </p>
           
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
@@ -192,6 +204,55 @@ const ListingDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Company Information */}
+      {(listing.companyId || listing.companyPan || listing.companyIsin) && (
+        <div className="px-6 mt-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Company Information</h2>
+          <div className="bg-white rounded-2xl shadow-mobile overflow-hidden">
+            <div className="p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Company Name</span>
+                <span className="text-sm font-semibold text-gray-900 text-right ml-4">
+                  {listing.companyId?.name || listing.companyName}
+                </span>
+              </div>
+              {(listing.companyId?.pan || listing.companyId?.PAN || listing.companyPan) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">PAN</span>
+                  <span className="text-sm font-mono font-semibold text-gray-900">
+                    {listing.companyId?.pan || listing.companyId?.PAN || listing.companyPan}
+                  </span>
+                </div>
+              )}
+              {(listing.companyId?.isin || listing.companyId?.ISIN || listing.companyIsin) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">ISIN</span>
+                  <span className="text-sm font-mono font-semibold text-gray-900">
+                    {listing.companyId?.isin || listing.companyId?.ISIN || listing.companyIsin}
+                  </span>
+                </div>
+              )}
+              {(listing.companyId?.cin || listing.companyId?.CIN || listing.companyCin) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">CIN</span>
+                  <span className="text-sm font-mono font-semibold text-gray-900 text-[11px]">
+                    {listing.companyId?.cin || listing.companyId?.CIN || listing.companyCin}
+                  </span>
+                </div>
+              )}
+              {(listing.companyId?.sector || listing.companyId?.Sector) && (
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Sector</span>
+                  <span className="text-sm font-semibold text-gray-900">
+                    {listing.companyId?.sector || listing.companyId?.Sector}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Description */}
       {listing.description && (

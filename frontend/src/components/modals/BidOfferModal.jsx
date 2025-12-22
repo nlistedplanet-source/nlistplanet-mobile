@@ -60,6 +60,20 @@ const BidOfferModal = ({ isOpen, onClose, listing, onSuccess }) => {
   const [riskAccepted, setRiskAccepted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
 
+  useEffect(() => {
+    if (listing) {
+      const isSell = listing.type === 'sell';
+      const displayPrice = isSell 
+        ? calculateBuyerPays(listing.price)
+        : calculateSellerGets(listing.price);
+      
+      setFormData({
+        price: displayPrice.toString(),
+        quantity: (listing.minLot || 1).toString()
+      });
+    }
+  }, [listing]);
+
   if (!isOpen || !listing) return null;
 
   const isSell = listing.type === 'sell';
