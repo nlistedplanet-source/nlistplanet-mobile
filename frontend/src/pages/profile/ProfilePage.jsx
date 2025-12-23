@@ -12,17 +12,20 @@ import {
   CheckCircle,
   XCircle,
   Gift,
-  FileText
+  FileText,
+  MessageCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatDate, haptic } from '../../utils/helpers';
 import toast from 'react-hot-toast';
 import { BrandLogo } from '../../components/common';
+import QueryModal from '../../components/modals/QueryModal';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { user, logout, unreadCount } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isQueryModalOpen, setIsQueryModalOpen] = useState(false);
 
   const handleLogout = () => {
     haptic.medium();
@@ -56,6 +59,17 @@ const ProfilePage = () => {
       onClick: () => {
         haptic.light();
         navigate('/referrals');
+      }
+    },
+    {
+      id: 'help',
+      icon: MessageCircle,
+      label: 'Send Query to Admin',
+      description: 'Get help with your issues',
+      badge: 'new',
+      onClick: () => {
+        haptic.light();
+        setIsQueryModalOpen(true);
       }
     },
     {
@@ -245,6 +259,12 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* Query Modal */}
+      <QueryModal 
+        isOpen={isQueryModalOpen} 
+        onClose={() => setIsQueryModalOpen(false)} 
+      />
     </div>
   );
 };
@@ -289,6 +309,8 @@ const MenuItem = ({ icon: Icon, label, description, badge, onClick }) => (
         <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold uppercase tracking-tight ${
           badge === 'verified' 
             ? 'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400' 
+            : badge === 'new'
+            ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
             : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
         }`}>
           {badge}
