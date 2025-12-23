@@ -21,6 +21,11 @@ const CompleteProfilePage = () => {
     if (user && user.fullName && user.phone && user.isPhoneVerified) {
       navigate('/');
     }
+    
+    // Pre-fill full name if available from Google
+    if (user && user.fullName && !formData.fullName) {
+      setFormData(prev => ({ ...prev, fullName: user.fullName }));
+    }
   }, [user, navigate]);
 
   const handleChange = (e) => {
