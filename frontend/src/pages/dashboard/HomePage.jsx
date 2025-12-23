@@ -690,16 +690,16 @@ const HomePage = () => {
       {/* Confirmed Deals Section - Mobile */}
       {confirmedDeals.length > 0 && (
         <div className="px-5 mt-6">
-          <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl shadow-md border-2 border-green-200 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <CheckCircle className="text-white" size={20} />
+          <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl shadow-md border-2 border-green-200 p-3">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 bg-gradient-to-br from-green-600 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <CheckCircle className="text-white" size={18} />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                     Confirmed Deals
-                    <span className="bg-green-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    <span className="bg-green-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                       {confirmedDeals.length}
                     </span>
                   </h2>
@@ -708,7 +708,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {confirmedDeals.map((deal) => {
                 const isSeller = deal.sellerId === user._id || deal.sellerId._id === user._id;
                 const myCode = isSeller ? deal.sellerVerificationCode : deal.buyerVerificationCode;
@@ -718,15 +718,15 @@ const HomePage = () => {
                   : (deal.sellerName || deal.sellerUsername);
 
                 return (
-                  <div key={deal._id} className="bg-white rounded-xl border-2 border-green-300 p-3 shadow-sm">
-                    <div className="flex items-start justify-between mb-3">
+                  <div key={deal._id} className="bg-white rounded-xl border-2 border-green-300 p-2.5 shadow-sm">
+                    <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-bold text-gray-900 text-sm">{deal.companyName}</h3>
+                        <h3 className="font-bold text-gray-900 text-xs">{deal.companyName}</h3>
                         <p className="text-xs text-gray-600 mt-0.5">
                           {deal.quantity} shares @ ₹{isSeller ? deal.sellerReceivesPerShare : deal.buyerPaysPerShare}
                         </p>
                       </div>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
+                      <span className={`px-1.5 py-0.5 rounded-lg text-xs font-bold ${
                         isSeller ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
                       }`}>
                         {isSeller ? 'SELL' : 'BUY'}
@@ -734,40 +734,26 @@ const HomePage = () => {
                     </div>
 
                     {/* My Code */}
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3 mb-2">
+                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-2 mb-2">
                       <p className="text-xs text-green-700 font-semibold mb-1">Your Code:</p>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xl font-bold text-green-700 tracking-widest flex-1">
+                        <p className="text-lg font-bold text-green-700 tracking-widest flex-1">
                           {visibleCodes[deal._id] ? myCode : '••••••'}
                         </p>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              setVisibleCodes(prev => ({ ...prev, [deal._id]: !prev[deal._id] }));
-                              haptic('light');
-                            }}
-                            className="p-1.5 hover:bg-green-100 rounded transition-colors"
-                          >
-                            <Eye className={`w-4 h-4 text-green-600 ${visibleCodes[deal._id] ? 'fill-green-600' : ''}`} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(myCode);
-                              haptic('success');
-                              toast.success('Code copied!');
-                            }}
-                            className="p-1.5 hover:bg-green-100 rounded transition-colors"
-                          >
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => {
+                            setVisibleCodes(prev => ({ ...prev, [deal._id]: !prev[deal._id] }));
+                            haptic('light');
+                          }}
+                          className="p-1.5 hover:bg-green-100 rounded transition-colors"
+                        >
+                          <Eye className={`w-5 h-5 text-green-600 ${visibleCodes[deal._id] ? 'fill-green-600' : ''}`} />
+                        </button>
                       </div>
                     </div>
 
                     {/* Other Party Info */}
-                    <div className="bg-gray-50 rounded-lg p-2 border border-gray-200">
+                    <div className="bg-gray-50 rounded-lg p-1.5 border border-gray-200">
                       <p className="text-xs text-gray-600">
                         {isSeller ? 'Buyer' : 'Seller'}: <span className="font-semibold text-gray-900">@{otherPartyName}</span>
                       </p>
@@ -782,13 +768,13 @@ const HomePage = () => {
 
             <button
               onClick={() => navigate('/confirmation-codes')}
-              className="mt-3 w-full px-4 py-2 bg-white border-2 border-green-600 text-green-700 font-semibold rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-2"
+              className="mt-2 w-full px-3 py-1.5 bg-white border-2 border-green-600 text-green-700 text-sm font-semibold rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-2"
             >
               View All Codes
-              <ArrowRight size={16} />
+              <ArrowRight size={14} />
             </button>
 
-            <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
               <p className="text-xs text-blue-900">
                 <span className="font-bold">ℹ️ Important:</span> Share your verification code only with our official RM during the confirmation call.
               </p>
