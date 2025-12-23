@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile Modern UI Components */
+@import './modern-ui-mobile.css';
+
 /* Theme variables - light defaults, and dark overrides below */
 /* Professional Color Palette - Inspired by modern apps */
 :root {

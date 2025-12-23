@@ -47,6 +47,7 @@ module.exports = {
         'scale-in': 'scaleIn 0.2s ease-out',
         'bounce-subtle': 'bounceSubtle 2s ease-in-out infinite',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'shimmer': 'shimmer 2s linear infinite',
       },
       keyframes: {
         slideUp: {
@@ -72,6 +73,10 @@ module.exports = {
         pulseGlow: {
           '0%, 100%': { boxShadow: '0 0 0 0 rgba(14, 165, 233, 0.4)' },
           '50%': { boxShadow: '0 0 0 8px rgba(14, 165, 233, 0)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
     },
