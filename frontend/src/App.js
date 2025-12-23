@@ -1,3 +1,4 @@
+// Mobile PWA - Deploy trigger: 2025-12-23 (Auto-deploy test)
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
