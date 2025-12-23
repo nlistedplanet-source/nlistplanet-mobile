@@ -710,12 +710,19 @@ const HomePage = () => {
 
             <div className="space-y-2">
               {confirmedDeals.map((deal) => {
-                const isSeller = deal.sellerId === user._id || deal.sellerId._id === user._id;
+                // Properly compare ObjectIds as strings
+                const userIdStr = user._id?.toString() || user._id;
+                const sellerIdStr = deal.sellerId?._id?.toString() || deal.sellerId?.toString() || deal.sellerId;
+                const buyerIdStr = deal.buyerId?._id?.toString() || deal.buyerId?.toString() || deal.buyerId;
+                
+                const isSeller = sellerIdStr === userIdStr;
+                const isBuyer = buyerIdStr === userIdStr;
+                
                 const myCode = isSeller ? deal.sellerVerificationCode : deal.buyerVerificationCode;
                 const otherPartyCode = isSeller ? deal.buyerVerificationCode : deal.sellerVerificationCode;
                 const otherPartyName = isSeller 
-                  ? (deal.buyerName || deal.buyerUsername) 
-                  : (deal.sellerName || deal.sellerUsername);
+                  ? (deal.buyerId?.username || deal.buyerName || deal.buyerUsername) 
+                  : (deal.sellerId?.username || deal.sellerName || deal.sellerUsername);
 
                 return (
                   <div key={deal._id} className="bg-white rounded-xl border-2 border-green-300 p-2.5 shadow-sm">
