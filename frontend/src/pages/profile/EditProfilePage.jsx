@@ -42,7 +42,8 @@ const EditProfilePage = () => {
   
   const [kycDocuments, setKycDocuments] = useState({
     pan: null,
-    aadhar: null,
+    aadharFront: null,
+    aadharBack: null,
     cancelledCheque: null,
     cml: null
   });
@@ -79,7 +80,8 @@ const EditProfilePage = () => {
       if (user.kycDocuments) {
         setKycDocuments({
           pan: user.kycDocuments.pan || null,
-          aadhar: user.kycDocuments.aadhar || null,
+          aadharFront: user.kycDocuments.aadharFront || user.kycDocuments.aadhar || null,
+          aadharBack: user.kycDocuments.aadharBack || null,
           cancelledCheque: user.kycDocuments.cancelledCheque || null,
           cml: user.kycDocuments.cml || null
         });
@@ -140,9 +142,10 @@ const EditProfilePage = () => {
 
       setKycDocuments(prev => ({
         ...prev,
-        [docType]: response.data.documentUrl
+        [docType]: response.data.url || response.data.documentUrl
       }));
       
+      haptic.success();
       toast.success(`${docType.toUpperCase()} uploaded successfully!`);
     } catch (error) {
       console.error('Upload error:', error);
@@ -464,9 +467,18 @@ const EditProfilePage = () => {
               />
               
               <KycDocumentCardMobile
-                title="Aadhar Card"
-                docType="aadhar"
-                document={kycDocuments.aadhar}
+                title="Aadhar Card (Front)"
+                docType="aadharFront"
+                document={kycDocuments.aadharFront}
+                onUpload={handleKycDocumentUpload}
+                uploading={uploadingDoc}
+                color="green"
+              />
+              
+              <KycDocumentCardMobile
+                title="Aadhar Card (Back)"
+                docType="aadharBack"
+                document={kycDocuments.aadharBack}
                 onUpload={handleKycDocumentUpload}
                 uploading={uploadingDoc}
                 color="green"
