@@ -210,24 +210,19 @@ const EditProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-safe-offset-24">
-      {/* Header */}
-      <div className="bg-gradient-to-br from-primary-600 to-indigo-700 px-6 pt-safe pb-6 sticky top-0 z-40">
-        <div className="flex items-center justify-between">
+      {/* Clean Header with Back */}
+      <div className="bg-gradient-to-br from-primary-600 to-indigo-700 px-6 pt-safe pb-6 sticky top-0 z-40 shadow-lg">
+        <div className="flex items-center gap-4 mb-4">
           <button
             onClick={() => navigate(-1)}
             className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center"
           >
             <ArrowLeft className="w-5 h-5 text-white" />
           </button>
-          <h1 className="text-xl font-bold text-white">Edit Profile</h1>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-4 h-10 bg-white text-primary-600 rounded-xl font-semibold flex items-center gap-2 disabled:opacity-50"
-          >
-            <Save size={16} />
-            {loading ? 'Saving...' : 'Save'}
-          </button>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-white">Edit Profile</h1>
+            <p className="text-sm text-white/70">@{user?.username}</p>
+          </div>
         </div>
       </div>
 
@@ -505,7 +500,25 @@ const EditProfilePage = () => {
           </>
         )}
       </div>
-    </div>
+      {/* Action Buttons at Bottom */}
+      <div className="px-6 py-6 bg-white dark:bg-zinc-900 shadow-2xl">
+        <div className="flex gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex-1 px-6 py-3.5 border-2 border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 rounded-2xl font-semibold"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={loading}
+            className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
+          >
+            <Save size={18} />
+            {loading ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>    </div>
   );
 };
 
@@ -548,6 +561,8 @@ const KycDocumentCardMobile = ({ title, docType, document, onUpload, uploading, 
     orange: 'bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
   };
   
+  const isPDF = document && document.toLowerCase().endsWith('.pdf');
+  
   return (
     <div className={`${colorClasses[color]} border rounded-2xl p-4`}>
       <div className="flex items-center justify-between mb-3">
@@ -562,7 +577,7 @@ const KycDocumentCardMobile = ({ title, docType, document, onUpload, uploading, 
               {document ? (
                 <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
                   <CheckCircle size={12} />
-                  Uploaded
+                  Uploaded {isPDF && '(PDF)'}
                 </span>
               ) : (
                 <span className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
@@ -578,11 +593,12 @@ const KycDocumentCardMobile = ({ title, docType, document, onUpload, uploading, 
         {document && (
           <a
             href={document}
+            download
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 px-4 py-2.5 text-sm bg-blue-600 text-white rounded-xl font-semibold text-center"
           >
-            View
+            {isPDF ? 'Download' : 'View'}
           </a>
         )}
         <button
