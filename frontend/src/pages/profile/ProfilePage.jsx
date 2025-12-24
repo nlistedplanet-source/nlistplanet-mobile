@@ -13,7 +13,8 @@ import {
   XCircle,
   Gift,
   FileText,
-  MessageCircle
+  MessageCircle,
+  Edit2
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatDate, haptic } from '../../utils/helpers';
@@ -40,6 +41,16 @@ const ProfilePage = () => {
   };
 
   const menuItems = [
+    {
+      id: 'edit',
+      icon: Edit2,
+      label: 'Edit Profile',
+      description: 'Update your personal information',
+      onClick: () => {
+        haptic.light();
+        navigate('/profile/edit');
+      }
+    },
     {
       id: 'kyc',
       icon: Shield,

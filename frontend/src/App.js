@@ -29,6 +29,7 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const MarketplacePage = lazy(() => import('./pages/marketplace/MarketplacePage'));
 const ListingDetailPage = lazy(() => import('./pages/listing/ListingDetailPage'));
 const ProfilePage = lazy(() => import('./pages/profile/ProfilePage'));
+const EditProfilePage = lazy(() => import('./pages/profile/EditProfilePage'));
 const ActivityPage = lazy(() => import('./pages/activity/ActivityPage'));
 const KYCPage = lazy(() => import('./pages/kyc/KYCPage'));
 const ReferralsPage = lazy(() => import('./pages/referrals/ReferralsPage'));
@@ -116,6 +117,7 @@ function AppRoutes() {
           <Route path="/listing/:id" element={<ProtectedRoute><AppLayout><ListingDetailPage /></AppLayout></ProtectedRoute>} />
           <Route path="/activity" element={<ProtectedRoute><AppLayout><ActivityPage /></AppLayout></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+          <Route path="/profile/edit" element={<ProtectedRoute><EditProfilePage /></ProtectedRoute>} />
           
           {/* Additional protected routes - all with bottom nav */}
           <Route path="/kyc" element={<ProtectedRoute><AppLayout><KYCPage /></AppLayout></ProtectedRoute>} />
