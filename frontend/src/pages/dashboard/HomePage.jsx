@@ -432,44 +432,46 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      {/* NEW LISTINGS Ticker */}
-      {newListings.length > 0 && (
-        <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border-t border-b border-gray-200 py-2 overflow-hidden">
-          <div className="flex items-center gap-2 px-3">
-            <span className="text-purple-600 font-bold text-xs whitespace-nowrap flex-shrink-0">🔥 NEW LISTINGS:</span>
-            <div className="flex-1 overflow-hidden relative">
-              <div className="flex animate-marquee whitespace-nowrap gap-6">
-                {newListings.map((listing, idx) => {
-                  const formatQuantity = (qty) => {
-                    if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
-                    if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
-                    if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
-                    return qty.toString();
-                  };
-                  return (
-                    <span key={listing._id + idx} className="inline-flex items-center gap-1 mx-2">
-                      <span className="text-xs font-semibold text-gray-800">
-                        {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+      {/* NEW LISTINGS Ticker Section (moved above Quick Actions) */}
+      <div className="px-5 mt-4">
+        {newListings.length > 0 && (
+          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border border-gray-200 rounded-2xl py-2 overflow-hidden shadow-sm">
+            <div className="flex items-center gap-2 px-3">
+              <span className="text-purple-600 font-bold text-xs whitespace-nowrap flex-shrink-0">🔥 NEW LISTINGS:</span>
+              <div className="flex-1 overflow-hidden relative">
+                <div className="marquee whitespace-nowrap gap-6 flex">
+                  {newListings.map((listing, idx) => {
+                    const formatQuantity = (qty) => {
+                      if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
+                      if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
+                      if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
+                      return qty.toString();
+                    };
+                    return (
+                      <span key={listing._id + idx} className="inline-flex items-center gap-1 mx-2">
+                        <span className="text-xs font-semibold text-gray-800">
+                          {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                        </span>
+                        <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
+                          {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                        </span>
+                        <span className="text-xs font-bold text-blue-600">
+                          @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                        </span>
+                        <span className="text-xs text-gray-700">
+                          • {formatQuantity(listing.quantity)} shares
+                        </span>
+                        <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
+                        <span className="text-gray-300 mx-1">•</span>
                       </span>
-                      <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
-                        {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
-                      </span>
-                      <span className="text-xs font-bold text-blue-600">
-                        @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
-                      </span>
-                      <span className="text-xs text-gray-700">
-                        • {formatQuantity(listing.quantity)} shares
-                      </span>
-                      <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
-                      <span className="text-gray-300 mx-1">•</span>
-                    </span>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
       {/* Header */}
       <div className="bg-gradient-to-br from-slate-100 via-gray-50 to-slate-50 px-5 pt-safe pb-6">
         <div className="flex items-center justify-between mb-6">
@@ -548,6 +550,16 @@ const HomePage = () => {
       </div>
 
       {/* Quick Stats Cards */}
+      /* Add marquee animation for ticker */
+      <style>
+      .marquee {
+        animation: marquee 18s linear infinite;
+      }
+      @keyframes marquee {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+      </style>
       <div id="mobile-quick-stats" className="px-5 -mt-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
