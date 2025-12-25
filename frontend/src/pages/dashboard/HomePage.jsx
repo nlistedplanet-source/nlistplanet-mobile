@@ -449,22 +449,22 @@ const HomePage = () => {
                         return qty.toString();
                       };
                       return (
-                        <span key={listing._id + idx} className="inline-flex items-center gap-1 mx-2">
-                          <span className="text-xs font-semibold text-gray-800">
+                        <div key={listing._id + idx} className="inline-flex items-center gap-1 px-3 flex-shrink-0">
+                          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
                             {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
                           </span>
-                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
-                          <span className="text-xs font-bold text-blue-600">
+                          <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
                             @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
                           </span>
-                          <span className="text-xs text-gray-700">
+                          <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} shares
                           </span>
-                          <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
-                          <span className="text-gray-300 mx-1">•</span>
-                        </span>
+                          <span className="text-[10px] text-green-600 font-semibold whitespace-nowrap">LIVE! 🚀</span>
+                          <span className="text-gray-300">•</span>
+                        </div>
                       );
                     })}
                     {/* Duplicate for seamless loop */}
@@ -476,22 +476,22 @@ const HomePage = () => {
                         return qty.toString();
                       };
                       return (
-                        <span key={listing._id + idx + '-dup'} className="inline-flex items-center gap-1 mx-2">
-                          <span className="text-xs font-semibold text-gray-800">
+                        <div key={listing._id + idx + '-dup'} className="inline-flex items-center gap-1 px-3 flex-shrink-0">
+                          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
                             {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
                           </span>
-                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
-                          <span className="text-xs font-bold text-blue-600">
+                          <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
                             @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
                           </span>
-                          <span className="text-xs text-gray-700">
+                          <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} shares
                           </span>
-                          <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
-                          <span className="text-gray-300 mx-1">•</span>
-                        </span>
+                          <span className="text-[10px] text-green-600 font-semibold whitespace-nowrap">LIVE! 🚀</span>
+                          <span className="text-gray-300">•</span>
+                        </div>
                       );
                     })}
                   </div>
