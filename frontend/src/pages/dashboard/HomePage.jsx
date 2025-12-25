@@ -439,33 +439,62 @@ const HomePage = () => {
             <div className="flex items-center gap-2 px-3">
               <span className="text-purple-600 font-bold text-xs whitespace-nowrap flex-shrink-0">🔥 NEW LISTINGS:</span>
               <div className="flex-1 overflow-hidden relative">
-                <div className="marquee whitespace-nowrap gap-6 flex">
-                  {newListings.map((listing, idx) => {
-                    const formatQuantity = (qty) => {
-                      if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
-                      if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
-                      if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
-                      return qty.toString();
-                    };
-                    return (
-                      <span key={listing._id + idx} className="inline-flex items-center gap-1 mx-2">
-                        <span className="text-xs font-semibold text-gray-800">
-                          {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                <div className="marquee-track">
+                  <div className="marquee-content">
+                    {newListings.map((listing, idx) => {
+                      const formatQuantity = (qty) => {
+                        if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
+                        if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
+                        if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
+                        return qty.toString();
+                      };
+                      return (
+                        <span key={listing._id + idx} className="inline-flex items-center gap-1 mx-2">
+                          <span className="text-xs font-semibold text-gray-800">
+                            {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                          </span>
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
+                            {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                          </span>
+                          <span className="text-xs font-bold text-blue-600">
+                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                          </span>
+                          <span className="text-xs text-gray-700">
+                            • {formatQuantity(listing.quantity)} shares
+                          </span>
+                          <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
+                          <span className="text-gray-300 mx-1">•</span>
                         </span>
-                        <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
-                          {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                      );
+                    })}
+                    {/* Duplicate for seamless loop */}
+                    {newListings.map((listing, idx) => {
+                      const formatQuantity = (qty) => {
+                        if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
+                        if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
+                        if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
+                        return qty.toString();
+                      };
+                      return (
+                        <span key={listing._id + idx + '-dup'} className="inline-flex items-center gap-1 mx-2">
+                          <span className="text-xs font-semibold text-gray-800">
+                            {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                          </span>
+                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium">
+                            {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                          </span>
+                          <span className="text-xs font-bold text-blue-600">
+                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                          </span>
+                          <span className="text-xs text-gray-700">
+                            • {formatQuantity(listing.quantity)} shares
+                          </span>
+                          <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
+                          <span className="text-gray-300 mx-1">•</span>
                         </span>
-                        <span className="text-xs font-bold text-blue-600">
-                          @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
-                        </span>
-                        <span className="text-xs text-gray-700">
-                          • {formatQuantity(listing.quantity)} shares
-                        </span>
-                        <span className="text-[10px] text-green-600 font-semibold">is now LIVE! 🚀</span>
-                        <span className="text-gray-300 mx-1">•</span>
-                      </span>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>

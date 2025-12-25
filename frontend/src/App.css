@@ -1,4 +1,20 @@
 /* Marquee animation for NEW LISTINGS ticker */
+.marquee-track {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  height: 32px;
+}
+.marquee-content {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 18s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+/* Marquee animation for NEW LISTINGS ticker */
 .marquee {
   animation: marquee 18s linear infinite;
 }
