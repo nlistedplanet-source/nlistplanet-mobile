@@ -25,6 +25,7 @@ import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
 import { useLoader } from '../../context/LoaderContext';
+import Snowfall from '../../components/Snowfall';
 import CreateListingModal from '../../components/modals/CreateListingModal';
 import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
 import AdBanner from '../../components/common/AdBanner';
@@ -443,6 +444,8 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
+      {/* Snowfall Effect */}
+      <Snowfall />
       {/* Header */}
       <div className="bg-gradient-to-br from-slate-100 via-gray-50 to-slate-50 px-5 pt-safe pb-6">
         <div className="flex items-center justify-between mb-6">
