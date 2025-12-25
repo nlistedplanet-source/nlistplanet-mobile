@@ -482,43 +482,71 @@ const HomePage = () => {
           <AdBanner position="dashboard_top" className="h-24" />
         </div>
 
-        {/* NEW LISTINGS Ticker - Fresh Simple Version */}
+        {/* NEW LISTINGS Ticker - Same as Desktop (Horizontal Marquee) */}
         {newListingsTicker.length > 0 && (
-          <div className="mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl px-4 py-3 shadow-lg overflow-hidden">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-white font-bold text-xs">🔥 NEW LISTINGS</span>
-            </div>
-            <div className="space-y-2">
-              {newListingsTicker.map((listing) => (
-                <div key={listing._id} className="bg-white/90 backdrop-blur rounded-lg px-3 py-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <span className="text-xs font-bold text-gray-900 truncate">
-                      {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown'}
-                    </span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                      listing.listingType === 'sell' 
-                        ? 'bg-red-100 text-red-700' 
-                        : 'bg-green-100 text-green-700'
-                    }`}>
-                      {listing.listingType === 'sell' ? 'SELL' : 'BUY'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 whitespace-nowrap">
-                    <span className="text-sm font-bold text-blue-600">
-                      @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
-                    </span>
-                    <span className="text-xs text-gray-600">
-                      • {(() => {
-                        const qty = listing.quantity;
+          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border-t border-gray-200 py-2 overflow-hidden mb-4">
+            <div className="flex items-center gap-3 px-4">
+              <span className="text-purple-600 font-bold text-xs whitespace-nowrap flex-shrink-0">🔥 NEW LISTINGS:</span>
+              <div className="flex-1 overflow-hidden relative">
+                <div className="flex">
+                  <div className="animate-marquee flex whitespace-nowrap">
+                    {/* First copy */}
+                    {newListingsTicker.map((listing, idx) => {
+                      const formatQuantity = (qty) => {
                         if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
                         if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
                         if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
                         return qty.toString();
-                      })()} sh
-                    </span>
+                      };
+                      return (
+                        <span key={`${listing._id}-1-${idx}`} className="inline-flex items-center gap-2 mx-3">
+                          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
+                            {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                          </span>
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+                            {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                          </span>
+                          <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
+                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                          </span>
+                          <span className="text-xs text-gray-700 whitespace-nowrap">
+                            • {formatQuantity(listing.quantity)} sh
+                          </span>
+                          <span className="text-xs text-green-600 font-semibold whitespace-nowrap">LIVE! 🚀</span>
+                          <span className="text-gray-400 mx-1">•</span>
+                        </span>
+                      );
+                    })}
+                    {/* Second copy for seamless loop */}
+                    {newListingsTicker.map((listing, idx) => {
+                      const formatQuantity = (qty) => {
+                        if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
+                        if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
+                        if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
+                        return qty.toString();
+                      };
+                      return (
+                        <span key={`${listing._id}-2-${idx}`} className="inline-flex items-center gap-2 mx-3">
+                          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
+                            {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown Company'}
+                          </span>
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+                            {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
+                          </span>
+                          <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
+                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                          </span>
+                          <span className="text-xs text-gray-700 whitespace-nowrap">
+                            • {formatQuantity(listing.quantity)} sh
+                          </span>
+                          <span className="text-xs text-green-600 font-semibold whitespace-nowrap">LIVE! 🚀</span>
+                          <span className="text-gray-400 mx-1">•</span>
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         )}
