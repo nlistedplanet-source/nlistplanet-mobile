@@ -782,7 +782,7 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* Confirmed Deals Section - Mobile */}
+      {/* Confirmed Deals Section - Mobile - Horizontal Scroll */}
       {confirmedDeals.length > 0 && (
         <div className="px-5 mt-6">
           <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 rounded-2xl shadow-md border-2 border-green-200 p-3">
@@ -803,69 +803,72 @@ const HomePage = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              {confirmedDeals.map((deal) => {
-                // Properly compare ObjectIds as strings
-                const userIdStr = user._id?.toString() || user._id;
-                const sellerIdStr = deal.sellerId?._id?.toString() || deal.sellerId?.toString() || deal.sellerId;
-                const buyerIdStr = deal.buyerId?._id?.toString() || deal.buyerId?.toString() || deal.buyerId;
-                
-                const isSeller = sellerIdStr === userIdStr;
-                const isBuyer = buyerIdStr === userIdStr;
-                
-                const myCode = isSeller ? deal.sellerVerificationCode : deal.buyerVerificationCode;
-                const otherPartyCode = isSeller ? deal.buyerVerificationCode : deal.sellerVerificationCode;
-                const otherPartyName = isSeller 
-                  ? (deal.buyerId?.username || deal.buyerName || deal.buyerUsername) 
-                  : (deal.sellerId?.username || deal.sellerName || deal.sellerUsername);
+            {/* Horizontal Scrolling Container */}
+            <div className="overflow-x-auto pb-2 -mx-3 px-3">
+              <div className="flex gap-3">
+                {confirmedDeals.map((deal) => {
+                  // Properly compare ObjectIds as strings
+                  const userIdStr = user._id?.toString() || user._id;
+                  const sellerIdStr = deal.sellerId?._id?.toString() || deal.sellerId?.toString() || deal.sellerId;
+                  const buyerIdStr = deal.buyerId?._id?.toString() || deal.buyerId?.toString() || deal.buyerId;
+                  
+                  const isSeller = sellerIdStr === userIdStr;
+                  const isBuyer = buyerIdStr === userIdStr;
+                  
+                  const myCode = isSeller ? deal.sellerVerificationCode : deal.buyerVerificationCode;
+                  const otherPartyCode = isSeller ? deal.buyerVerificationCode : deal.sellerVerificationCode;
+                  const otherPartyName = isSeller 
+                    ? (deal.buyerId?.username || deal.buyerName || deal.buyerUsername) 
+                    : (deal.sellerId?.username || deal.sellerName || deal.sellerUsername);
 
-                return (
-                  <div key={deal._id} className="bg-white rounded-xl border-2 border-green-300 p-2.5 shadow-sm">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-bold text-gray-900 text-xs">{deal.companyName}</h3>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          {deal.quantity} shares @ ₹{isSeller ? deal.sellerReceivesPerShare : deal.buyerPaysPerShare}
+                  return (
+                    <div key={deal._id} className="bg-white rounded-xl border-2 border-green-300 p-2.5 shadow-sm flex-shrink-0 w-80">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-bold text-gray-900 text-xs">{deal.companyName}</h3>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            {deal.quantity} shares @ ₹{isSeller ? deal.sellerReceivesPerShare : deal.buyerPaysPerShare}
+                          </p>
+                        </div>
+                        <span className={`px-1.5 py-0.5 rounded-lg text-xs font-bold whitespace-nowrap ${
+                          isSeller ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {isSeller ? 'SELL' : 'BUY'}
+                        </span>
+                      </div>
+
+                      {/* My Code */}
+                      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-2 mb-2">
+                        <p className="text-xs text-green-700 font-semibold mb-1">Your Code:</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-lg font-bold text-green-700 tracking-widest flex-1">
+                            {visibleCodes[deal._id] ? myCode : '••••••'}
+                          </p>
+                          <button
+                            onClick={() => {
+                              setVisibleCodes(prev => ({ ...prev, [deal._id]: !prev[deal._id] }));
+                              haptic('light');
+                            }}
+                            className="p-1.5 hover:bg-green-100 rounded transition-colors flex-shrink-0"
+                          >
+                            <Eye className={`w-5 h-5 text-green-600 ${visibleCodes[deal._id] ? 'fill-green-600' : ''}`} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Other Party Info */}
+                      <div className="bg-gray-50 rounded-lg p-1.5 border border-gray-200">
+                        <p className="text-xs text-gray-600">
+                          {isSeller ? 'Buyer' : 'Seller'}: <span className="font-semibold text-gray-900">@{otherPartyName}</span>
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Their Code: <span className="font-mono font-bold text-gray-700">{otherPartyCode}</span>
                         </p>
                       </div>
-                      <span className={`px-1.5 py-0.5 rounded-lg text-xs font-bold ${
-                        isSeller ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {isSeller ? 'SELL' : 'BUY'}
-                      </span>
                     </div>
-
-                    {/* My Code */}
-                    <div className="bg-green-50 border-2 border-green-200 rounded-lg p-2 mb-2">
-                      <p className="text-xs text-green-700 font-semibold mb-1">Your Code:</p>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-lg font-bold text-green-700 tracking-widest flex-1">
-                          {visibleCodes[deal._id] ? myCode : '••••••'}
-                        </p>
-                        <button
-                          onClick={() => {
-                            setVisibleCodes(prev => ({ ...prev, [deal._id]: !prev[deal._id] }));
-                            haptic('light');
-                          }}
-                          className="p-1.5 hover:bg-green-100 rounded transition-colors"
-                        >
-                          <Eye className={`w-5 h-5 text-green-600 ${visibleCodes[deal._id] ? 'fill-green-600' : ''}`} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Other Party Info */}
-                    <div className="bg-gray-50 rounded-lg p-1.5 border border-gray-200">
-                      <p className="text-xs text-gray-600">
-                        {isSeller ? 'Buyer' : 'Seller'}: <span className="font-semibold text-gray-900">@{otherPartyName}</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Their Code: <span className="font-mono font-bold text-gray-700">{otherPartyCode}</span>
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
 
             <button
