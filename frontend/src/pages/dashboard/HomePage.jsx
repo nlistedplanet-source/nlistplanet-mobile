@@ -57,6 +57,29 @@ const HomePage = () => {
   const [referralCount, setReferralCount] = useState(0);
   const [confirmedDeals, setConfirmedDeals] = useState([]);
   const [visibleCodes, setVisibleCodes] = useState({});
+  const [newListingsTicker, setNewListingsTicker] = useState([]);
+
+  // Fetch NEW LISTINGS ticker data
+  useEffect(() => {
+    const fetchTicker = async () => {
+      try {
+        const res = await listingsAPI.getAll({ limit: 5, sort: '-createdAt' });
+        const listings = res.data.data || [];
+        const now = new Date();
+        const filtered = listings.filter(listing => {
+          const listingDate = new Date(listing.createdAt);
+          const hoursDiff = (now - listingDate) / (1000 * 60 * 60);
+          return hoursDiff <= 24;
+        });
+        setNewListingsTicker(filtered.slice(0, 5));
+      } catch (error) {
+        console.error('Failed to fetch ticker listings:', error);
+      }
+    };
+    fetchTicker();
+    const interval = setInterval(fetchTicker, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch data when auth is ready and user is authenticated
   useEffect(() => {
@@ -412,19 +435,7 @@ const HomePage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  // NEW LISTINGS Ticker (Mobile) - must be at top level
-  const [newListings, setNewListings] = useState([]);
-  useEffect(() => {
-    listingsAPI.getAll({ limit: 5, sort: '-createdAt' }).then(res => {
-      const now = new Date();
-      const filtered = (res.data.data || []).filter(listing => {
-        const listingDate = new Date(listing.createdAt);
-        const hoursDiff = (now - listingDate) / (1000 * 60 * 60);
-        return hoursDiff <= 24;
-      });
-      setNewListings(filtered);
-    });
-  }, []);
+
 
   if (loading) {
     return null;
@@ -432,45 +443,6 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      {/* NEW LISTINGS Ticker Section (moved above Quick Actions) */}
-      <div className="px-5 mt-4">
-        {newListings.length > 0 && (
-          <div className="bg-gradient-to-r from-purple-50 via-blue-50 to-indigo-50 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2 px-3 py-2">
-              <span className="text-purple-600 font-bold text-xs whitespace-nowrap flex-shrink-0">🔥 NEW:</span>
-              <div className="flex-1 overflow-hidden">
-                <div className="marquee-track">
-                  <div className="marquee-content">
-                    {newListings.concat(newListings).map((listing, idx) => {
-                      const formatQuantity = (qty) => {
-                        if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
-                        if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
-                        if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
-                        return qty.toString();
-                      };
-                      return (
-                        <div key={idx} className="inline-flex items-center gap-1 px-2 flex-shrink-0">
-                          <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
-                            {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown'}
-                          </span>
-                          <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap">
-                            {listing.listingType === 'sell' ? '🔴' : '🟢'}
-                          </span>
-                          <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
-                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
-                          </span>
-                          <span className="text-[10px] text-green-600 whitespace-nowrap">• {formatQuantity(listing.quantity)}</span>
-                          <span className="text-gray-300 px-1">•</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
       {/* Header */}
       <div className="bg-gradient-to-br from-slate-100 via-gray-50 to-slate-50 px-5 pt-safe pb-6">
         <div className="flex items-center justify-between mb-6">
@@ -509,6 +481,47 @@ const HomePage = () => {
         <div className="mb-6">
           <AdBanner position="dashboard_top" className="h-24" />
         </div>
+
+        {/* NEW LISTINGS Ticker - Fresh Simple Version */}
+        {newListingsTicker.length > 0 && (
+          <div className="mb-4 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl px-4 py-3 shadow-lg overflow-hidden">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-white font-bold text-xs">🔥 NEW LISTINGS</span>
+            </div>
+            <div className="space-y-2">
+              {newListingsTicker.map((listing) => (
+                <div key={listing._id} className="bg-white/90 backdrop-blur rounded-lg px-3 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-xs font-bold text-gray-900 truncate">
+                      {listing.companyId?.CompanyName || listing.companyId?.name || 'Unknown'}
+                    </span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                      listing.listingType === 'sell' 
+                        ? 'bg-red-100 text-red-700' 
+                        : 'bg-green-100 text-green-700'
+                    }`}>
+                      {listing.listingType === 'sell' ? 'SELL' : 'BUY'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-sm font-bold text-blue-600">
+                      @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                    </span>
+                    <span className="text-xs text-gray-600">
+                      • {(() => {
+                        const qty = listing.quantity;
+                        if (qty >= 10000000) return `${(qty / 10000000).toFixed(1)}Cr`;
+                        if (qty >= 100000) return `${(qty / 100000).toFixed(1)}L`;
+                        if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
+                        return qty.toString();
+                      })()} sh
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Portfolio Value Card */}
         <div id="mobile-portfolio-card" className="bg-white rounded-3xl p-5 shadow-xl shadow-slate-200/50 border border-slate-200">
