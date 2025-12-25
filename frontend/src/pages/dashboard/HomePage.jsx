@@ -412,14 +412,9 @@ const HomePage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  if (loading) {
-    return null;
-  }
-
-  // NEW LISTINGS Ticker (Mobile)
+  // NEW LISTINGS Ticker (Mobile) - must be at top level
   const [newListings, setNewListings] = useState([]);
   useEffect(() => {
-    // Fetch latest listings (last 24h, max 5)
     listingsAPI.getAll({ limit: 5, sort: '-createdAt' }).then(res => {
       const now = new Date();
       const filtered = (res.data.data || []).filter(listing => {
@@ -430,6 +425,10 @@ const HomePage = () => {
       setNewListings(filtered);
     });
   }, []);
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
