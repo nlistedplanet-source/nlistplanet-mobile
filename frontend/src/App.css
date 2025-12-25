@@ -3,14 +3,23 @@
   width: 100%;
   overflow: hidden;
   position: relative;
-  height: auto;
-  min-height: 24px;
+  height: 32px;
+  display: flex;
+  align-items: center;
 }
 .marquee-content {
   display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
   white-space: nowrap;
   gap: 0;
-  animation: marquee-scroll 20s linear infinite;
+  animation: marquee-scroll 25s linear infinite;
+  align-items: center;
+  height: 100%;
+}
+.marquee-content > div {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
 }
 @keyframes marquee-scroll {
