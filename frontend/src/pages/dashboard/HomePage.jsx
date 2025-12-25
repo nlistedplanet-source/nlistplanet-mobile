@@ -550,16 +550,7 @@ const HomePage = () => {
       </div>
 
       {/* Quick Stats Cards */}
-      /* Add marquee animation for ticker */
-      <style>
-      .marquee {
-        animation: marquee 18s linear infinite;
-      }
-      @keyframes marquee {
-        0% { transform: translateX(100%); }
-        100% { transform: translateX(-100%); }
-      }
-      </style>
+
       <div id="mobile-quick-stats" className="px-5 -mt-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
