@@ -211,6 +211,24 @@ const EditProfilePage = () => {
     }
   };
 
+  const handleNextTab = () => {
+    haptic.light();
+    if (activeTab === 'personal') {
+      setActiveTab('bank');
+    } else if (activeTab === 'bank') {
+      setActiveTab('documents');
+    }
+  };
+
+  const handlePreviousTab = () => {
+    haptic.light();
+    if (activeTab === 'documents') {
+      setActiveTab('bank');
+    } else if (activeTab === 'bank') {
+      setActiveTab('personal');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-safe-offset-24">
       {/* Clean Header with Back */}
@@ -514,21 +532,43 @@ const EditProfilePage = () => {
       </div>
       {/* Action Buttons at Bottom */}
       <div className="px-6 py-6 bg-white dark:bg-zinc-900 shadow-2xl">
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex-1 px-6 py-3.5 border-2 border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 rounded-2xl font-semibold"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading}
-            className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
-          >
-            <Save size={18} />
-            {loading ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="flex items-center justify-between gap-3">
+          {/* Left side - Previous/Cancel */}
+          <div className="flex gap-3 flex-1">
+            {activeTab !== 'personal' && (
+              <button
+                onClick={handlePreviousTab}
+                className="px-6 py-3.5 border-2 border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 rounded-2xl font-semibold"
+              >
+                ← Prev
+              </button>
+            )}
+            <button
+              onClick={() => navigate(-1)}
+              className="flex-1 px-6 py-3.5 border-2 border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 rounded-2xl font-semibold"
+            >
+              Cancel
+            </button>
+          </div>
+          
+          {/* Right side - Next/Save */}
+          {activeTab !== 'documents' ? (
+            <button
+              onClick={handleNextTab}
+              className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold shadow-lg"
+            >
+              Next →
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="flex-1 px-6 py-3.5 bg-gradient-to-r from-primary-600 to-indigo-600 text-white rounded-2xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg"
+            >
+              <Save size={18} />
+              {loading ? 'Saving...' : 'Save All'}
+            </button>
+          )}
         </div>
       </div>    </div>
   );
