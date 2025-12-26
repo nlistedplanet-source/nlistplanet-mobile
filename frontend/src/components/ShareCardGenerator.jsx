@@ -160,21 +160,6 @@ const ShareCardGenerator = ({ listing, onClose }) => {
       setLoading(false);
     }
   };
-        link.download = file.name;
-        link.click();
-        
-        await navigator.clipboard.writeText(data.caption);
-        toast.success('Card downloaded & caption copied!');
-      }
-
-      onClose();
-    } catch (error) {
-      console.error('Share error:', error);
-      toast.error('Failed to share');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Handle download only
   const handleDownload = async () => {
