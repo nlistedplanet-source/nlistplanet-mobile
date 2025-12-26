@@ -3,34 +3,22 @@ import { X, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const TOUR_STEPS = [
   {
-    target: '#sidebar-tab-marketplace',
-    title: '🛒 Marketplace',
-    description: 'Browse and trade unlisted shares. Place bids on SELL posts or offers on BUY requests.',
-    position: 'right'
+    target: '#mobile-portfolio-card',
+    title: '💼 Portfolio',
+    description: 'Track your total portfolio value, investments, and gains in real-time.',
+    position: 'bottom'
   },
   {
-    target: '#sidebar-tab-portfolio',
-    title: '💼 My Portfolio',
-    description: 'Track all your unlisted share holdings and monitor their performance.',
-    position: 'right'
+    target: '#mobile-quick-stats',
+    title: '📊 Quick Stats',
+    description: 'View your active listings and completed trades at a glance.',
+    position: 'bottom'
   },
   {
-    target: '#sidebar-tab-posts',
-    title: '📝 My Posts',
-    description: 'View and manage your SELL listings and BUY requests here.',
-    position: 'right'
-  },
-  {
-    target: '#sidebar-tab-my-bids-offers',
-    title: '💰 My Bids & Offers',
-    description: 'Track all bids you placed on SELL posts and offers on BUY requests.',
-    position: 'right'
-  },
-  {
-    target: '#dashboard-action-center',
-    title: '⚡ Action Center',
-    description: 'Important notifications about new bids, counter-offers, and deals requiring your action.',
-    position: 'top'
+    target: '#mobile-quick-actions',
+    title: '⚡ Quick Actions',
+    description: 'Create new posts or browse marketplace listings quickly from here.',
+    position: 'bottom'
   }
 ];
 
@@ -70,6 +58,9 @@ const SimpleTour = () => {
       } else if (step.position === 'top') {
         top = rect.top - 200;
         left = rect.left + (rect.width / 2) - 150;
+      } else if (step.position === 'bottom') {
+        top = rect.bottom + 20;
+        left = Math.max(20, rect.left + (rect.width / 2) - 150);
       }
 
       setPosition({ top, left });

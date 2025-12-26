@@ -477,7 +477,6 @@ const HomePage = () => {
               className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200 relative"
             >
               <PlayCircle className="w-5 h-5 text-indigo-600" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
             </button>
           </div>
         </div>
