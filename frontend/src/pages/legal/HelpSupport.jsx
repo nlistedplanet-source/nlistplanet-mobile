@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MessageCircle, FileQuestion, Clock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, FileQuestion, Send } from 'lucide-react';
 import { haptic } from '../../utils/helpers';
+import { useAuth } from '../../context/AuthContext';
+import QueryModal from '../../components/modals/QueryModal';
+import toast from 'react-hot-toast';
 
 const HelpSupport = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isQueryModalOpen, setIsQueryModalOpen] = useState(false);
 
   const faqs = [
     {
@@ -22,6 +27,10 @@ const HelpSupport = () => {
     {
       question: 'Is my data secure?',
       answer: 'Yes, we use industry-standard encryption and security practices. Your documents and personal data are stored securely.'
+    },
+    {
+      question: 'How do I contact admin?',
+      answer: 'Use the "Send Query to Admin" button below. Our admin team will respond to your query within 24 hours.'
     }
   ];
 
@@ -46,65 +55,22 @@ const HelpSupport = () => {
       </div>
 
       <div className="px-6 pt-6">
-        {/* Contact Options */}
-        <div className="bg-white rounded-2xl shadow-mobile p-5 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Contact Us</h2>
-          <div className="space-y-3">
-            <a
-              href="mailto:support@nlistplanet.com"
-              className="flex items-center gap-4 p-4 bg-blue-50 rounded-xl"
-            >
-              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Mail className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900">Email Support</p>
-                <p className="text-sm text-gray-500">support@nlistplanet.com</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </a>
-
-            <a
-              href="tel:+918999999999"
-              className="flex items-center gap-4 p-4 bg-green-50 rounded-xl"
-            >
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <Phone className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900">Phone Support</p>
-                <p className="text-sm text-gray-500">Mon-Sat, 10AM - 6PM</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </a>
-
-            <a
-              href="https://wa.me/918999999999"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 p-4 bg-emerald-50 rounded-xl"
-            >
-              <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                <MessageCircle className="w-6 h-6 text-emerald-600" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900">WhatsApp</p>
-                <p className="text-sm text-gray-500">Quick responses</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </a>
+        {/* Send Query Button */}
+        <div className="bg-gradient-to-br from-primary-600 to-indigo-700 rounded-2xl shadow-lg p-6 mb-6">
+          <div className="text-center mb-4">
+            <h2 className="text-xl font-bold text-white mb-2">Need Help?</h2>
+            <p className="text-sm text-white/80">Send us your query and our admin team will respond within 24 hours</p>
           </div>
-        </div>
-
-        {/* Response Time */}
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <Clock className="w-5 h-5 text-amber-600" />
-            <div>
-              <p className="font-semibold text-amber-900">Response Time</p>
-              <p className="text-sm text-amber-700">We typically respond within 24 hours</p>
-            </div>
-          </div>
+          <button
+            onClick={() => {
+              haptic.medium();
+              setIsQueryModalOpen(true);
+            }}
+            className="w-full bg-white text-primary-600 rounded-xl py-3.5 font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform"
+          >
+            <Send size={20} />
+            Send Query to Admin
+          </button>
         </div>
 
         {/* FAQs */}
@@ -123,6 +89,12 @@ const HelpSupport = () => {
           </div>
         </div>
       </div>
+
+      {/* Query Modal */}
+      <QueryModal 
+        isOpen={isQueryModalOpen}
+        onClose={() => setIsQueryModalOpen(false)}
+      />
     </div>
   );
 };
