@@ -449,8 +449,16 @@ const HomePage = () => {
       <div className="bg-gradient-to-br from-slate-100 via-gray-50 to-slate-50 px-5 pt-safe pb-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200">
-              <span className="text-white font-bold text-lg">{getInitials(user?.fullName || user?.username)}</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 overflow-hidden">
+              {user?.profileImage ? (
+                <img 
+                  src={user.profileImage} 
+                  alt={user?.fullName || user?.username} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-white font-bold text-lg">{getInitials(user?.fullName || user?.username)}</span>
+              )}
             </div>
             <div>
               <p className="text-slate-700 text-xs font-medium">Welcome back,</p>

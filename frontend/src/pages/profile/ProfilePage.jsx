@@ -151,10 +151,18 @@ const ProfilePage = () => {
         <div className="relative z-10 flex flex-col items-center text-center mt-2">
           {/* Avatar with Logo Overlay */}
           <div className="relative mb-4">
-            <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3">
-              <span className="text-4xl font-bold text-primary-600 dark:text-primary-400 -rotate-3">
-                {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
-              </span>
+            <div className="w-24 h-24 bg-white dark:bg-zinc-800 rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 overflow-hidden">
+              {user?.profileImage ? (
+                <img 
+                  src={user.profileImage} 
+                  alt={user?.fullName || user?.username} 
+                  className="w-full h-full object-cover -rotate-3"
+                />
+              ) : (
+                <span className="text-4xl font-bold text-primary-600 dark:text-primary-400 -rotate-3">
+                  {user?.fullName?.charAt(0) || user?.username?.charAt(0) || 'U'}
+                </span>
+              )}
             </div>
             <div className="absolute -bottom-2 -right-2 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl shadow-lg">
               <BrandLogo size={24} />
