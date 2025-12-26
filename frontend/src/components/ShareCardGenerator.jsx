@@ -130,12 +130,12 @@ const ShareCardGenerator = ({ listing, onClose }) => {
       // Convert data URL to blob
       const response = await fetch(imageDataUrl);
       const blob = await response.blob();
-      const file = new File([blob], `nlistplanet-${listing.companyId?.name || listing.companyName || 'share'}.png`, { type: 'image/png' });
+      const file = new File([blob], 'share-card.png', { type: 'image/png' });
 
       // Check if Web Share API is available
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: `${listing.companyId?.name || listing.companyName} - NlistPlanet`,
+          title: 'Investment Opportunity',
           text: data.caption,
           files: [file]
         });
