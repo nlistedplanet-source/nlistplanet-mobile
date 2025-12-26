@@ -7,7 +7,6 @@ import {
   Activity,
   Plus,
   Eye,
-  RefreshCw,
   ArrowUpRight,
   Wallet,
   BarChart3,
@@ -19,7 +18,8 @@ import {
   ArrowRight,
   CheckCircle,
   XCircle,
-  RotateCcw
+  RotateCcw,
+  HelpCircle
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
@@ -29,13 +29,12 @@ import Snowfall from '../../components/Snowfall';
 import CreateListingModal from '../../components/modals/CreateListingModal';
 import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
 import AdBanner from '../../components/common/AdBanner';
-import { useDashboardTour } from '../../components/TourGuide';
+import SimpleTour, { startSimpleTour } from '../../components/SimpleTour';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, unreadCount } = useAuth();
-  useDashboardTour();
   const { showLoader, hideLoader } = useLoader();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -471,11 +470,14 @@ const HomePage = () => {
               )}
             </button>
             <button 
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200"
+              onClick={() => {
+                haptic.light();
+                startSimpleTour();
+              }}
+              className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200 relative"
             >
-              <RefreshCw className={`w-5 h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+              <HelpCircle className="w-5 h-5 text-indigo-600" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
             </button>
           </div>
         </div>
@@ -1160,6 +1162,9 @@ const HomePage = () => {
           fetchData(); // Refresh data to remove item from action center
         }}
       />
+
+      {/* Tour Guide Component */}
+      <SimpleTour />
     </div>
   );
 };
