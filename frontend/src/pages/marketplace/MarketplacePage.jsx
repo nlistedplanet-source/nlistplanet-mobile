@@ -80,6 +80,8 @@ const MarketplacePage = () => {
   const [filteredListings, setFilteredListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('latest');
+  const [sectorFilter, setSectorFilter] = useState('all');
   const [selectedListing, setSelectedListing] = useState(null); // For popup modal
   const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
   const [showBidModal, setShowBidModal] = useState(false); // Bid modal
@@ -120,9 +122,21 @@ const MarketplacePage = () => {
 
   const filterListings = useCallback(() => {
     let filtered = [...listings];
+    
+    // Filter by type (all/buy/sell)
     if (activeFilter !== 'all') {
       filtered = filtered.filter(listing => listing.type === activeFilter);
     }
+    
+    // Filter by sector
+    if (sectorFilter !== 'all') {
+      filtered = filtered.filter(listing => {
+        const sector = (listing.companyId?.Sector || listing.companyId?.sector || '').toLowerCase();
+        return sector.includes(sectorFilter.toLowerCase());
+      });
+    }
+    
+    // Filter by search
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(listing => 
@@ -138,8 +152,25 @@ const MarketplacePage = () => {
         listing.description?.toLowerCase().includes(query)
       );
     }
+    
+    // Sort listings
+    filtered.sort((a, b) => {
+      if (sortBy === 'latest') {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      } else if (sortBy === 'price-high') {
+        return (b.price || 0) - (a.price || 0);
+      } else if (sortBy === 'price-low') {
+        return (a.price || 0) - (b.price || 0);
+      } else if (sortBy === 'quantity-high') {
+        return (b.quantity || 0) - (a.quantity || 0);
+      } else if (sortBy === 'quantity-low') {
+        return (a.quantity || 0) - (b.quantity || 0);
+      }
+      return 0;
+    });
+    
     setFilteredListings(filtered);
-  }, [listings, searchQuery, activeFilter]);
+  }, [listings, searchQuery, activeFilter, sortBy, sectorFilter]);
 
   const handleCardClick = (listing) => {
     haptic.light();
@@ -163,11 +194,14 @@ const MarketplacePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      {/* Header - Compact Amber Theme */}
-      <div className="bg-white/80 backdrop-blur-xl sticky top-0 z-20 shadow-sm border-b border-gray-100">
-        <div className="px-3 pt-safe pb-2">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-base font-bold text-gray-900">Marketplace</h1>
+      {/* Header with Title */}
+      <div className="bg-white sticky top-0 z-20 shadow-sm border-b border-gray-100">
+        <div className="px-4 pt-safe pb-3">
+          {/* Top Bar with Refresh & Notifications */}
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-lg font-bold bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+              Discover & Trade Unlisted Shares
+            </h1>
             <div className="flex items-center gap-2">
               <button 
                 onClick={handleRefresh}
@@ -190,39 +224,68 @@ const MarketplacePage = () => {
             </div>
           </div>
 
-          {/* Search Bar - Smaller */}
-          <div className="relative mb-2">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          {/* Search Bar */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search companies..."
+              placeholder="Search by company, sector, user..."
               onChange={(e) => debouncedSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-900 text-xs placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+              className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
 
-          {/* Filter Tabs - Smaller */}
-          <div className="flex gap-1.5 overflow-x-auto scrollbar-none -mx-3 px-3">
-            {[
-              { value: 'all', label: 'All' },
-              { value: 'sell', label: 'Selling', icon: TrendingDown },
-              { value: 'buy', label: 'Buying', icon: TrendingUp }
-            ].map(({ value, label, icon: Icon }) => (
-              <button
-                key={value}
-                onClick={() => { haptic.light(); setActiveFilter(value); }}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-medium whitespace-nowrap transition-all ${
-                  activeFilter === value
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-600 border border-gray-200'
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  {Icon && <Icon size={11} />}
+          {/* Filter Tabs + Dropdowns */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            {/* All/Buy/Sell Tabs */}
+            <div className="flex gap-1.5">
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'buy', label: 'Buy' },
+                { value: 'sell', label: 'Sell' }
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => { haptic.light(); setActiveFilter(value); }}
+                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    activeFilter === value
+                      ? 'bg-emerald-500 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
                   {label}
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort & Filter Dropdowns */}
+            <div className="flex gap-1.5">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-[11px] font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="latest">Latest</option>
+                <option value="price-high">Price High</option>
+                <option value="price-low">Price Low</option>
+                <option value="quantity-high">Qty High</option>
+                <option value="quantity-low">Qty Low</option>
+              </select>
+              <select
+                value={sectorFilter}
+                onChange={(e) => setSectorFilter(e.target.value)}
+                className="px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-[11px] font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+              >
+                <option value="all">All Sectors</option>
+                <option value="technology">Technology</option>
+                <option value="finance">Finance</option>
+                <option value="healthcare">Healthcare</option>
+                <option value="ecommerce">E-commerce</option>
+                <option value="automobile">Automobile</option>
+                <option value="real estate">Real Estate</option>
+                <option value="energy">Energy</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
