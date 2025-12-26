@@ -130,24 +130,57 @@ const ShareCardGenerator = ({ listing, onClose }) => {
       // Convert data URL to blob
       const response = await fetch(imageDataUrl);
       const blob = await response.blob();
-      const file = new File([blob], 'share-card.png', { type: 'image/png' });
+      const file = new File([blob], `nlistplanet-${listing.companyId?.name || listing.companyName || 'share'}.png`, { type: 'image/png' });
 
-      // Check if Web Share API is available
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: 'Investment Opportunity',
-          text: data.caption,
-          files: [file]
-        });
-        toast.success('Shared successfully!');
+      // Try Web Share API with files first
+      if (navigator.share) {
+        try {
+          // First try with image + caption
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `${listing.companyId?.name || listing.companyName} - NlistPlanet`,
+              text: data.caption,
+              files: [file]
+            });
+            toast.success('Shared successfully!');
+            onClose();
+            return;
+          }
+          
+          // If file sharing not supported, download and copy caption
+          const link = document.createElement('a');
+          link.href = imageDataUrl;
+          link.download = file.name;
+          link.click();
+          
+          // Copy caption and show share dialog for text
+          await navigator.clipboard.writeText(data.caption);
+          
+          // Try to share just the text/link as fallback
+          try {
+            await navigator.share({
+              title: `${listing.companyId?.name || listing.companyName} - NlistPlanet`,
+              text: data.caption,
+              url: data.shareUrl
+            });
+          } catch (e) {
+            // Silent fail if user cancels
+          }
+          
+          toast.success('Card downloaded & caption copied!');
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            throw error;
+          }
+          // User cancelled share
+        }
       } else {
-        // Fallback: Download image and copy caption
+        // No Web Share API - download and copy
         const link = document.createElement('a');
         link.href = imageDataUrl;
-        link.download = `nlistplanet-${listing.companyId?.name || listing.companyName || 'share'}.png`;
+        link.download = file.name;
         link.click();
         
-        // Copy caption to clipboard
         await navigator.clipboard.writeText(data.caption);
         toast.success('Card downloaded & caption copied!');
       }
