@@ -127,6 +127,14 @@ const MarketplacePage = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(listing => 
         listing.companyName?.toLowerCase().includes(query) ||
+        listing.companyId?.CompanyName?.toLowerCase().includes(query) ||
+        listing.companyId?.name?.toLowerCase().includes(query) ||
+        listing.companyId?.ScripName?.toLowerCase().includes(query) ||
+        listing.companyId?.scriptName?.toLowerCase().includes(query) ||
+        listing.companyId?.symbol?.toLowerCase().includes(query) ||
+        listing.companyId?.Sector?.toLowerCase().includes(query) ||
+        listing.companyId?.sector?.toLowerCase().includes(query) ||
+        listing.username?.toLowerCase().includes(query) ||
         listing.description?.toLowerCase().includes(query)
       );
     }
