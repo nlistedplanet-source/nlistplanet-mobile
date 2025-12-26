@@ -435,7 +435,14 @@ const HomePage = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-
+  // Get time-based greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 21) return 'Good evening';
+    return 'Good night';
+  };
 
   if (loading) {
     return null;
@@ -461,7 +468,7 @@ const HomePage = () => {
               )}
             </div>
             <div>
-              <p className="text-slate-700 text-xs font-medium">Welcome back,</p>
+              <p className="text-slate-700 text-xs font-medium">{getGreeting()},</p>
               <h1 className="text-gray-900 text-xl font-bold">{user?.fullName || user?.username}</h1>
             </div>
           </div>
