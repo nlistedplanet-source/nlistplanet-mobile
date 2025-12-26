@@ -27,7 +27,7 @@ import {
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
-import ShareCardGenerator from '../../components/ShareCardGenerator';
+import NewShareModal from '../../components/NewShareModal';
 import toast from 'react-hot-toast';
 
 const MyPostsPage = () => {
@@ -278,7 +278,7 @@ const MyPostsPage = () => {
 
       {/* Share Card Generator */}
       {showShareModal && selectedListing && (
-        <ShareCardGenerator
+        <NewShareModal
           listing={selectedListing}
           onClose={() => {
             setShowShareModal(false);
