@@ -1,6 +1,6 @@
-// Update cache version to force refresh - Dec 26, 2025 v2.0.0
-const CACHE_NAME = 'nlistplanet-v12';
-const STATIC_CACHE = 'nlistplanet-static-v12';
+// Update cache version to force refresh - Dec 26, 2025 v3.0.0 - Share modal fix
+const CACHE_NAME = 'nlistplanet-v13';
+const STATIC_CACHE = 'nlistplanet-static-v13';
 
 // Only cache static assets, not HTML
 const urlsToCache = [

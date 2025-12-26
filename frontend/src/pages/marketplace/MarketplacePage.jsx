@@ -24,6 +24,7 @@ import { useLoader } from '../../context/LoaderContext';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import BidOfferModal from '../../components/modals/BidOfferModal';
+import NewShareModal from '../../components/NewShareModal';
 
 // Format quantity - 5000 to 5K, 100000 to 1L etc
 const formatQty = (qty) => {
@@ -82,6 +83,8 @@ const MarketplacePage = () => {
   const [selectedListing, setSelectedListing] = useState(null); // For popup modal
   const [showConfirmation, setShowConfirmation] = useState(false); // Accept confirmation
   const [showBidModal, setShowBidModal] = useState(false); // Bid modal
+  const [showShareModal, setShowShareModal] = useState(false); // Share modal
+  const [shareListingData, setShareListingData] = useState(null); // Listing to share
 
   useEffect(() => {
     fetchListings();
@@ -250,6 +253,21 @@ const MarketplacePage = () => {
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
           onBidClick={() => setShowBidModal(true)}
+          onShareClick={(listing) => {
+            setShareListingData(listing);
+            setShowShareModal(true);
+          }}
+        />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && shareListingData && (
+        <NewShareModal
+          listing={shareListingData}
+          onClose={() => {
+            setShowShareModal(false);
+            setShareListingData(null);
+          }}
         />
       )}
 
@@ -392,7 +410,7 @@ const CompactCard = ({ listing, onClick }) => {
 // ═══════════════════════════════════════════════════════════════
 // POPUP MODAL - Card click opens animated popup with full details
 // ═══════════════════════════════════════════════════════════════
-const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick }) => {
+const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfirmation, onBidClick, onShareClick }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [liked, setLiked] = useState(false);
   const [favorited, setFavorited] = useState(false);
@@ -437,15 +455,7 @@ const PopupModal = ({ listing, onClose, navigate, showConfirmation, setShowConfi
   const handleShare = (e) => {
     e.stopPropagation();
     haptic.light();
-    if (navigator.share) {
-      navigator.share({ 
-        title: listing.companyName, 
-        url: window.location.origin + `/listing/${listing._id}`
-      }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(window.location.origin + `/listing/${listing._id}`);
-      toast.success('Link copied!');
-    }
+    onShareClick(listing);
   };
 
   const handleAcceptClick = (e) => {
