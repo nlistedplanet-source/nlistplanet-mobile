@@ -48,17 +48,50 @@ const ShareCardGenerator = ({ listing, onClose }) => {
   };
 
   // Generate card image
+  // Generate card image at full resolution
   const generateCardImage = async () => {
     if (!cardRef.current) return null;
 
     try {
-      const canvas = await html2canvas(cardRef.current, {
+      // Create a hidden container to render card at full size
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.width = '1080px';
+      container.style.height = '1080px';
+      
+      // Clone the card
+      const clonedCard = cardRef.current.cloneNode(true);
+      clonedCard.style.transform = 'scale(1)'; // Full size
+      clonedCard.style.width = '1080px';
+      clonedCard.style.height = '1080px';
+      
+      container.appendChild(clonedCard);
+      document.body.appendChild(container);
+
+      const canvas = await html2canvas(clonedCard, {
         scale: 2,
         backgroundColor: '#ffffff',
         logging: false,
-        useCORS: true
+        useCORS: true,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        width: 1080,
+        height: 1080,
+        ignoreElements: (element) => {
+          return element.tagName === 'LINK' && element.rel === 'stylesheet';
+        },
+        onclone: (clonedDoc) => {
+          const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+          links.forEach(link => {
+            if (link.href.includes('fonts.googleapis.com')) {
+              link.remove();
+            }
+          });
+        }
       });
 
+      document.body.removeChild(container);
       return canvas.toDataURL('image/png');
     } catch (error) {
       console.error('Card generation error:', error);
@@ -90,33 +123,17 @@ const ShareCardGenerator = ({ listing, onClose }) => {
 
       // Check if Web Share API is available
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          // Copy caption to clipboard first (workaround for apps that drop text when sharing files)
-          await navigator.clipboard.writeText(data.caption);
-          toast.success('Caption copied! Select app to share...');
-
-          await navigator.share({
-            title: 'Investment Opportunity',
-            text: data.caption,
-            files: [file]
-          });
-        } catch (shareError) {
-          console.error('Native share failed, falling back:', shareError);
-          // Fallback if native share fails (e.g. user cancelled or not supported)
-          const link = document.createElement('a');
-          link.href = imageDataUrl;
-          link.download = `nlistplanet-${listing.company?.name || 'share'}.png`;
-          link.click();
-          
-          // Ensure caption is copied in fallback too
-          await navigator.clipboard.writeText(data.caption);
-          toast.success('Card downloaded & caption copied!');
-        }
+        await navigator.share({
+          title: 'Investment Opportunity',
+          text: data.caption,
+          files: [file]
+        });
+        toast.success('Shared successfully!');
       } else {
         // Fallback: Download image and copy caption
         const link = document.createElement('a');
         link.href = imageDataUrl;
-        link.download = `nlistplanet-${listing.company?.name || 'share'}.png`;
+        link.download = `nlistplanet-${listing.companyId?.name || listing.companyName || 'share'}.png`;
         link.click();
         
         // Copy caption to clipboard
@@ -143,7 +160,7 @@ const ShareCardGenerator = ({ listing, onClose }) => {
 
       const link = document.createElement('a');
       link.href = imageDataUrl;
-      link.download = `nlistplanet-${listing.company?.name || 'share'}.png`;
+      link.download = `nlistplanet-${listing.companyId?.name || listing.companyName || 'share'}.png`;
       link.click();
 
       toast.success('Card downloaded!');
@@ -206,15 +223,15 @@ const ShareCardGenerator = ({ listing, onClose }) => {
 
         {/* Share Card Preview - Scaled to fit */}
         <div className={`mb-4 overflow-hidden rounded-xl bg-gradient-to-br ${cardTheme.gradient} relative`} style={{ width: '100%', paddingBottom: '100%' }}>
-          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-            <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div style={{ width: '100%', height: '100%', transform: 'scale(1)', transformOrigin: 'center' }}>
               <div 
                 ref={cardRef} 
-                className={`bg-gradient-to-br ${cardTheme.gradient} overflow-hidden`}
+                className={`w-full h-full bg-gradient-to-br ${cardTheme.gradient} overflow-hidden`}
                 style={{ 
                   width: '1080px', 
                   height: '1080px',
-                  transform: 'scale(0.3)', // Fixed scale for mobile preview
+                  transform: 'scale(0.36)',
                   transformOrigin: 'top left',
                   position: 'absolute',
                   top: 0,
