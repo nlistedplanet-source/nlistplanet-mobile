@@ -4,11 +4,17 @@ import { Share2, Download, X, Copy, Check, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 
+// Version: 2.0.0 - Dec 26, 2025 - Complete rewrite with card preview
 const NewShareModal = ({ listing, onClose }) => {
   const cardRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [shareData, setShareData] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Debug log to confirm new version loaded
+  useEffect(() => {
+    console.log('🎉 NewShareModal v2.0.0 loaded!');
+  }, []);
 
   useEffect(() => {
     generateShareData();
