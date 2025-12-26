@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { companiesAPI } from '../utils/api';
 import AdBanner from '../components/common/AdBanner';
+import SnowfallMobile from '../components/Snowfall';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
+      <SnowfallMobile />
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-teal-50 via-cyan-50 to-emerald-50 pt-6 md:pt-8 pb-12 px-8 flex flex-col justify-between relative overflow-hidden" style={{minHeight: '85vh'}}>
         <div className="absolute top-20 right-10 w-64 h-64 bg-emerald-200 rounded-full opacity-20 blur-3xl"></div>

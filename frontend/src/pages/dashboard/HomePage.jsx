@@ -19,7 +19,7 @@ import {
   CheckCircle,
   XCircle,
   RotateCcw,
-  HelpCircle
+  PlayCircle
 } from 'lucide-react';
 import { portfolioAPI, listingsAPI } from '../../utils/api';
 import { formatCurrency, formatPercentage, timeAgo, haptic, storage, calculateBuyerPays, calculateSellerGets, getNetPriceForUser } from '../../utils/helpers';
@@ -459,6 +459,16 @@ const HomePage = () => {
           </div>
           <div className="flex items-center gap-2">
             <button 
+              onClick={() => {
+                haptic.light();
+                startSimpleTour();
+              }}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-lg shadow-indigo-200 active:scale-95 transition-transform"
+            >
+              <PlayCircle className="w-4 h-4" />
+              <span className="text-xs font-bold">Tour Demo</span>
+            </button>
+            <button 
               onClick={() => navigate('/notifications')}
               className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200 relative"
             >
@@ -468,16 +478,6 @@ const HomePage = () => {
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
               )}
-            </button>
-            <button 
-              onClick={() => {
-                haptic.light();
-                startSimpleTour();
-              }}
-              className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-sm border border-slate-200 relative"
-            >
-              <HelpCircle className="w-5 h-5 text-indigo-600" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
             </button>
           </div>
         </div>
