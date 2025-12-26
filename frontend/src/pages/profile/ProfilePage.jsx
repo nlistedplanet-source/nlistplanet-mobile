@@ -52,17 +52,6 @@ const ProfilePage = () => {
       }
     },
     {
-      id: 'kyc',
-      icon: Shield,
-      label: 'KYC Verification',
-      description: user?.kycStatus === 'verified' ? 'Verified' : 'Not verified',
-      badge: user?.kycStatus === 'verified' ? 'verified' : user?.kycStatus === 'pending' ? 'pending' : null,
-      onClick: () => {
-        haptic.light();
-        navigate('/kyc');
-      }
-    },
-    {
       id: 'referrals',
       icon: Gift,
       label: 'Referrals',
