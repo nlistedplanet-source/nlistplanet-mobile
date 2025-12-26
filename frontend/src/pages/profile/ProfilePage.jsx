@@ -83,26 +83,6 @@ const ProfilePage = () => {
       }
     },
     {
-      id: 'privacy',
-      icon: FileText,
-      label: 'Privacy Policy',
-      description: 'View privacy terms',
-      onClick: () => {
-        haptic.light();
-        navigate('/privacy');
-      }
-    },
-    {
-      id: 'terms',
-      icon: FileText,
-      label: 'Terms of Service',
-      description: 'View terms and conditions',
-      onClick: () => {
-        haptic.light();
-        navigate('/terms');
-      }
-    },
-    {
       id: 'help',
       icon: HelpCircle,
       label: 'Help & Support',
