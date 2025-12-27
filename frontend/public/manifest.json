@@ -6,19 +6,19 @@
   "description": "Trade unlisted shares on the go with NlistPlanet mobile app",
   "icons": [
     {
-      "src": "Logo.png",
+      "src": "Logo copy.png",
       "sizes": "64x64",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "Logo.png",
+      "src": "Logo copy.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "Logo.png",
+      "src": "Logo copy.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any"
@@ -37,14 +37,14 @@
       "short_name": "Market",
       "description": "Browse unlisted shares",
       "url": "/marketplace",
-      "icons": [{ "src": "Logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Logo copy.png", "sizes": "192x192" }]
     },
     {
       "name": "My Posts",
       "short_name": "Posts",
       "description": "View your listings",
       "url": "/my-posts",
-      "icons": [{ "src": "Logo.png", "sizes": "192x192" }]
+      "icons": [{ "src": "Logo copy.png", "sizes": "192x192" }]
     }
   ]
 }
