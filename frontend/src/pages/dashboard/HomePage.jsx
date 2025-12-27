@@ -531,7 +531,7 @@ const HomePage = () => {
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
                           <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
-                            @ ₹{formatCurrency(displayPrice)}
+                            @ {formatCurrency(displayPrice)}
                           </span>
                           <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} sh
@@ -563,7 +563,7 @@ const HomePage = () => {
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
                           <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
-                            @ ₹{formatCurrency(displayPrice)}
+                            @ {formatCurrency(displayPrice)}
                           </span>
                           <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} sh
