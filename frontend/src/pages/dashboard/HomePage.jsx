@@ -517,6 +517,11 @@ const HomePage = () => {
                         if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
                         return qty.toString();
                       };
+                      // Apply platform fee model
+                      const basePrice = listing.pricePerShare ?? listing.price ?? 0;
+                      const displayPrice = listing.listingType === 'sell' 
+                        ? calculateBuyerPays(basePrice) 
+                        : calculateSellerGets(basePrice);
                       return (
                         <span key={`${listing._id}-1-${idx}`} className="inline-flex items-center gap-2 mx-3">
                           <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
@@ -526,7 +531,7 @@ const HomePage = () => {
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
                           <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
-                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                            @ ₹{formatCurrency(displayPrice)}
                           </span>
                           <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} sh
@@ -544,6 +549,11 @@ const HomePage = () => {
                         if (qty >= 1000) return `${(qty / 1000).toFixed(1)}K`;
                         return qty.toString();
                       };
+                      // Apply platform fee model
+                      const basePrice = listing.pricePerShare ?? listing.price ?? 0;
+                      const displayPrice = listing.listingType === 'sell' 
+                        ? calculateBuyerPays(basePrice) 
+                        : calculateSellerGets(basePrice);
                       return (
                         <span key={`${listing._id}-2-${idx}`} className="inline-flex items-center gap-2 mx-3">
                           <span className="text-xs font-semibold text-gray-800 whitespace-nowrap">
@@ -553,7 +563,7 @@ const HomePage = () => {
                             {listing.listingType === 'sell' ? '🔴 SELL' : '🟢 BUY'}
                           </span>
                           <span className="text-xs font-bold text-blue-600 whitespace-nowrap">
-                            @ ₹{listing.pricePerShare ?? listing.price ?? 'N/A'}
+                            @ ₹{formatCurrency(displayPrice)}
                           </span>
                           <span className="text-xs text-gray-700 whitespace-nowrap">
                             • {formatQuantity(listing.quantity)} sh
