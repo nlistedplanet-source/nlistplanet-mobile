@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 import { 
   requestNotificationPermission, 
   onForegroundMessage,
-  signInWithGoogle as firebaseGoogleSignIn
+  signInWithGoogle as firebaseGoogleSignIn,
+  getGoogleRedirectResult
 } from '../config/firebase';
 
 const AuthContext = createContext();
@@ -97,6 +98,13 @@ export const AuthProvider = ({ children }) => {
             // If verification fails, don't immediately logout - 
             // token might be valid but backend might be cold starting
             console.log('Token verification failed, using cached user data');
+          }
+        } else {
+          // Check for Google redirect result
+          const googleResult = await getGoogleRedirectResult();
+          if (googleResult) {
+            console.log('Google redirect result found, logging in...');
+            await loginWithGoogle(googleResult);
           }
         }
       } catch (error) {
@@ -295,9 +303,19 @@ export const AuthProvider = ({ children }) => {
     storage.set('user', userData);
   };
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (googleUserData = null) => {
     try {
-      const googleUser = await firebaseGoogleSignIn();
+      let googleUser = googleUserData;
+      
+      if (!googleUser) {
+        googleUser = await firebaseGoogleSignIn();
+        
+        // If googleUser is null, it means redirect flow is in progress
+        if (!googleUser) {
+          toast.info('Redirecting to Google login...');
+          return { success: false, message: 'Redirect in progress' };
+        }
+      }
       
       // Send Google ID token to backend for verification
       const response = await authAPI.googleLogin({

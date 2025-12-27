@@ -180,6 +180,7 @@ export const getNotificationPermission = () => {
 
 /**
  * Sign in with Google
+ * Uses redirect flow for better mobile PWA support
  * @returns {Promise<{idToken: string, email: string, displayName: string, photoURL: string}>}
  */
 export const signInWithGoogle = async () => {
@@ -192,17 +193,32 @@ export const signInWithGoogle = async () => {
     provider.addScope('email');
     provider.addScope('profile');
     
-    const result = await auth.signInWithPopup(provider);
-    const user = result.user;
-    const idToken = await user.getIdToken();
-    
-    return {
-      idToken,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      uid: user.uid
-    };
+    // Use redirect for better mobile PWA support
+    try {
+      // Try popup first (works on desktop)
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+      
+      return {
+        idToken,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        uid: user.uid
+      };
+    } catch (popupError) {
+      // If popup is blocked/closed, try redirect method
+      if (popupError.code === 'auth/popup-blocked' || popupError.code === 'auth/popup-closed-by-user') {
+        console.log('Popup not available, using redirect flow for mobile');
+        await auth.signInWithRedirect(provider);
+        
+        // After redirect, we need to handle the result in the component
+        // Return null to signal that redirect is in progress
+        return null;
+      }
+      throw popupError;
+    }
   } catch (error) {
     console.error('Google sign-in error details:', {
       code: error.code,
@@ -210,6 +226,37 @@ export const signInWithGoogle = async () => {
       fullError: error
     });
     throw error;
+  }
+};
+
+/**
+ * Get the result from Google redirect login
+ * Call this on component mount to handle redirect result
+ */
+export const getGoogleRedirectResult = async () => {
+  try {
+    if (!auth) {
+      console.warn('Firebase Auth not initialized');
+      return null;
+    }
+    
+    const result = await auth.getRedirectResult();
+    if (result && result.user) {
+      const user = result.user;
+      const idToken = await user.getIdToken();
+      
+      return {
+        idToken,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        uid: user.uid
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting redirect result:', error);
+    return null;
   }
 };
 
