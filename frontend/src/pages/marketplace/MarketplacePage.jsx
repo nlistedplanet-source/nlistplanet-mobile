@@ -278,13 +278,16 @@ const MarketplacePage = () => {
                 className="px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-[11px] font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-emerald-500"
               >
                 <option value="all">All Sectors</option>
-                <option value="technology">Technology</option>
-                <option value="finance">Finance</option>
+                <option value="financial">Finance</option>
+                <option value="tech">Technology</option>
+                <option value="insurance">Insurance</option>
                 <option value="healthcare">Healthcare</option>
                 <option value="ecommerce">E-commerce</option>
+                <option value="retail">Retail</option>
+                <option value="investment">Investment</option>
                 <option value="automobile">Automobile</option>
-                <option value="real estate">Real Estate</option>
                 <option value="energy">Energy</option>
+                <option value="manufacturing">Manufacturing</option>
               </select>
             </div>
           </div>
