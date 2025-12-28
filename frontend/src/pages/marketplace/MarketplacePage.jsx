@@ -128,11 +128,12 @@ const MarketplacePage = () => {
       filtered = filtered.filter(listing => listing.type === activeFilter);
     }
     
-    // Filter by sector
-    if (sectorFilter !== 'all') {
+    // Filter by sector - Only apply if NOT "all"
+    if (sectorFilter && sectorFilter !== 'all') {
       filtered = filtered.filter(listing => {
         const sector = (listing.companyId?.Sector || listing.companyId?.sector || '').toLowerCase();
-        return sector.includes(sectorFilter.toLowerCase());
+        // Check if sector exists and contains the filter value
+        return sector && sector.includes(sectorFilter.toLowerCase());
       });
     }
     
