@@ -37,6 +37,7 @@ const MyPostsPage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
   const [subTab, setSubTab] = useState('sell'); // sell or buy
+  const [statusTab, setStatusTab] = useState('active'); // active or history
   const [selectedListing, setSelectedListing] = useState(null);
   const [showModifyModal, setShowModifyModal] = useState(false);
   const [showSoldModal, setShowSoldModal] = useState(false);
@@ -46,7 +47,8 @@ const MyPostsPage = () => {
   const fetchMyListings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await listingsAPI.getMyListings({ type: subTab });
+      const status = statusTab === 'active' ? 'active' : 'inactive';
+      const response = await listingsAPI.getMyListings({ type: subTab, status });
       setListings(response.data.data || []);
     } catch (error) {
       console.error('Failed to fetch listings:', error);
@@ -54,7 +56,7 @@ const MyPostsPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [subTab]);
+  }, [subTab, statusTab]);
 
   useEffect(() => {
     fetchMyListings();
@@ -184,6 +186,29 @@ const MyPostsPage = () => {
                 <Package size={16} />
                 BUY Requests
               </button>
+            </div>
+
+            {/* Active/History Toggle */}
+            <div className="flex items-center justify-end gap-2 mt-3">
+              <span className={`text-[10px] font-semibold ${statusTab === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
+                Active
+              </span>
+              <button
+                onClick={() => {
+                  haptic.light();
+                  setStatusTab(statusTab === 'active' ? 'history' : 'active');
+                }}
+                className={`relative w-11 h-6 rounded-full transition-all duration-300 ${
+                  statusTab === 'history' ? 'bg-gray-400' : 'bg-emerald-500'
+                }`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 ${
+                  statusTab === 'history' ? 'left-6' : 'left-1'
+                }`} />
+              </button>
+              <span className={`text-[10px] font-semibold ${statusTab === 'history' ? 'text-gray-700' : 'text-gray-400'}`}>
+                History
+              </span>
             </div>
           </div>
 

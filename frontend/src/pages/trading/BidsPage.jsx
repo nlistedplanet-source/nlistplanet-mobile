@@ -16,11 +16,13 @@ import {
   Eye,
   AlertTriangle,
   ShieldCheck,
+  Key,
   Bell
 } from 'lucide-react';
 import { listingsAPI } from '../../utils/api';
 import { formatCurrency, timeAgo, haptic, formatNumber, calculateSellerGets, calculateBuyerPays, getNetPriceForUser } from '../../utils/helpers';
 import { useAuth } from '../../context/AuthContext';
+import VerificationCodesModal from '../../components/modals/VerificationCodesModal';
 import toast from 'react-hot-toast';
 
 const BidsPage = () => {
@@ -37,10 +39,12 @@ const BidsPage = () => {
   const [counterPrice, setCounterPrice] = useState('');
   const [counterQuantity, setCounterQuantity] = useState('');
   const [dealDetails, setDealDetails] = useState({});
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [verificationDeal, setVerificationDeal] = useState(null);
 
   // Define which statuses are "active" vs "expired"
-  const activeStatuses = ['pending', 'countered', 'pending_seller_confirmation', 'pending_confirmation'];
-  const expiredStatuses = ['accepted', 'rejected', 'expired', 'completed', 'cancelled', 'confirmed', 'sold', 'rejected_by_seller'];
+  const activeStatuses = ['pending', 'countered', 'pending_seller_confirmation', 'pending_confirmation', 'accepted', 'confirmed'];
+  const expiredStatuses = ['rejected', 'expired', 'completed', 'cancelled', 'sold', 'rejected_by_seller'];
 
   useEffect(() => {
     fetchMyActivity();
@@ -385,6 +389,13 @@ const BidsPage = () => {
                         onReject={() => handleReject(activity)}
                         onCounter={() => handleCounterClick(activity)}
                         onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
+                        onViewCode={() => {
+                          if (dealDetails[activity.dealId]) {
+                            haptic.light();
+                            setVerificationDeal(dealDetails[activity.dealId]);
+                            setShowVerificationModal(true);
+                          }
+                        }}
                         isExpired={false}
                         isActionable={true}
                         dealDetails={dealDetails}
@@ -413,6 +424,13 @@ const BidsPage = () => {
                       onReject={() => handleReject(activity)}
                       onCounter={() => handleCounterClick(activity)}
                       onView={() => activity.listing?._id ? navigate(`/listing/${activity.listing._id}`) : null}
+                      onViewCode={() => {
+                        if (dealDetails[activity.dealId]) {
+                          haptic.light();
+                          setVerificationDeal(dealDetails[activity.dealId]);
+                          setShowVerificationModal(true);
+                        }
+                      }}
                       isExpired={statusFilter === 'expired'}
                       isActionable={false}
                       dealDetails={dealDetails}
@@ -543,12 +561,22 @@ const BidsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Verification Codes Modal */}
+      <VerificationCodesModal
+        isOpen={showVerificationModal}
+        deal={verificationDeal}
+        onClose={() => {
+          setShowVerificationModal(false);
+          setVerificationDeal(null);
+        }}
+      />
     </>
   );
 };
 
 // Activity Card Component - Mobile Style
-const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, onView, isExpired, isActionable, dealDetails }) => {
+const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, onView, onViewCode, isExpired, isActionable, dealDetails }) => {
   const [expanded, setExpanded] = useState(false);
   
   const isBid = activity.type === 'bid';
@@ -751,34 +779,16 @@ const ActivityCard = ({ activity, actionLoading, onAccept, onReject, onCounter, 
         </div>
       )}
 
-      {/* Verification Codes (Confirmed) */}
-      {(activity.status === 'confirmed' || activity.status === 'sold') && activity.dealId && dealDetails[activity.dealId] && (
-        <div className="px-3 py-3 bg-emerald-50 border-t border-emerald-100">
-          <h5 className="text-xs font-bold text-emerald-800 flex items-center gap-1.5 mb-2">
-            <ShieldCheck size={14} className="text-emerald-600" />
-            Deal Confirmed!
-          </h5>
-          
-          <div className="grid grid-cols-3 gap-2 mb-2">
-            <div className="bg-white rounded p-2 border border-blue-200 text-center">
-              <div className="text-[8px] uppercase text-gray-500 font-bold">You</div>
-              <div className="text-xs font-bold text-blue-700 font-mono">
-                BUY-{dealDetails[activity.dealId].buyerVerificationCode}
-              </div>
-            </div>
-            <div className="bg-white rounded p-2 border border-orange-200 text-center">
-              <div className="text-[8px] uppercase text-gray-500 font-bold">Seller</div>
-              <div className="text-xs font-bold text-orange-700 font-mono">
-                SEL-{dealDetails[activity.dealId].sellerVerificationCode}
-              </div>
-            </div>
-            <div className="bg-white rounded p-2 border border-purple-200 text-center">
-              <div className="text-[8px] uppercase text-gray-500 font-bold">Admin</div>
-              <div className="text-xs font-bold text-purple-700 font-mono">
-                ADM-{dealDetails[activity.dealId].rmVerificationCode}
-              </div>
-            </div>
-          </div>
+      {/* View Verification Codes Button (Confirmed/Sold) */}
+      {(activity.status === 'confirmed' || activity.status === 'sold') && activity.dealId && dealDetails && onViewCode && (
+        <div className="px-3 py-3 bg-emerald-50 border-t border-emerald-200">
+          <button
+            onClick={onViewCode}
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform"
+          >
+            <Key size={18} />
+            View Verification Codes
+          </button>
         </div>
       )}
 
