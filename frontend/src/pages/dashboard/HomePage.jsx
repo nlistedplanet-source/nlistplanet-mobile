@@ -220,9 +220,14 @@ const HomePage = () => {
             // Use universal helper for display price
             const displayPrice = getNetPriceForUser(bid, 'sell', true);
             
-            if (bid.status === 'pending') {
+            // Handle countered status - only show if buyer made the latest counter
+            const counterHistory = bid.counterHistory || [];
+            const latestCounter = counterHistory[counterHistory.length - 1];
+            const isCounteredByBuyer = bid.status === 'countered' && latestCounter?.by === 'buyer';
+            
+            if (bid.status === 'pending' || isCounteredByBuyer) {
               actions.push({
-                type: 'bid_received',
+                type: isCounteredByBuyer ? 'counter_received' : 'bid_received',
                 id: bid._id,
                 listingId: listing._id,
                 company: listing.companyName,
@@ -232,7 +237,7 @@ const HomePage = () => {
                 counterPrice: displayPrice,
                 quantity: bid.quantity,
                 user: bid.userId?.username || bid.username,
-                date: bid.createdAt,
+                date: latestCounter?.timestamp || bid.createdAt,
                 status: bid.status
               });
             } else if (bid.status === 'accepted' || bid.status === 'pending_confirmation') {
@@ -264,9 +269,14 @@ const HomePage = () => {
             // Use universal helper for display price
             const displayPrice = getNetPriceForUser(offer, 'buy', true);
             
-            if (offer.status === 'pending') {
+            // Handle countered status - only show if seller made the latest counter
+            const counterHistory = offer.counterHistory || [];
+            const latestCounter = counterHistory[counterHistory.length - 1];
+            const isCounteredBySeller = offer.status === 'countered' && latestCounter?.by === 'seller';
+            
+            if (offer.status === 'pending' || isCounteredBySeller) {
               actions.push({
-                type: 'offer_received',
+                type: isCounteredBySeller ? 'counter_received' : 'offer_received',
                 id: offer._id,
                 listingId: listing._id,
                 company: listing.companyName,
@@ -276,10 +286,10 @@ const HomePage = () => {
                 counterPrice: displayPrice,
                 quantity: offer.quantity,
                 user: offer.userId?.username,
-                date: offer.createdAt,
+                date: latestCounter?.timestamp || offer.createdAt,
                 status: offer.status
               });
-            } else if (offer.status === 'accepted') {
+            } else if (offer.status === 'accepted' || offer.status === 'pending_confirmation') {
               // High priority: Deal accepted by one party, waiting for other
               actions.push({
                 type: 'deal_accepted',
@@ -302,17 +312,20 @@ const HomePage = () => {
           });
         });
 
-        // Counter Offers on my Bids
+        // Counter Offers on my Bids/Offers - only show if OTHER party countered
         myBids.forEach(activity => {
           if (activity.status === 'countered') {
             const counterHistory = activity.counterHistory || [];
             const latestCounter = counterHistory[counterHistory.length - 1];
             const isBuyer = activity.type === 'bid';
             
-            const rawListingPrice = activity.listing.listingPrice || activity.listing.price;
-            const listPrice = isBuyer 
-              ? calculateBuyerPays(rawListingPrice)
-              : calculateSellerGets(rawListingPrice);
+            // Only show in Action Center if latest counter is from the OTHER party
+            const latestCounterBy = latestCounter?.by;
+            const isActionRequired = isBuyer 
+              ? (latestCounterBy === 'seller') // I am buyer, seller countered → I need to act
+              : (latestCounterBy === 'buyer'); // I am seller, buyer countered → I need to act
+            
+            if (!isActionRequired) return; // Skip if I sent the last counter
 
             // Use universal helper for the counter received
             const otherPrice = getNetPriceForUser(activity, activity.type === 'bid' ? 'sell' : 'buy', false, latestCounter?.by);
@@ -328,7 +341,7 @@ const HomePage = () => {
               counterPrice: otherPrice,
               quantity: activity.quantity,
               user: activity.listing.userId?.username || 'Seller',
-              date: activity.createdAt,
+              date: latestCounter?.timestamp || activity.createdAt,
               isBuyer: isBuyer
             });
           }
