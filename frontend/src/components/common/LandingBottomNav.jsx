@@ -85,9 +85,9 @@ const LandingBottomNav = ({ onInstallClick }) => {
             <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/40 border-4 border-gray-900 overflow-hidden transform active:scale-90 transition-transform">
               {currentLogoIndex === 0 ? (
                 // Show N Logo
-                <img 
-                  src="/crismas logo.png" 
-                  alt="NlistPlanet" 
+                <img
+                  src="/new_logo.png"
+                  alt="NlistPlanet"
                   className="w-10 h-10 object-contain animate-fade-in"
                   onError={(e) => {
                     e.target.style.display = 'none';

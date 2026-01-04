@@ -12,9 +12,9 @@ const LoadingScreen = ({ message = '' }) => {
         <div className="relative mb-8 group">
           <div className="absolute inset-0 bg-primary-500/20 blur-2xl rounded-full group-hover:bg-primary-500/30 transition-all duration-500" />
           <div className="relative w-28 h-28 rounded-[2.5rem] bg-white dark:bg-zinc-900 shadow-2xl flex items-center justify-center overflow-hidden border border-white/20 dark:border-zinc-800 transform rotate-3 hover:rotate-0 transition-transform duration-500">
-            <img 
-              src="/Logo copy.png" 
-              alt="NlistPlanet" 
+            <img
+              src="/new_logo.png"
+              alt="NlistPlanet"
               className="w-20 h-20 object-contain -rotate-3 group-hover:rotate-0 transition-transform duration-500"
               onError={(e) => {
                 e.target.style.display = 'none';

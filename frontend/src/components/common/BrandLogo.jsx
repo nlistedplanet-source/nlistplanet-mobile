@@ -4,7 +4,7 @@ function BrandLogo({ size = 64, className = '', alt = 'NlistPlanet' }) {
   const px = typeof size === 'number' ? `${size}px` : size;
   return (
     <img
-      src={process.env.PUBLIC_URL + '/Logo copy.png'}
+      src={process.env.PUBLIC_URL + '/new_logo.png'}
       alt={alt}
       className={className}
       style={{ 

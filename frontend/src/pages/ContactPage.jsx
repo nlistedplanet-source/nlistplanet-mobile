@@ -90,7 +90,7 @@ const ContactPage = () => {
             <h1 className="text-lg font-bold text-white">Contact Us</h1>
           </div>
           <img 
-            src="/crismas logo.png" 
+            src="/new_logo.png" 
             alt="NlistPlanet" 
             className="w-10 h-10 object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}

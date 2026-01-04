@@ -78,9 +78,9 @@ const PBLoader = ({ show = false }) => {
         <div className={getAnimationClass()}>
           {currentIndex === 0 ? (
             // Show N Logo - same as bottom nav
-            <img 
-              src="/crismas logo.png" 
-              alt="NlistPlanet" 
+            <img
+              src="/new_logo.png"
+              alt="NlistPlanet"
               className="w-12 h-12 object-contain"
               onError={(e) => {
                 e.target.style.display = 'none';
