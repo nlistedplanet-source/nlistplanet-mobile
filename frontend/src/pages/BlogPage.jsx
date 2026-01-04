@@ -240,17 +240,20 @@ const BlogPage = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-transparent"></div>
             </div>
 
-            {/* Content Section - Hindi Only */}
+            {/* Content Section - English/Hindi */}
             <div className="h-[70%] bg-gray-900 flex flex-col flex-shrink-0 overflow-hidden">
               <div className="px-3.5 pt-3 pb-2 flex flex-col h-full">
-                {/* Hindi News - Full Content Scrollable */}
-                {currentArticle.hindiSummary && (
-                  <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
-                    <p className="text-gray-100 text-[17px] leading-[1.7] font-hindi font-medium">
-                      {currentArticle.hindiSummary}
-                    </p>
-                  </div>
-                )}
+                {/* Title */}
+                <h2 className="text-white text-lg font-bold mb-2 line-clamp-2">
+                  {currentArticle.title}
+                </h2>
+                
+                {/* News Content - Full Content Scrollable */}
+                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                  <p className="text-gray-300 text-[15px] leading-[1.6]">
+                    {currentArticle.summary || currentArticle.content || 'No content available'}
+                  </p>
+                </div>
 
                 {/* Bottom Card Footer - Date, Segment Tag, Source */}
                 <div className="pt-2.5 border-t border-gray-800 flex-shrink-0">
@@ -294,7 +297,7 @@ const BlogPage = () => {
               <div className="absolute bottom-20 left-1/2 -translate-x-1/2 animate-bounce">
                 <div className="bg-emerald-500/20 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 border border-emerald-500/30">
                   <ChevronUp size={12} className="text-emerald-400" />
-                  <span className="text-emerald-400 text-[10px] font-semibold">ऊपर स्वाइप करें</span>
+                  <span className="text-emerald-400 text-[10px] font-semibold">Swipe up for next</span>
                 </div>
               </div>
             )}
