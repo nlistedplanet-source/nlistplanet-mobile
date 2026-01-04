@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Share2, ExternalLink, ChevronUp, ChevronDown, BookOpen, Calendar } from 'lucide-react';
 import LandingBottomNav from '../components/common/LandingBottomNav';
+import { newsAPI } from '../utils/api';
+import toast from 'react-hot-toast';
 
 const BlogPage = () => {
   const navigate = useNavigate();
@@ -13,14 +15,6 @@ const BlogPage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
-  // Get base API URL without /api suffix for news endpoint
-  const getBaseUrl = () => {
-    const envUrl = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com/api';
-    // Remove /api suffix if present to avoid double /api/api
-    return envUrl.replace(/\/api\/?$/, '');
-  };
-  const BASE_URL = getBaseUrl();
-
   const categories = ['All', 'IPO', 'Market', 'Unlisted', 'Startup', 'Regulatory'];
 
   useEffect(() => {
@@ -30,17 +24,29 @@ const BlogPage = () => {
   const fetchNews = async () => {
     try {
       setLoading(true);
-      const categoryParam = activeCategory !== 'All' ? `?category=${activeCategory}&limit=50` : '?limit=50';
-      const response = await fetch(`${BASE_URL}/api/news${categoryParam}`);
+      setError(null);
       
-      if (!response.ok) throw new Error('Failed to fetch news');
+      const params = { limit: 50 };
+      if (activeCategory !== 'All') {
+        params.category = activeCategory;
+      }
       
-      const data = await response.json();
-      setNews(data.data || []);
+      const response = await newsAPI.getAll(params);
+      console.log('📰 News API Response:', response.data);
+      
+      const newsData = response.data?.data || response.data || [];
+      console.log('📰 News Data:', newsData.length, 'articles');
+      
+      setNews(newsData);
       setCurrentIndex(0);
+      
+      if (newsData.length === 0) {
+        setError('No news available for this category');
+      }
     } catch (err) {
-      console.error('Error fetching news:', err);
-      setError('Unable to load news');
+      console.error('❌ Error fetching news:', err);
+      setError(err.response?.data?.message || 'Unable to load news');
+      toast.error('Failed to load news');
     } finally {
       setLoading(false);
     }
@@ -124,7 +130,16 @@ const BlogPage = () => {
   const currentArticle = news[currentIndex];
 
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <BookOpen className="w-10 h-10 text-emerald-500" />
+          </div>
+          <p className="text-gray-400">Loading news...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error || news.length === 0) {

@@ -149,6 +149,13 @@ export const companiesAPI = {
   search: (query) => api.get('/companies/search', { params: { q: query } }),
 };
 
+// News API
+export const newsAPI = {
+  getAll: (params) => api.get('/news', { params }),
+  getById: (id) => api.get(`/news/${id}`),
+  getByCategory: (category, params) => api.get(`/news?category=${category}`, { params }),
+};
+
 // Notifications API
 export const notificationsAPI = {
   getAll: (params) => api.get('/notifications', { params }),

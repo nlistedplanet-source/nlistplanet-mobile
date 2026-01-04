@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Clock, Eye, Share2, BookmarkPlus, ExternalLink, Home, BookOpen, Info, Mail, HelpCircle } from 'lucide-react';
+import { newsAPI } from '../utils/api';
+import toast from 'react-hot-toast';
 
 const BlogDetailPage = () => {
   const navigate = useNavigate();
@@ -9,13 +11,6 @@ const BlogDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get base API URL without /api suffix
-  const getBaseUrl = () => {
-    const envUrl = process.env.REACT_APP_API_URL || 'https://api.nlistplanet.com/api';
-    return envUrl.replace(/\/api\/?$/, '');
-  };
-  const BASE_URL = getBaseUrl();
-
   useEffect(() => {
     fetchArticle();
   }, [id]);
@@ -23,15 +18,16 @@ const BlogDetailPage = () => {
   const fetchArticle = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/news/${id}`);
+      setError(null);
       
-      if (!response.ok) throw new Error('Article not found');
+      const response = await newsAPI.getById(id);
+      console.log('📰 News Detail Response:', response.data);
       
-      const data = await response.json();
-      setArticle(data.data);
+      setArticle(response.data?.data || response.data);
     } catch (err) {
-      console.error('Error fetching article:', err);
-      setError('Unable to load article');
+      console.error('❌ Error fetching article:', err);
+      setError(err.response?.data?.message || 'Unable to load article');
+      toast.error('Failed to load article');
     } finally {
       setLoading(false);
     }
@@ -78,7 +74,16 @@ const BlogDetailPage = () => {
   };
 
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <BookOpen className="w-10 h-10 text-emerald-500" />
+          </div>
+          <p className="text-gray-400">Loading article...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !article) {
