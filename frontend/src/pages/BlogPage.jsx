@@ -211,13 +211,13 @@ const BlogPage = () => {
 
       {/* Inshorts-style Card - Full Height */}
       <div
-        className="flex-1 relative overflow-hidden"
+        className="flex-1 relative overflow-hidden pb-20"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {currentArticle && (
-          <div className="h-full w-full flex flex-col px-0 py-4 pb-12">
+          <div className="h-full w-full flex flex-col px-4 py-4">
             <div className="h-full flex flex-col border border-gray-800 rounded-xl overflow-hidden bg-gray-900 shadow-lg">
             {/* Image Section - Clean (No Badges) */}
             <div className={`h-[25%] relative bg-gradient-to-br ${getCategoryColor(currentArticle.category)} flex-shrink-0`}>
